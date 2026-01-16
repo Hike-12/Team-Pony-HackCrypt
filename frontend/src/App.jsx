@@ -11,6 +11,7 @@ import AdminStudents from "@/pages/Admin/AdminStudents";
 import AdminTeachers from "@/pages/Admin/AdminTeachers";
 import LeaveApplication from "@/pages/Student/LeaveApplication";
 import LeaveHistory from "@/pages/Student/LeaveHistory";
+import StudentProfile from "@/pages/Student/Profile";
 
 
 import { Toaster } from '@/components/ui/sonner';
@@ -37,6 +38,7 @@ const App = () => {
                   <Route path="/student/dashboard" element={<StudentDashboard />} />
                   <Route path="/student/leave/apply" element={<LeaveApplication />} />
                   <Route path="/student/leave/history" element={<LeaveHistory />} />
+                  <Route path="/student/profile" element={<StudentProfile />} />
                 </Route>
                 
                 <Route path="/teacher/login" element={<TeacherAuth />} />
