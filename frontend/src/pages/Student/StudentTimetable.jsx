@@ -1,37 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import TimetableGrid from '../../components/TimetableGrid';
 import { StudentSidebar } from '../../components/student/StudentSidebar';
+import { StudentContext } from '../../context/StudentContext';
+import { format, startOfWeek } from 'date-fns';
 
 const StudentTimetable = () => {
+    const { student } = useContext(StudentContext);
     const [entries, setEntries] = useState([]);
     const [slots, setSlots] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchStudentData = async () => {
-            try {
-                // Get student info from storage
-                const userStr = localStorage.getItem('user');
-                const studentProfileStr = localStorage.getItem('studentProfile'); 
-                
-                let classId = null;
+            if (!student) return;
 
-                if (studentProfileStr) {
-                    const profile = JSON.parse(studentProfileStr);
-                    classId = profile.class_id || profile.class_id?._id;
-                } else if (userStr) {
-                   // Fallback: Fetch student full profile
-                   const user = JSON.parse(userStr);
-                   const res = await fetch(`http://localhost:8000/api/admin/students`); // Inefficient but hacky
-                   const students = await res.json();
-                   const me = students.find(s => s.email === user.email);
-                   if (me) classId = me.class_id; 
+            try {
+                // Get the student ID from context
+                const studentId = student.student_id || student._id || student.id;
+                
+                // Fetch student details to get class_id
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/students/${studentId}`);
+                if (!res.ok) {
+                     setLoading(false);
+                     return;
                 }
+                
+                const profile = await res.json();
+                const classId = profile.class_id?._id || profile.class_id;
 
                 if (classId) {
                     await fetchTimetable(classId);
                 } else {
-                    setLoading(false); // No class found
+                    setLoading(false); 
                 }
             } catch (e) {
                 console.error(e);
@@ -40,13 +40,13 @@ const StudentTimetable = () => {
         };
 
         fetchStudentData();
-    }, []);
+    }, [student]);
 
     const fetchTimetable = async (cid) => {
         try {
             const [slotsRes, entriesRes] = await Promise.all([
-                fetch('http://localhost:8000/api/admin/timetable/slots'),
-                fetch(`http://localhost:8000/api/admin/timetable/entries?class_id=${cid}`)
+                fetch(`${import.meta.env.VITE_API_URL}/api/admin/timetable/slots`),
+                fetch(`${import.meta.env.VITE_API_URL}/api/admin/timetable/entries?class_id=${cid}`)
             ]);
             
             const slotsData = await slotsRes.json();
@@ -61,21 +61,38 @@ const StudentTimetable = () => {
         }
     };
 
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekInfo = `${format(weekStart, 'dd MMM')} - ${format(new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000), 'dd MMM yyyy')}`;
+
     return (
         <div className="flex min-h-screen w-full">
             <StudentSidebar />
             <main className="flex-1 min-h-screen w-full ml-64 bg-background">
-                <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
-                    <h1 className="text-lg font-semibold">Class Timetable</h1>
+                <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+                    <div className="px-6 py-4">
+                        <h1 className="text-2xl font-bold text-foreground">My Class Timetable</h1>
+                        <p className="text-sm text-muted-foreground mt-1">Week of {weekInfo}</p>
+                    </div>
                 </header>
-                <div className="p-8">
+                <div className="p-6">
                     {loading ? (
-                        <div>Loading timetable...</div>
+                        <div className="flex items-center justify-center p-16">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary"></div>
+                                <p className="text-muted-foreground text-sm">Loading timetable...</p>
+                            </div>
+                        </div>
                     ) : entries.length > 0 ? (
                         <TimetableGrid slots={slots} entries={entries} role="STUDENT" />
                     ) : (
-                        <div className="text-center p-12 bg-white rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                             <p className="text-lg text-gray-500 dark:text-gray-400">No timetable found for your class.</p>
+                        <div className="flex flex-col items-center justify-center p-12 bg-card rounded-lg border border-dashed">
+                             <div className="mb-4">
+                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                                    <span className="text-3xl">📅</span>
+                                </div>
+                             </div>
+                             <h3 className="text-lg font-semibold text-foreground">No Classes Scheduled</h3>
+                             <p className="text-muted-foreground mt-2 text-center max-w-sm">Your timetable is currently empty. Check back later or contact your administrator.</p>
                         </div>
                     )}
                 </div>

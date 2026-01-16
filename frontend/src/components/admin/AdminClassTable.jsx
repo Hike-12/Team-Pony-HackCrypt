@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import { FaEdit, FaTrash, FaGraduationCap } from 'react-icons/fa';
+import { MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { ClassLocationSetup } from '@/components/admin/ClassLocationSetup';
 import {
   Dialog,
   DialogContent,
@@ -27,8 +29,10 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
   const [error, setError] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
   const [deletingClassId, setDeletingClassId] = useState(null);
+  const [locationClass, setLocationClass] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [editLoading, setEditLoading] = useState(false);
 
@@ -94,6 +98,16 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
     setDeleteOpen(true);
   }
 
+  const handleLocationOpen = (classItem) => {
+    setLocationClass(classItem);
+    setLocationOpen(true);
+  };
+
+  const handleLocationUpdated = (updatedClass) => {
+    setLocationOpen(false);
+    fetchClasses();
+  };
+
   const confirmDelete = async () => {
     if (!deletingClassId) return;
     try {
@@ -146,6 +160,7 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Division</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Batch Year</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Full Name</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Location</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground text-right">Actions</th>
                 </tr>
               </thead>
@@ -162,8 +177,26 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
                     <td className="px-4 py-3 text-sm text-foreground font-medium">
                       {classItem.name} {classItem.division} ({classItem.batch_year})
                     </td>
+                    <td className="px-4 py-3 text-sm">
+                      {classItem.location?.room_label ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-500/10 text-green-600 text-xs font-medium">
+                          <MapPin className="w-3 h-3" />
+                          {classItem.location.room_label}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">Not set</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 justify-end">
+                        <button
+                          aria-label="Set location"
+                          className="p-2 rounded-lg bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
+                          onClick={() => handleLocationOpen(classItem)}
+                          title="Set geofencing location"
+                        >
+                          <MapPin className="w-4 h-4" />
+                        </button>
                         <button
                           aria-label="Edit class"
                           className="p-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all"
@@ -184,7 +217,7 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
                 ))}
                 {classes.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center">
+                    <td colSpan={6} className="px-4 py-12 text-center">
                       <p className="text-muted-foreground">No classes found. Add a class to get started.</p>
                     </td>
                   </tr>
@@ -270,6 +303,24 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Location Setup Dialog */}
+      <Dialog open={locationOpen} onOpenChange={setLocationOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Setup Class Location</DialogTitle>
+            <DialogDescription>
+              Configure geofencing for {locationClass?.name} {locationClass?.division}
+            </DialogDescription>
+          </DialogHeader>
+          {locationClass && (
+            <ClassLocationSetup 
+              classData={locationClass} 
+              onLocationUpdated={handleLocationUpdated}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 });

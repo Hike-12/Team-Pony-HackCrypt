@@ -6,6 +6,6 @@ const subjectSchema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now }
 });
 
-subjectSchema.index({ code: 1 }, { unique: true });
+
 
 module.exports = mongoose.model('Subject', subjectSchema);

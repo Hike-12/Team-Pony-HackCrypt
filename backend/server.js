@@ -21,6 +21,7 @@ app.use('/api/student', require('./routes/Student/authRoutes'));
 app.use('/api/student/leave', require('./routes/Student/leaveRoutes'));
 app.use('/api/student/biometric', require('./routes/Student/biometricRoutes'));
 app.use('/api/student/webauthn', require('./routes/Student/webauthnRoutes')); 
+app.use('/api/student/geofencing', require('./routes/Student/geofencingRoutes')); 
 app.use('/api/teacher/auth', require('./routes/Teacher/authRoutes'));
 app.use('/api/teacher/attendance', require('./routes/Teacher/attendanceRoutes'));
 app.use('/api/teacher/leave', require('./routes/Teacher/leaveRoutes'));
@@ -30,6 +31,7 @@ app.use('/api/admin/timetable', require('./routes/Admin/timetableRoutes'));
 app.use('/api/admin/classes', require('./routes/adminClassRoutes'));
 app.use('/api/admin/subjects', require('./routes/adminSubjectRoutes'));
 app.use('/api/admin/teacher-subjects', require('./routes/adminTeacherSubjectRoutes'));
+app.use('/api/admin/geofencing', require('./routes/Admin/geofencingRoutes'));
 
 const PORT = process.env.PORT || 8000;
 
