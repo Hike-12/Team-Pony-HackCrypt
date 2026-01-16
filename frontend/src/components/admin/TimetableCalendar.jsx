@@ -347,9 +347,9 @@ const TimetableCalendar = ({
 
       <EditEntryDialog
         open={showEditDialog}
-        onClose={() => {
-          setShowEditDialog(false);
-          setEditingEntry(null);
+        onOpenChange={(open) => {
+          setShowEditDialog(open);
+          if (!open) setEditingEntry(null);
         }}
         entry={editingEntry}
         onUpdate={onEntryUpdate}

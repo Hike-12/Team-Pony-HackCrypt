@@ -30,6 +30,11 @@ const items = [
     title: "Subjects",
     url: "/admin/subjects",
     icon: Book,
+  },
+  {
+    title: "Timetable",
+    url: "/admin/timetable",
+    icon: Calendar,
   }
 ]
 
