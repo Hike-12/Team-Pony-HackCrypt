@@ -1,11 +1,12 @@
 import React from 'react'
 import { StudentSidebar } from '@/components/student/StudentSidebar'
 
+
 const StudentDashboard = () => {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen w-full">
       <StudentSidebar />
-      <main className="flex-1 ml-64 min-h-screen bg-background">
+      <main className="flex-1 min-h-screen w-full ml-64 bg-background">
         <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
           <h1 className="text-lg font-semibold">Student Dashboard</h1>
         </header>
