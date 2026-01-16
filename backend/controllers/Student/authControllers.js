@@ -39,7 +39,8 @@ exports.login = async (req, res) => {
         res.json({ 
             token, 
             user: { 
-                id: user._id, 
+                id: user._id,
+                student_id: student._id, // Add the student's _id
                 role: user.role, 
                 name: student.full_name, 
                 roll_no: student.roll_no,
