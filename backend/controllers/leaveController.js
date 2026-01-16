@@ -209,3 +209,218 @@ exports.cancelLeaveApplication = async (req, res) => {
         });
     }
 };
+
+// ==================== TEACHER FUNCTIONS ====================
+
+// Get all pending leave applications for teacher review
+exports.getPendingLeaves = async (req, res) => {
+    try {
+        const { limit = 50, skip = 0 } = req.query;
+
+        const leaves = await LeaveApplication.find({ status: 'PENDING' })
+            .populate('student_id', 'full_name roll_no class_id')
+            .sort({ created_at: -1 })
+            .limit(parseInt(limit))
+            .skip(parseInt(skip));
+
+        const total = await LeaveApplication.countDocuments({ status: 'PENDING' });
+
+        res.status(200).json({
+            success: true,
+            data: leaves,
+            pagination: {
+                total,
+                limit: parseInt(limit),
+                skip: parseInt(skip)
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching pending leaves:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch pending leaves',
+            error: error.message
+        });
+    }
+};
+
+// Get all leave applications with filters
+exports.getAllLeaves = async (req, res) => {
+    try {
+        const { status, student_id, start_date, end_date, limit = 50, skip = 0 } = req.query;
+
+        const query = {};
+        if (status) query.status = status;
+        if (student_id) query.student_id = student_id;
+        if (start_date || end_date) {
+            query.start_date = {};
+            if (start_date) query.start_date.$gte = new Date(start_date);
+            if (end_date) query.start_date.$lte = new Date(end_date);
+        }
+
+        const leaves = await LeaveApplication.find(query)
+            .populate('student_id', 'full_name roll_no class_id')
+            .populate('reviewed_by', 'full_name')
+            .sort({ created_at: -1 })
+            .limit(parseInt(limit))
+            .skip(parseInt(skip));
+
+        const total = await LeaveApplication.countDocuments(query);
+
+        res.status(200).json({
+            success: true,
+            data: leaves,
+            pagination: {
+                total,
+                limit: parseInt(limit),
+                skip: parseInt(skip)
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching leaves:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch leaves',
+            error: error.message
+        });
+    }
+};
+
+// Approve a leave application
+exports.approveLeave = async (req, res) => {
+    try {
+        const { leaveId } = req.params;
+        const { teacher_id, comments } = req.body; // TODO: Get teacher_id from auth middleware
+
+        const leave = await LeaveApplication.findById(leaveId);
+
+        if (!leave) {
+            return res.status(404).json({
+                success: false,
+                message: 'Leave application not found'
+            });
+        }
+
+        if (leave.status !== 'PENDING') {
+            return res.status(400).json({
+                success: false,
+                message: 'Only pending leaves can be approved'
+            });
+        }
+
+        leave.status = 'APPROVED';
+        leave.reviewed_by = teacher_id;
+        leave.reviewed_at = new Date();
+        if (comments) leave.review_comments = comments;
+
+        await leave.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Leave approved successfully',
+            data: leave
+        });
+    } catch (error) {
+        console.error('Error approving leave:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to approve leave',
+            error: error.message
+        });
+    }
+};
+
+// Reject a leave application
+exports.rejectLeave = async (req, res) => {
+    try {
+        const { leaveId } = req.params;
+        const { teacher_id, reason } = req.body; // TODO: Get teacher_id from auth middleware
+
+        if (!reason || !reason.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Rejection reason is required'
+            });
+        }
+
+        const leave = await LeaveApplication.findById(leaveId);
+
+        if (!leave) {
+            return res.status(404).json({
+                success: false,
+                message: 'Leave application not found'
+            });
+        }
+
+        if (leave.status !== 'PENDING') {
+            return res.status(400).json({
+                success: false,
+                message: 'Only pending leaves can be rejected'
+            });
+        }
+
+        leave.status = 'REJECTED';
+        leave.reviewed_by = teacher_id;
+        leave.reviewed_at = new Date();
+        leave.review_comments = reason;
+
+        await leave.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Leave rejected successfully',
+            data: leave
+        });
+    } catch (error) {
+        console.error('Error rejecting leave:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to reject leave',
+            error: error.message
+        });
+    }
+};
+
+// Get leave statistics for teacher dashboard
+exports.getTeacherLeaveStats = async (req, res) => {
+    try {
+        const stats = await LeaveApplication.aggregate([
+            {
+                $group: {
+                    _id: '$status',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const formattedStats = {
+            total: 0,
+            pending: 0,
+            approved: 0,
+            rejected: 0
+        };
+
+        stats.forEach(stat => {
+            formattedStats.total += stat.count;
+            if (stat._id === 'PENDING') {
+                formattedStats.pending = stat.count;
+            } else if (stat._id === 'APPROVED') {
+                formattedStats.approved = stat.count;
+            } else if (stat._id === 'REJECTED') {
+                formattedStats.rejected = stat.count;
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            data: formattedStats
+        });
+    } catch (error) {
+        console.error('Error fetching teacher leave stats:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch leave statistics',
+            error: error.message
+        });
+    }
+};

@@ -8,7 +8,7 @@ exports.login = async (req, res) => {
         const { roll_no, password } = req.body;
 
         if (!roll_no || !password) {
-             return res.status(400).json({ message: 'Please provide roll number and password' });
+            return res.status(400).json({ message: 'Please provide roll number and password' });
         }
 
         // 1. Find Student by roll_no
@@ -36,15 +36,16 @@ exports.login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        res.json({ 
-            token, 
-            user: { 
-                id: user._id, 
-                role: user.role, 
-                name: student.full_name, 
+        res.json({
+            token,
+            user: {
+                id: user._id,
+                student_id: student._id,
+                role: user.role,
+                name: student.full_name,
                 roll_no: student.roll_no,
                 class_id: student.class_id
-            } 
+            }
         });
 
     } catch (error) {

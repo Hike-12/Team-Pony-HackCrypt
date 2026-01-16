@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { StudentSidebar } from '@/components/student/StudentSidebar';
+import { StudentContext } from '@/context/StudentContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import {
 } from 'react-icons/fa';
 
 const LeaveApplication = () => {
+    const { student } = useContext(StudentContext);
     const [formData, setFormData] = useState({
         leave_type: '',
         start_date: '',
@@ -69,6 +71,12 @@ const LeaveApplication = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Check if student is logged in
+        if (!student || !student.student_id) {
+            return toast.error('Please login to submit leave application');
+        }
+
         if (!formData.leave_type) return toast.error('Please select a leave type');
         if (!formData.start_date || !formData.end_date) return toast.error('Please select dates');
         if (new Date(formData.end_date) < new Date(formData.start_date)) return toast.error('End date must be greater than start date');
@@ -85,8 +93,7 @@ const LeaveApplication = () => {
             Object.keys(formData).forEach(key => {
                 if (formData[key]) formDataToSend.append(key, formData[key]);
             });
-            // TODO: Get actual student ID from context
-            formDataToSend.append('student_id', 'STUDENT_ID_HERE');
+            formDataToSend.append('student_id', student.student_id);
 
             const response = await fetch('http://localhost:8000/api/student/leave/apply', {
                 method: 'POST',
