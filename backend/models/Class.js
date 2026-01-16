@@ -5,7 +5,7 @@ const classSchema = new mongoose.Schema({
   batch_year: { type: Number, required: true },
   division: { type: String, required: true },
   // Geofencing location data
-  location: {
+    location: {
     latitude: { type: Number },
     longitude: { type: Number },
     allowed_radius: { type: Number, default: 50 }, // meters
