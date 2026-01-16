@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import TimetableCalendar from '@/components/admin/TimetableCalendar';
 import FileUploadDialog from '@/components/admin/FileUploadDialog';
 import AddEntryDialog from '@/components/admin/AddEntryDialog';
-import { Calendar, Upload, Plus, Settings } from 'lucide-react';
-import { Toaster, toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Users, GraduationCap, BookOpen, Calendar, Bell, TrendingUp, Activity, Shield } from 'lucide-react'
+import { Calendar, Upload, Plus, Settings, Users, GraduationCap, BookOpen, Bell, TrendingUp, Activity, Shield } from 'lucide-react';
+import { toast } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
 
 // Stat Card Component
 const StatCard = ({ title, value, description, icon: Icon, color, trend }) => (
@@ -184,9 +183,9 @@ const AdminDashboard = () => {
   const selectedClassData = classes.find(c => c._id === selectedClass);
 
   return (
+
     <div className="min-h-screen bg-background p-6">
       <Toaster position="top-right" richColors />
-      
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -234,41 +233,42 @@ const AdminDashboard = () => {
                 ))}
               </select>
             </div>
-
             {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest system events and updates</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { action: 'New attendance session created', user: 'Prof. Smith', time: '5 minutes ago', type: 'success' },
-                    { action: 'Student enrollment approved', user: 'Admin Team', time: '15 minutes ago', type: 'info' },
-                    { action: 'Attendance report generated', user: 'System', time: '1 hour ago', type: 'success' },
-                    { action: 'Edit request pending review', user: 'John Doe', time: '2 hours ago', type: 'warning' },
-                  ].map((activity, index) => (
-                    <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
-                      <div className={`h-2 w-2 rounded-full mt-2 ${
-                        activity.type === 'success' ? 'bg-green-500' :
-                        activity.type === 'warning' ? 'bg-yellow-500' :
-                        'bg-blue-500'
-                      }`} />
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{activity.action}</p>
-                        <p className="text-xs text-muted-foreground">{activity.user} • {activity.time}</p>
+            <div className="w-full sm:w-1/2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>Latest system events and updates</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {[
+                      { action: 'New attendance session created', user: 'Prof. Smith', time: '5 minutes ago', type: 'success' },
+                      { action: 'Student enrollment approved', user: 'Admin Team', time: '15 minutes ago', type: 'info' },
+                      { action: 'Attendance report generated', user: 'System', time: '1 hour ago', type: 'success' },
+                      { action: 'Edit request pending review', user: 'John Doe', time: '2 hours ago', type: 'warning' },
+                    ].map((activity, index) => (
+                      <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
+                        <div className={`h-2 w-2 rounded-full mt-2 ${
+                          activity.type === 'success' ? 'bg-green-500' :
+                          activity.type === 'warning' ? 'bg-yellow-500' :
+                          'bg-blue-500'
+                        }`} />
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{activity.action}</p>
+                          <p className="text-xs text-muted-foreground">{activity.user} • {activity.time}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
-      </main>
-    </SidebarProvider>
-  )
+        </Card>
+      </div>
+    </div>
+  );
 }
 
 export default AdminDashboard;
