@@ -16,13 +16,15 @@ app.use(express.json());
 
 // Routes
 app.use('/api/student/auth', require('./routes/Student/authRoutes'));
+app.use('/api/student', require('./routes/Student/authRoutes'));
 app.use('/api/student/leave', require('./routes/Student/leaveRoutes'));
 app.use('/api/teacher/auth', require('./routes/Teacher/authRoutes'));
 app.use('/api/teacher/leave', require('./routes/Teacher/leaveRoutes'));
 app.use('/api/admin/students', require('./routes/adminStudentRoutes'));
 app.use('/api/admin/teachers', require('./routes/adminTeacherRoutes'));
 app.use('/api/admin/timetable', require('./routes/Admin/timetableRoutes'));
-app.use('/api/classes', require('./routes/classRoutes'));
+app.use('/api/admin/classes', require('./routes/adminClassRoutes'));
+app.use('/api/admin/subjects', require('./routes/adminSubjectRoutes'));
 
 const PORT = process.env.PORT || 8000;
 

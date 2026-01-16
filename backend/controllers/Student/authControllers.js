@@ -1,5 +1,6 @@
 const User = require('../../models/User');
 const Student = require('../../models/Student');
+const Class = require('../../models/Class');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -36,20 +37,64 @@ exports.login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        res.json({
-            token,
-            user: {
+        // Populate class information
+        const studentWithClass = await Student.findById(student._id).populate('class_id');
+
+        res.json({ 
+            token, 
+            user: { 
                 id: user._id,
                 student_id: student._id,
-                role: user.role,
-                name: student.full_name,
+                role: user.role, 
+                name: student.full_name, 
                 roll_no: student.roll_no,
-                class_id: student.class_id
+                class_id: student.class_id,
+                class_name: studentWithClass.class_id?.name || 'Not assigned',
+                phone: student.phone,
+                gender: student.gender,
+                image_url: student.image_url,
+                email: user.email
             }
         });
 
     } catch (error) {
         console.error("Student Login Error:", error);
         res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+exports.getProfile = async (req, res) => {
+    try {
+        const { studentId } = req.params;
+
+        // Find student with populated class information
+        const student = await Student.findById(studentId).populate('class_id');
+        
+        if (!student) {
+            return res.status(404).json({ success: false, message: 'Student not found' });
+        }
+
+        // Find user information
+        const user = await User.findById(student.user_id);
+        
+        const profileData = {
+            full_name: student.full_name,
+            roll_no: student.roll_no,
+            phone: student.phone,
+            gender: student.gender,
+            class_name: student.class_id?.name || 'Not assigned',
+            image_url: student.image_url,
+            email: user?.email || 'N/A',
+            created_at: student.created_at
+        };
+
+        res.json({ 
+            success: true, 
+            data: profileData 
+        });
+
+    } catch (error) {
+        console.error("Get Profile Error:", error);
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
