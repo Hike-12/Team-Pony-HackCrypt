@@ -3,8 +3,8 @@ import { StudentContext } from '@/context/StudentContext';
 import { StudentSidebar } from '@/components/student/StudentSidebar';
 import { BiometricVerification } from '@/components/student/BiometricVerification';
 import { LocationVerification } from '@/components/student/LocationVerification';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, MapPin, Camera, Fingerprint, CreditCard, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { CheckCircle, MapPin, Camera, Fingerprint, CreditCard, ChevronRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,9 +21,9 @@ export default function AttendanceVerification() {
   const steps = [
     {
       id: 1,
-      name: 'Geofencing',
+      name: 'Location Check',
       icon: MapPin,
-      description: 'Location Check',
+      description: 'Geofencing Verification',
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10'
     },
@@ -39,22 +39,21 @@ export default function AttendanceVerification() {
       id: 3,
       name: 'ID Scan',
       icon: CreditCard,
-      description: 'Document Check',
+      description: 'Document Verification',
       color: 'text-amber-500',
       bgColor: 'bg-amber-500/10'
     },
     {
       id: 4,
-      name: 'Biometric',
+      name: 'Final Approval',
       icon: Fingerprint,
-      description: 'Final Approval',
+      description: 'Biometric Auth',
       color: 'text-emerald-500',
       bgColor: 'bg-emerald-500/10'
     },
   ];
 
   const handleStepSuccess = (step, result) => {
-    // Add artificial delay for ux feeling
     setTimeout(() => {
       setStepResults(prev => ({ ...prev, [step]: result }));
       if (currentStep < 4) {
@@ -62,113 +61,111 @@ export default function AttendanceVerification() {
       } else {
         submitAttendance();
       }
-    }, 500);
+    }, 600);
   };
 
   const submitAttendance = async () => {
-    // Submit all verification results to backend
     console.log('Submitting attendance with results:', stepResults);
-    // API call to mark attendance
+    // API call placeholder
   };
 
   return (
     <div className="flex min-h-screen w-full bg-background font-sans">
       <StudentSidebar />
-      <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-64 ml-0 bg-background/50 pb-24 md:pb-8 flex flex-col">
+      <main className="flex-1 w-full transition-all duration-300 md:ml-64 ml-0 flex flex-col min-h-screen">
+
         {/* Header */}
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md shadow-sm supports-[backdrop-filter]:bg-background/60 px-4 md:px-8 py-4 md:py-6"
-        >
+        <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-600 dark:text-green-400">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Verify Attendance</h1>
-              <p className="text-sm text-muted-foreground">Complete security checks to mark presence</p>
+              <h1 className="text-xl font-bold tracking-tight text-foreground">Attendance Verification</h1>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                <span className="flex h-2 w-2 rounded-full bg-green-500" />
+                Secure Environment Active
+              </div>
             </div>
           </div>
-        </motion.header>
+        </header>
 
-        <div className="flex-1 p-4 md:p-8 flex items-start justify-center">
-          <div className="w-full max-w-4xl grid md:grid-cols-3 gap-8">
+        <div className="flex-1 p-6 md:p-12 flex items-center justify-center bg-muted/20">
+          {/* Main Split Card */}
+          <Card className="w-full max-w-5xl overflow-hidden border shadow-xl flex flex-col md:flex-row min-h-[550px] bg-card">
 
-            {/* Left: Progress Steps */}
-            <Card className="md:col-span-1 h-fit sticky top-28 border-0 shadow-lg bg-gradient-to-b from-card to-secondary/10">
-              <CardHeader>
-                <CardTitle className="text-lg">Progress</CardTitle>
-                <CardDescription>Step {currentStep} of {steps.length}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 relative">
-                {/* Vertical line connector */}
-                <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-border -z-10 ml-[3px]" />
+            {/* Left Panel: Progress Information */}
+            <div className="md:w-1/3 bg-muted/30 border-r p-6 md:p-8 flex flex-col justify-between relative">
+              <div className="space-y-6 md:space-y-8">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight mb-1">Verification Steps</h2>
+                  <p className="text-sm text-muted-foreground">Complete all checks to mark your attendance.</p>
+                </div>
 
-                {steps.map((step) => {
-                  const isCompleted = currentStep > step.id;
-                  const isCurrent = currentStep === step.id;
+                <div className="space-y-4 relative">
+                  {/* Connecting Line */}
+                  <div className="absolute left-6 top-4 bottom-4 w-px bg-border -z-10 ml-0.5" />
 
-                  return (
-                    <motion.div
-                      key={step.id}
-                      initial={false}
-                      animate={{ opacity: isCurrent || isCompleted ? 1 : 0.5 }}
-                      className="flex items-center gap-4 relative bg-card/80 backdrop-blur-sm p-2 rounded-lg"
-                    >
-                      <div className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 border-2",
-                        isCompleted ? "bg-green-500 border-green-500 text-white" :
-                          isCurrent ? `bg-white dark:bg-zinc-900 border-primary text-primary shadow-[0_0_10px_rgba(0,0,0,0.1)]` :
-                            "bg-muted border-muted-foreground/30 text-muted-foreground"
+                  {steps.map((step) => {
+                    const isCompleted = currentStep > step.id;
+                    const isCurrent = currentStep === step.id;
+
+                    return (
+                      <div key={step.id} className={cn("relative flex items-center gap-4 py-1 transition-opacity duration-300",
+                        isCurrent ? "opacity-100" : isCompleted ? "opacity-60" : "opacity-40"
                       )}>
-                        {isCompleted ? <CheckCircle className="w-4 h-4" /> : <step.icon className="w-4 h-4" />}
+                        <div className={cn(
+                          "w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all duration-300 shrink-0 bg-background z-10",
+                          isCompleted ? "border-green-500 text-green-500" :
+                            isCurrent ? cn("border-primary text-primary shadow-lg", step.color) : "border-muted text-muted-foreground"
+                        )}>
+                          {isCompleted ? <CheckCircle className="w-6 h-6" /> : <step.icon className="w-6 h-6" />}
+                        </div>
+                        <div>
+                          <p className={cn("text-sm font-bold", isCurrent ? "text-foreground" : "text-muted-foreground")}>{step.name}</p>
+                          <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/70">{step.description}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className={cn("text-sm font-semibold leading-none", isCurrent && "text-primary")}>{step.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{step.description}</p>
-                      </div>
-                      {isCurrent && (
-                        <motion.div
-                          layoutId="active-step-arrow"
-                          className="absolute right-0 text-primary"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </CardContent>
-            </Card>
+                    )
+                  })}
+                </div>
+              </div>
 
-            {/* Right: Active Step Content */}
-            <div className="md:col-span-2">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStep}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Card className="border-0 shadow-xl overflow-hidden min-h-[400px] flex flex-col">
-                    <div className={cn("h-2 w-full", steps[currentStep - 1].bgColor.replace('/10', '/50'))} />
-                    <CardHeader>
+              {/* Footer Info */}
+              <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground bg-background/50 p-3 rounded-lg border">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Please ensure you are in a well-lit area for facial verification.</span>
+              </div>
+            </div>
+
+            {/* Right Panel: Active Step Content */}
+            <div className="md:w-2/3 p-6 md:p-10 flex flex-col relative bg-background">
+              <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentStep}
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="w-full"
+                  >
+                    {/* Header for Active Step */}
+                    <div className="text-center mb-10">
                       {(() => {
                         const StepIcon = steps[currentStep - 1].icon;
                         return (
-                          <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-4", steps[currentStep - 1].bgColor, steps[currentStep - 1].color)}>
-                            <StepIcon className="w-6 h-6" />
+                          <div className={cn("w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 bg-muted animate-pulse-slow", steps[currentStep - 1].bgColor)}>
+                            <StepIcon className={cn("w-8 h-8", steps[currentStep - 1].color)} />
                           </div>
                         );
                       })()}
-                      <CardTitle className="text-xl">Step {currentStep}: {steps[currentStep - 1].name}</CardTitle>
-                      <CardDescription>{steps[currentStep - 1].description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col items-center justify-center p-6 bg-muted/5 min-h-[300px]">
+                      <h2 className="text-2xl font-bold tracking-tight mb-2">{steps[currentStep - 1].name}</h2>
+                      <p className="text-muted-foreground">{steps[currentStep - 1].description}</p>
+                    </div>
 
-                      {/* Step 1: Geofencing */}
+                    {/* Content Renderers */}
+                    <div className="w-full">
                       {currentStep === 1 && (
                         <LocationVerification
                           classId={student?.class_id}
@@ -177,45 +174,33 @@ export default function AttendanceVerification() {
                         />
                       )}
 
-                      {/* Step 2: Face Recognition */}
                       {currentStep === 2 && (
-                        <div className="text-center space-y-4">
-                          <div className="relative mx-auto w-48 h-48 bg-black rounded-2xl overflow-hidden border-4 border-dashed border-zinc-700 flex items-center justify-center">
-                            <Camera className="w-12 h-12 text-zinc-500 opacity-50" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
-                            <span className="absolute bottom-4 text-xs font-mono text-zinc-400">Waiting for camera...</span>
+                        <div className="space-y-6 text-center">
+                          <div className="relative mx-auto w-64 h-64 bg-black rounded-3xl overflow-hidden shadow-2xl ring-4 ring-zinc-100 dark:ring-zinc-800 flex items-center justify-center group cursor-pointer" onClick={() => handleStepSuccess('faceRecognition', { verified: true })}>
+                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Camera className="w-16 h-16 text-zinc-700 group-hover:text-zinc-500 transition-colors" />
+                            <p className="absolute bottom-6 text-xs text-zinc-500 font-mono">Tap to Simulate</p>
                           </div>
-                          <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-                            Position your face within the frame. Ensure good lighting.
+                          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                            Position your face within the frame. Ensure good lighting conditions.
                           </p>
-                          <button
-                            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity text-sm"
-                            onClick={() => handleStepSuccess('faceRecognition', { verified: true })}
-                          >
-                            Simulate Face Match
-                          </button>
                         </div>
                       )}
 
-                      {/* Step 3: ID Card Scan */}
                       {currentStep === 3 && (
-                        <div className="text-center space-y-4">
-                          <div className="relative mx-auto w-64 h-40 bg-zinc-100 dark:bg-zinc-800 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center">
-                            <CreditCard className="w-10 h-10 text-zinc-400" />
+                        <div className="space-y-6 text-center">
+                          <div className="relative mx-auto w-full max-w-sm h-56 bg-zinc-50 dark:bg-zinc-900 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-4 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => handleStepSuccess('idCard', { verified: true })}>
+                            <div className="w-16 h-10 bg-zinc-200 dark:bg-zinc-800 rounded flex items-center justify-center">
+                              <CreditCard className="w-6 h-6 text-zinc-400" />
+                            </div>
+                            <span className="text-sm font-medium text-muted-foreground">Click to Simulate ID Scan</span>
                           </div>
-                          <p className="text-muted-foreground text-sm max-w-xs mx-auto">
-                            Place your ID card on a flat surface and align it with the guide.
+                          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                            Place your Student ID card on a flat surface and align it with the guide.
                           </p>
-                          <button
-                            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity text-sm"
-                            onClick={() => handleStepSuccess('idCard', { verified: true })}
-                          >
-                            Simulate ID Scan
-                          </button>
                         </div>
                       )}
 
-                      {/* Step 4: Biometric */}
                       {currentStep === 4 && (
                         <BiometricVerification
                           studentId={student?._id}
@@ -224,15 +209,21 @@ export default function AttendanceVerification() {
                           onError={(error) => console.error('Biometric failed:', error)}
                         />
                       )}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </AnimatePresence>
+              {/* Step Indicator dots at bottom right */}
+              <div className="absolute bottom-6 right-6 flex gap-1">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className={cn("w-1.5 h-1.5 rounded-full transition-all", i === currentStep ? "bg-primary w-3" : "bg-muted-foreground/30")} />
+                ))}
+              </div>
             </div>
-          </div>
+          </Card>
         </div>
-      </main >
-    </div >
+      </main>
+    </div>
   );
 }
