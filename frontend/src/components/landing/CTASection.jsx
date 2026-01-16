@@ -7,19 +7,19 @@ export default function CTASection() {
             <div
                 className="mx-auto bg-background max-w-5xl rounded-3xl border px-6 py-12 md:py-20 lg:py-20">
                 <div className="text-center">
-                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Start Building</h2>
-                    <p className="mt-4">Libero sapiente aliquam quibusdam aspernatur.</p>
+                    <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Transform Your Attendance Management</h2>
+                    <p className="mt-4">Implement secure, intelligent biometric verification across your institution today.</p>
 
                     <div className="mt-12 flex flex-wrap justify-center gap-4">
                         <Button asChild size="lg">
                             <Link href="/">
-                                <span>Get Started</span>
+                                <span>Start Free Trial</span>
                             </Link>
                         </Button>
 
                         <Button asChild size="lg" variant="outline">
                             <Link href="/">
-                                <span>Book Demo</span>
+                                <span>Schedule Demo</span>
                             </Link>
                         </Button>
                     </div>
