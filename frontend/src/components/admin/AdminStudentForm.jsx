@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaPhone, FaPlus, FaIdCard, FaVenusMars } from 'react-icons/fa';
+import { FaUser, FaPhone, FaPlus, FaIdCard, FaVenusMars, FaEnvelope, FaLock, FaImage } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
-export function AdminStudentForm() {
+export function AdminStudentForm({ onStudentAdded }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rollNo, setRollNo] = useState('');
   const [fullName, setFullName] = useState('');
   const [gender, setGender] = useState('male');
   const [phone, setPhone] = useState('');
   const [classId, setClassId] = useState('');
-  const [deviceIdHash, setDeviceIdHash] = useState('');
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -29,34 +32,70 @@ export function AdminStudentForm() {
     fetchClasses();
   }, []);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(null);
+
+    if (!image) {
+      toast.error('Student image is required');
+      setLoading(false);
+      return;
+    }
+
     try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('roll_no', rollNo);
+      formData.append('full_name', fullName);
+      formData.append('gender', gender);
+      formData.append('phone', phone);
+      formData.append('class_id', classId);
+      formData.append('image', image);
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/students`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          roll_no: rollNo,
-          full_name: fullName,
-          gender,
-          phone,
-          class_id: classId,
-          device_id_hash: deviceIdHash,
-        }),
+        body: formData,
       });
-      if (!res.ok) throw new Error('Failed to add student');
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add student');
+      
       toast.success('Student added successfully!');
       setSuccess('Student added successfully');
+      
+      // Reset form
+      setEmail('');
+      setPassword('');
       setRollNo('');
       setFullName('');
       setGender('male');
       setPhone('');
       setClassId('');
-      setDeviceIdHash('');
+      setImage(null);
+      setImagePreview(null);
+      
+      // Notify parent to refresh the table
+      if (onStudentAdded) onStudentAdded();
     } catch (err) {
       toast.error(err.message);
       setError(err.message);
@@ -76,6 +115,37 @@ export function AdminStudentForm() {
       <h2 className="text-xl font-bold mb-2 text-foreground">Add Student</h2>
       
       <div className="space-y-4">
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <FaEnvelope className="w-4 h-4" />
+            Email
+          </label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="Enter email address"
+            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <FaLock className="w-4 h-4" />
+            Password
+          </label>
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Enter password"
+            minLength={6}
+            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          />
+        </div>
+
         <div className="flex flex-col gap-2">
           <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <FaIdCard className="w-4 h-4" />
@@ -155,16 +225,26 @@ export function AdminStudentForm() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-muted-foreground">
-            Device ID Hash (Optional)
+          <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <FaImage className="w-4 h-4" />
+            Student Image <span className="text-destructive">*</span>
           </label>
           <input
-            type="text"
-            value={deviceIdHash}
-            onChange={e => setDeviceIdHash(e.target.value)}
-            placeholder="Enter device ID hash"
-            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            type="file"
+            required
+            accept="image/*"
+            onChange={handleImageChange}
+            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
           />
+          {imagePreview && (
+            <div className="mt-2">
+              <img 
+                src={imagePreview} 
+                alt="Preview" 
+                className="w-32 h-32 object-cover rounded-lg border-2 border-border"
+              />
+            </div>
+          )}
         </div>
       </div>
 
