@@ -1,60 +1,90 @@
-import React from 'react'
-import { Home, Users, Calendar, FileText, Settings, LogOut, Sun, Moon } from 'lucide-react'
+import { Home, Users, Calendar, FileText, Settings, LogOut, User, Moon, Sun, BookOpen, BarChart3, Shield } from "lucide-react"
+import { useTheme } from "@/context/ThemeContext"
+import { cn } from "@/lib/utils"
+import { useLocation, useNavigate } from "react-router-dom"
+
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
-} from '@/components/ui/sidebar'
-import { useTheme } from '@/context/ThemeContext'
+  SidebarFooter,
+  useSidebar,
+} from "@/components/ui/sidebar"
 
-const menuItems = [
-  { title: 'Dashboard', icon: Home, url: '/admin/dashboard' },
+// Menu items.
+const items = [
+  {
+    title: "Dashboard",
+    url: "/admin/dashboard",
+    icon: Home,
+  },
+  {
+    title: "Users",
+    url: "/admin/users",
+    icon: Users,
+  },
+  {
+    title: "Classes",
+    url: "/admin/classes",
+    icon: BookOpen,
+  },
+  {
+    title: "Reports",
+    url: "/admin/reports",
+    icon: BarChart3,
+  },
+  {
+    title: "Settings",
+    url: "/admin/settings",
+    icon: Settings,
+  },
 ]
 
 export function AdminSidebar() {
+  const { theme, setTheme } = useTheme();
+  const { state } = useSidebar();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    function ThemeToggle() {
-        const { theme, setTheme } = useTheme()
-        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      
-        return (
-          <SidebarMenuButton onClick={() => setTheme(isDark ? 'light' : 'dark')}>
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            <span>{isDark ? 'Light' : 'Dark'}</span>
-          </SidebarMenuButton>
-        )
-      }
-      
+  const isActive = (url) => {
+    return location.pathname === url;
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const handleLogout = () => {
+    // Add logout logic here
+    navigate("/");
+  };
+
   return (
     <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <span className="text-lg font-bold">A</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold">Admin Panel</span>
-            <span className="text-xs text-muted-foreground">Management</span>
-          </div>
-        </div>
-      </SidebarHeader>
-      <SidebarSeparator />
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-lg font-bold text-primary py-4 mb-4">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              <span>Admin Panel</span>
+            </div>
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={isActive(item.url)}
+                    className={cn(
+                      state === "expanded" && isActive(item.url) && "bg-accent/50 border-l-4 border-primary pl-2"
+                    )}
+                  >
                     <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
@@ -66,20 +96,44 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarSeparator />
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <ThemeToggle />
+            <SidebarMenuButton asChild isActive={isActive("/admin/profile")} className="w-full">
+              <a href="/admin/profile" className="flex items-center w-full">
+                <User className={cn(state === "expanded" && "ml-2")} />
+                {state === "expanded" && <span>Profile</span>}
+              </a>
+            </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton>
-              <LogOut />
-              <span>Logout</span>
+            <SidebarMenuButton asChild className="w-full">
+              <button 
+                onClick={toggleTheme}
+                className="flex items-center w-full cursor-pointer"
+              >
+                {theme === "dark" ? (
+                  <Moon className={cn("h-[1.2rem] w-[1.2rem]", state === "expanded" && "ml-2")} />
+                ) : (
+                  <Sun className={cn("h-[1.2rem] w-[1.2rem]", state === "expanded" && "ml-2")} />
+                )}
+                {state === "expanded" && <span>Theme</span>}
+              </button>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild className="w-full">
+              <button 
+                onClick={handleLogout}
+                className="flex items-center w-full mb-4 cursor-pointer text-destructive hover:text-destructive/90"
+              >
+                <LogOut className={cn(state === "expanded" && "ml-2")} />
+                {state === "expanded" && <span>Logout</span>}
+              </button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
