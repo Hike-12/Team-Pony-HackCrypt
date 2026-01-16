@@ -17,6 +17,8 @@ import { useTheme } from '@/context/ThemeContext'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/admin/dashboard' },
+  { title: 'Add Student', icon: Users, url: '/admin/students' },
+  { title: 'Add Teacher', icon: Users, url: '/admin/teachers' },
 ]
 
 export function AdminSidebar() {
