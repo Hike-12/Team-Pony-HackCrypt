@@ -23,6 +23,7 @@ app.use('/api/admin/teachers', require('./routes/adminTeacherRoutes'));
 app.use('/api/admin/timetable', require('./routes/Admin/timetableRoutes'));
 app.use('/api/admin/classes', require('./routes/adminClassRoutes'));
 app.use('/api/admin/subjects', require('./routes/adminSubjectRoutes'));
+app.use('/api/admin/teacher-subjects', require('./routes/adminTeacherSubjectRoutes'));
 
 const PORT = process.env.PORT || 8000;
 
