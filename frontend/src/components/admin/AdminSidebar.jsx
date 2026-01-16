@@ -24,24 +24,14 @@ const items = [
     icon: Home,
   },
   {
-    title: "Users",
-    url: "/admin/users",
+    title: "Students",
+    url: "/admin/students",
     icon: Users,
   },
   {
-    title: "Classes",
-    url: "/admin/classes",
+    title: "Teachers",
+    url: "/admin/teachers",
     icon: BookOpen,
-  },
-  {
-    title: "Reports",
-    url: "/admin/reports",
-    icon: BarChart3,
-  },
-  {
-    title: "Settings",
-    url: "/admin/settings",
-    icon: Settings,
   },
 ]
 
@@ -98,14 +88,6 @@ export function AdminSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive("/admin/profile")} className="w-full">
-              <a href="/admin/profile" className="flex items-center w-full">
-                <User className={cn(state === "expanded" && "ml-2")} />
-                {state === "expanded" && <span>Profile</span>}
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="w-full">
               <button 
