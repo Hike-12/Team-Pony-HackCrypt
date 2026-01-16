@@ -13,7 +13,7 @@ const studentSchema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now }
 });
 
-studentSchema.index({ user_id: 1 }, { unique: true });
+
 studentSchema.index({ class_id: 1 });
 
 module.exports = mongoose.model('Student', studentSchema);

@@ -120,7 +120,7 @@ exports.getLeaveStats = async (req, res) => {
         const student_id = req.params.studentId; // TODO: Get from auth middleware
 
         const stats = await LeaveApplication.aggregate([
-            { $match: { student_id: require('mongoose').Types.ObjectId(student_id) } },
+            { $match: { student_id: new require('mongoose').Types.ObjectId(student_id) } },
             {
                 $group: {
                     _id: '$status',

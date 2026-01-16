@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { TeacherContext } from '../../context/TeacherContext';
 import TimetableGrid from '../../components/TimetableGrid';
 import { TeacherSidebar } from '../../components/teacher/TeacherSidebar';
+import { format, startOfWeek } from 'date-fns';
 
 const TeacherSchedule = () => {
     const { teacher } = useContext(TeacherContext);
@@ -11,16 +12,20 @@ const TeacherSchedule = () => {
 
     useEffect(() => {
         const init = async () => {
-            if (teacher && teacher.id) {
-                await fetchTimetable(teacher.id);
-            } else if (teacher && teacher._id) {
-                await fetchTimetable(teacher._id);
+            if (teacher?.teacher_id) {
+                 await fetchTimetable(teacher.teacher_id);
+            } else if (teacher?.email) {
+                 await fetchTeacherProfile(teacher);
             } else {
-                 // Fallback
-                 const userStr = localStorage.getItem('user'); // Maybe 'teacherUser'?
+                 // Fallback to localStorage if context not yet ready or persisted
+                 const userStr = localStorage.getItem('teacherUser');
                  if (userStr) {
                     const user = JSON.parse(userStr);
-                    await fetchTeacherProfile(user);
+                    if (user.teacher_id) {
+                        await fetchTimetable(user.teacher_id);
+                    } else {
+                        await fetchTeacherProfile(user);
+                    }
                  } else {
                      setLoading(false);
                  }
@@ -31,14 +36,7 @@ const TeacherSchedule = () => {
 
     const fetchTeacherProfile = async (user) => {
         try {
-            // Find teacher by user_id or email
-            // Currently assuming we have teacherId stored or we fetch it
-            // Let's rely on an endpoint /api/teacher/auth/me if exists
-            // Or just hardcode logic if needed. 
-            // Better: User logs in -> gets token -> /me returns teacher profile.
-            
-            // Temporary: fetch all teachers and find me by email
-             const res = await fetch('http://localhost:8000/api/admin/teachers');
+             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/teachers`);
              const teachers = await res.json();
              const me = teachers.find(t => t.email === user.email);
              if (me) {
@@ -46,14 +44,15 @@ const TeacherSchedule = () => {
              }
         } catch (e) {
             console.error(e);
+            setLoading(false);
         }
     };
 
     const fetchTimetable = async (tid) => {
         try {
             const [slotsRes, entriesRes] = await Promise.all([
-                fetch('http://localhost:8000/api/admin/timetable/slots'),
-                fetch(`http://localhost:8000/api/admin/timetable/entries?teacher_id=${tid}`)
+                fetch(`${import.meta.env.VITE_API_URL}/api/admin/timetable/slots`),
+                fetch(`${import.meta.env.VITE_API_URL}/api/admin/timetable/entries?teacher_id=${tid}`)
             ]);
             
             const slotsData = await slotsRes.json();
@@ -68,16 +67,27 @@ const TeacherSchedule = () => {
         }
     };
 
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekInfo = `${format(weekStart, 'dd MMM')} - ${format(new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000), 'dd MMM yyyy')}`;
+
     return (
         <div className="flex min-h-screen w-full">
             <TeacherSidebar />
             <main className="flex-1 min-h-screen w-full ml-64 bg-background">
-                <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
-                    <h1 className="text-lg font-semibold">My Schedule</h1>
+                <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+                    <div className="px-6 py-4">
+                        <h1 className="text-2xl font-bold text-foreground">My Schedule</h1>
+                        <p className="text-sm text-muted-foreground mt-1">Week of {weekInfo}</p>
+                    </div>
                 </header>
-                <div className="p-8">
+                <div className="p-6">
                     {loading ? (
-                        <div>Loading schedule...</div>
+                        <div className="flex items-center justify-center p-16">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary"></div>
+                                <p className="text-muted-foreground text-sm">Loading schedule...</p>
+                            </div>
+                        </div>
                     ) : (
                         <TimetableGrid slots={slots} entries={entries} role="TEACHER" />
                     )}
