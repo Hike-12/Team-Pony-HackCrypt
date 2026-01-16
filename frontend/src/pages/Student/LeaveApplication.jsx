@@ -6,7 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { FaHeartbeat, FaUser, FaAmbulance, FaUsers, FaRunning, FaFileAlt, FaCloudUploadAlt, FaCalendarAlt } from 'react-icons/fa';
+import {
+    FaHeartbeat, FaUser, FaAmbulance, FaUsers,
+    FaRunning, FaFileAlt, FaCloudUploadAlt, FaCalendarAlt, FaInfoCircle, FaCheck
+} from 'react-icons/fa';
 
 const LeaveApplication = () => {
     const [formData, setFormData] = useState({
@@ -20,12 +23,12 @@ const LeaveApplication = () => {
     const [loading, setLoading] = useState(false);
 
     const leaveTypes = [
-        { value: 'MEDICAL', label: 'Medical Leave', icon: FaHeartbeat, requiresDoc: true },
-        { value: 'PERSONAL', label: 'Personal Leave', icon: FaUser, requiresDoc: false },
-        { value: 'EMERGENCY', label: 'Emergency', icon: FaAmbulance, requiresDoc: false },
-        { value: 'FAMILY_EVENT', label: 'Family Event', icon: FaUsers, requiresDoc: false },
-        { value: 'SPORTS', label: 'Sports', icon: FaRunning, requiresDoc: true },
-        { value: 'OTHER', label: 'Other', icon: FaFileAlt, requiresDoc: false }
+        { value: 'MEDICAL', label: 'Medical Leave', icon: FaHeartbeat, requiresDoc: true, description: 'Sick leave, checkups' },
+        { value: 'PERSONAL', label: 'Personal Leave', icon: FaUser, requiresDoc: false, description: 'Personal matters' },
+        { value: 'EMERGENCY', label: 'Emergency', icon: FaAmbulance, requiresDoc: false, description: 'Urgent situations' },
+        { value: 'FAMILY_EVENT', label: 'Family Event', icon: FaUsers, requiresDoc: false, description: 'Weddings, functions' },
+        { value: 'SPORTS', label: 'Sports', icon: FaRunning, requiresDoc: true, description: 'Competitions, events' },
+        { value: 'OTHER', label: 'Other', icon: FaFileAlt, requiresDoc: false, description: 'Miscellaneous' }
     ];
 
     const selectedLeaveType = leaveTypes.find(type => type.value === formData.leave_type);
@@ -70,7 +73,11 @@ const LeaveApplication = () => {
         if (!formData.start_date || !formData.end_date) return toast.error('Please select dates');
         if (new Date(formData.end_date) < new Date(formData.start_date)) return toast.error('End date must be greater than start date');
         if (!formData.reason.trim()) return toast.error('Please provide a reason');
-        if (selectedLeaveType?.requiresDoc && !formData.document) return toast.error('Supporting document required');
+
+        // Strict check for document requirement
+        if (selectedLeaveType?.requiresDoc && !formData.document) {
+            return toast.error(`Uploading a document is MANDATORY for ${selectedLeaveType.label}`);
+        }
 
         setLoading(true);
         try {
@@ -78,6 +85,7 @@ const LeaveApplication = () => {
             Object.keys(formData).forEach(key => {
                 if (formData[key]) formDataToSend.append(key, formData[key]);
             });
+            // TODO: Get actual student ID from context
             formDataToSend.append('student_id', 'STUDENT_ID_HERE');
 
             const response = await fetch('http://localhost:8000/api/student/leave/apply', {
@@ -101,127 +109,248 @@ const LeaveApplication = () => {
     };
 
     return (
-        <div className="flex min-h-screen font-sans bg-gray-50/50">
+        <div className="flex min-h-screen w-full">
             <StudentSidebar />
-            <main className="flex-1 ml-64 min-h-screen p-8">
-                <header className="mb-8 border-b pb-4">
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Apply for Leave</h1>
-                    <p className="text-muted-foreground mt-2">Select a leave type and fill in the details below.</p>
+            <main className="flex-1 min-h-screen w-full ml-64 bg-background">
+                <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-backdrop-filter:bg-background/60">
+                    <div>
+                        <h1 className="text-lg font-semibold text-foreground">Apply Leave</h1>
+                    </div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-2">
+                        <FaInfoCircle />
+                        <span>Fill details carefully</span>
+                    </div>
                 </header>
 
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                    {/* Main Form Area */}
-                    <div className="xl:col-span-2 space-y-8">
-                        {/* Leave Type Grid */}
-                        <section>
-                            <Label className="text-lg font-semibold mb-4 block">Select Leave Type</Label>
-                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                                {leaveTypes.map((type) => (
-                                    <button
-                                        key={type.value}
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, leave_type: type.value })}
-                                        className={`flex flex-col items-center justify-center p-6 rounded-xl border transition-all duration-200 hover:shadow-md h-32 ${formData.leave_type === type.value
-                                                ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
-                                                : 'border-border bg-white text-muted-foreground hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        <type.icon className="text-3xl mb-3" />
-                                        <span className="font-medium">{type.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </section>
+                <div className="p-6 max-w-7xl mx-auto animate-in fade-in duration-500">
+                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
 
-                        {/* Date Selection */}
-                        <section className="bg-white p-6 rounded-xl border space-y-4 shadow-sm">
-                            <h3 className="font-semibold text-lg flex items-center gap-2">
-                                <FaCalendarAlt className="text-primary" /> Duration
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label>Start Date</Label>
-                                    <Input
-                                        type="date"
-                                        value={formData.start_date}
-                                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                                        className="h-11 cursor-pointer"
-                                    />
+                        {/* Left Column - Form Inputs */}
+                        <div className="xl:col-span-8 space-y-6">
+
+                            {/* 1. Leave Type Section */}
+                            <section className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-base font-medium text-foreground">Select Category</Label>
+                                    {selectedLeaveType && (
+                                        <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
+                                            {selectedLeaveType.label} Selected
+                                        </span>
+                                    )}
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>End Date</Label>
-                                    <Input
-                                        type="date"
-                                        value={formData.end_date}
-                                        onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                                        className="h-11 cursor-pointer"
-                                    />
+
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {leaveTypes.map((type) => {
+                                        const isSelected = formData.leave_type === type.value;
+                                        return (
+                                            <button
+                                                key={type.value}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, leave_type: type.value })}
+                                                className={`relative group flex flex-col items-center justify-center p-6 rounded-2xl border transition-all duration-300 ease-out
+                          ${isSelected
+                                                        ? 'border-primary bg-primary/5 shadow-[0_0_0_2px_rgba(var(--primary),0.2)] scale-[1.02]'
+                                                        : 'border-border bg-card hover:border-primary/50 hover:bg-accent/50 hover:-translate-y-1'
+                                                    }
+                        `}
+                                            >
+                                                {/* Requirement Badge */}
+                                                {type.requiresDoc && (
+                                                    <span className={`absolute top-3 right-3 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border 
+                            ${isSelected ? 'bg-primary text-primary-foreground border-transparent' : 'bg-muted text-muted-foreground border-border'}
+                          `}>
+                                                        Doc Req
+                                                    </span>
+                                                )}
+
+                                                {/* Icon */}
+                                                <div className={`p-3 rounded-full mb-3 transition-colors duration-300
+                          ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground group-hover:bg-primary/20 group-hover:text-primary'}
+                        `}>
+                                                    <type.icon className="text-xl" />
+                                                </div>
+
+                                                <span className={`font-semibold text-sm ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                                                    {type.label}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground mt-1 text-center font-medium opacity-80">
+                                                    {type.description}
+                                                </span>
+
+                                                {/* Checkmark overlay for selected */}
+                                                {isSelected && (
+                                                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1 shadow-md">
+                                                        <FaCheck className="text-xs" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
-                            </div>
-                            {calculateDays() > 0 && (
-                                <div className="mt-2 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-100 flex items-center justify-between">
-                                    <span>Selected Duration</span>
-                                    <span className="font-bold text-lg">{calculateDays()} Days</span>
-                                </div>
-                            )}
-                        </section>
+                            </section>
 
-                        {/* Reason Textarea */}
-                        <section className="bg-white p-6 rounded-xl border space-y-4 shadow-sm">
-                            <h3 className="font-semibold text-lg">Reason for Leave</h3>
-                            <Textarea
-                                placeholder="Please define the reason for your leave application..."
-                                value={formData.reason}
-                                onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                                className="min-h-[150px] resize-none text-base p-4"
-                                maxLength={500}
-                            />
-                            <div className="text-xs text-muted-foreground text-right">{formData.reason.length}/500</div>
-                        </section>
-                    </div>
-
-                    {/* Right Sidebar: Upload & Summary */}
-                    <div className="space-y-6">
-                        <Card className="border shadow-sm sticky top-8">
-                            <CardContent className="p-6 space-y-6">
-                                <h3 className="font-semibold text-lg border-b pb-2">Supporting Documents</h3>
-
-                                <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 hover:bg-gray-50 transition-colors text-center cursor-pointer relative group">
-                                    <input
-                                        type="file"
-                                        accept=".jpg,.jpeg,.png,.pdf"
-                                        onChange={handleFileChange}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                    />
-                                    <div className="flex flex-col items-center gap-3">
-                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                            <FaCloudUploadAlt className="text-2xl" />
+                            {/* 2. Date & Reason Section */}
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <Card className="border shadow-sm bg-card/50">
+                                    <CardContent className="p-6 space-y-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600">
+                                                <FaCalendarAlt />
+                                            </div>
+                                            <h3 className="font-semibold">Duration</h3>
                                         </div>
-                                        {preview ? (
-                                            <div className="text-sm font-medium text-green-600 truncate max-w-[200px]">
-                                                {formData.document?.name}
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-1">
-                                                <p className="font-medium text-gray-700">Upload File</p>
-                                                <p className="text-xs text-muted-foreground">PDF, JPG, PNG (Max 5MB)</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
 
-                                <div className="pt-4">
-                                    <Button
-                                        onClick={handleSubmit}
-                                        size="lg"
-                                        className="w-full h-12 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Submitting...' : 'Submit Application'}
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                        <div className="space-y-4">
+                                            <div className="space-y-1.5">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">From</Label>
+                                                <Input
+                                                    type="date"
+                                                    value={formData.start_date}
+                                                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                                                    className="h-12 bg-background border-input/50 focus:border-primary transition-all"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">To</Label>
+                                                <Input
+                                                    type="date"
+                                                    value={formData.end_date}
+                                                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                                                    className="h-12 bg-background border-input/50 focus:border-primary transition-all"
+                                                />
+                                            </div>
+
+                                            {calculateDays() > 0 && (
+                                                <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg flex justify-between items-center animate-in fade-in">
+                                                    <span className="text-sm font-medium text-muted-foreground">Total Days</span>
+                                                    <span className="text-lg font-bold text-primary">{calculateDays()} Days</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border shadow-sm bg-card/50">
+                                    <CardContent className="p-6 space-y-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600">
+                                                <FaFileAlt />
+                                            </div>
+                                            <h3 className="font-semibold">Reason</h3>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Textarea
+                                                placeholder="Explain why you need leave..."
+                                                value={formData.reason}
+                                                onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                                                className="min-h-[180px] text-base resize-none bg-background border-input/50 focus:border-primary transition-all leading-relaxed"
+                                                maxLength={500}
+                                            />
+                                            <div className="flex justify-end">
+                                                <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
+                                                    {formData.reason.length} / 500
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+
+                        {/* Right Column - Upload & Submit */}
+                        <div className="xl:col-span-4 space-y-6">
+                            <Card className={`border shadow-sm sticky top-20 transition-all duration-300
+                 ${selectedLeaveType?.requiresDoc && !formData.document
+                                    ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.1)]'
+                                    : 'border-border'}
+              `}>
+                                <CardContent className="p-6 space-y-6">
+                                    <div>
+                                        <h3 className="text-lg font-bold flex items-center gap-2">
+                                            Supporting Docs
+                                            {selectedLeaveType?.requiresDoc && (
+                                                <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full border border-red-200">
+                                                    REQUIRED
+                                                </span>
+                                            )}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            {selectedLeaveType?.requiresDoc
+                                                ? `Proof is mandatory for ${selectedLeaveType.label}.`
+                                                : "Optional, but recommended for better approval chances."}
+                                        </p>
+                                    </div>
+
+                                    {/* Modern Upload Zone */}
+                                    <div className="relative group">
+                                        <input
+                                            type="file"
+                                            accept=".jpg,.jpeg,.png,.pdf"
+                                            onChange={handleFileChange}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                                        />
+
+                                        <div className={`
+                       border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300
+                       ${preview ? 'border-primary bg-primary/5' : 'border-muted-foreground/20 hover:border-primary/50 hover:bg-accent/50'}
+                     `}>
+                                            {preview ? (
+                                                <div className="space-y-3 z-10 relative">
+                                                    <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                                                        <FaCheck />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-semibold text-primary truncate max-w-[200px]">
+                                                            {formData.document?.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground mt-1">Click to change</p>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    <div className={`
+                               w-16 h-16 rounded-full flex items-center justify-center mx-auto transition-transform duration-500 group-hover:scale-110
+                               ${selectedLeaveType?.requiresDoc ? 'bg-red-50 text-red-500' : 'bg-primary/10 text-primary'}
+                            `}>
+                                                        <FaCloudUploadAlt className="text-3xl" />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-sm font-semibold">
+                                                            {selectedLeaveType?.requiresDoc ? "Upload Required File" : "Drop file here"}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">PDF, PNG, JPG (Max 5MB)</p>
+                                                    </div>
+                                                    <Button size="sm" variant="outline" className="pointer-events-none">
+                                                        Browse Files
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <Button
+                                            onClick={handleSubmit}
+                                            size="lg"
+                                            className="w-full h-14 text-base font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                                            disabled={loading}
+                                        >
+                                            {loading ? (
+                                                <span className="flex items-center gap-2">
+                                                    <FaHeartbeat className="animate-spin" /> Submitting...
+                                                </span>
+                                            ) : (
+                                                "Submit Application"
+                                            )}
+                                        </Button>
+                                        <p className="text-[10px] text-center text-muted-foreground mt-3">
+                                            By submitting, you declare that the information provided is true.
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
                     </div>
                 </div>
             </main>
