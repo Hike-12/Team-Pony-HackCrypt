@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meet Attendance Tracker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Meet Attendance</h1>
+      <div class="status-indicator" id="statusIndicator">
+        <span class="dot"></span>
+        <span id="statusText">Not Tracking</span>
+      </div>
+    </header>
+
+    <div class="session-info" id="sessionInfo" style="display: none;">
+      <div class="info-row">
+        <span class="label">Session Code:</span>
+        <span class="value" id="sessionCode">-</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Participants:</span>
+        <span class="value" id="participantCount">0</span>
+      </div>
+    </div>
+
+    <div class="input-section" id="inputSection">
+      <label for="sessionCodeInput">Session Code</label>
+      <input 
+        type="text" 
+        id="sessionCodeInput" 
+        placeholder="Enter session code"
+        maxlength="20"
+      >
+    </div>
+
+    <div class="actions">
+      <button id="startBtn" class="btn btn-primary">Start Tracking</button>
+      <button id="stopBtn" class="btn btn-secondary" style="display: none;">Stop Tracking</button>
+    </div>
+
+    <div class="footer">
+      <p class="hint">Join a Google Meet to track attendance</p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

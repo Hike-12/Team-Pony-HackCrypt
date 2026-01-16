@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meet Attendance Debug Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .results {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-active {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .status-left {
+            color: #ef4444;
+        }
+
+        .error {
+            background: #fee;
+            color: #c00;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎥 Meet Attendance Debug Viewer</h1>
+
+        <div class="controls">
+            <h3 style="margin-bottom: 15px;">View Attendance Logs</h3>
+            <div class="input-group">
+                <input type="text" id="sessionCode" placeholder="Enter Session Code (e.g., aat-myfe-qpk)"
+                    value="aat-myfe-qpk">
+                <button onclick="fetchBySessionCode()">Get Logs by Session Code</button>
+            </div>
+            <button onclick="fetchAllLogs()" style="width: 100%;">View All Recent Logs</button>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-value" id="totalParticipants">0</div>
+                <div class="stat-label">Total Participants</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeCount">0</div>
+                <div class="stat-label">Currently Active</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="leftCount">0</div>
+                <div class="stat-label">Left Meeting</div>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <p style="text-align: center; color: #999;">Enter a session code or view all logs to get started</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/meet';
+
+        async function fetchBySessionCode() {
+            const sessionCode = document.getElementById('sessionCode').value.trim();
+
+            if (!sessionCode) {
+                alert('Please enter a session code');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch(`${API_BASE}/debug/logs/${sessionCode}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayLogs(data);
+                } else {
+                    showError(data.message || 'Failed to fetch logs');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function fetchAllLogs() {
+            showLoading();
+
+            try {
+                const response = await fetch(`${API_BASE}/debug/all-logs`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayAllLogs(data);
+                } else {
+                    showError(data.message || 'Failed to fetch logs');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        function displayLogs(data) {
+            const stats = document.getElementById('stats');
+            const results = document.getElementById('results');
+
+            // Update stats
+            const activeCount = data.data.filter(log => log.status === 'Active').length;
+            const leftCount = data.data.filter(log => log.status === 'Left').length;
+
+            document.getElementById('totalParticipants').textContent = data.totalParticipants;
+            document.getElementById('activeCount').textContent = activeCount;
+            document.getElementById('leftCount').textContent = leftCount;
+            stats.style.display = 'grid';
+
+            // Build table
+            let html = `
+                <h3>Session: ${data.sessionCode}</h3>
+                <p style="color: #666; margin-bottom: 20px;">Total Participants: ${data.totalParticipants}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Participant Name</th>
+                            <th>Joined At</th>
+                            <th>Left At</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.data.forEach(log => {
+                const statusClass = log.status === 'Active' ? 'status-active' : 'status-left';
+                html += `
+                    <tr>
+                        <td><strong>${log.participant}</strong></td>
+                        <td>${formatDate(log.joinedAt)}</td>
+                        <td>${log.leftAt ? formatDate(log.leftAt) : '-'}</td>
+                        <td>${log.duration}</td>
+                        <td class="${statusClass}">${log.status}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            results.innerHTML = html;
+        }
+
+        function displayAllLogs(data) {
+            const stats = document.getElementById('stats');
+            stats.style.display = 'none';
+
+            const results = document.getElementById('results');
+
+            let html = `
+                <h3>All Recent Logs (Last 50)</h3>
+                <p style="color: #666; margin-bottom: 20px;">Total: ${data.total} logs</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Session Code</th>
+                            <th>Participant Name</th>
+                            <th>Joined At</th>
+                            <th>Left At</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.data.forEach(log => {
+                const duration = log.duration_minutes ? `${log.duration_minutes} min` : '-';
+                html += `
+                    <tr>
+                        <td><strong>${log.meet_session_id?.session_code || 'N/A'}</strong></td>
+                        <td>${log.participant_name}</td>
+                        <td>${formatDate(log.joined_at)}</td>
+                        <td>${log.left_at ? formatDate(log.left_at) : '-'}</td>
+                        <td>${duration}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            results.innerHTML = html;
+        }
+
+        function showLoading() {
+            document.getElementById('results').innerHTML = '<div class="loading">Loading...</div>';
+        }
+
+        function showError(message) {
+            document.getElementById('results').innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+    </script>
+</body>
+
+</html>
