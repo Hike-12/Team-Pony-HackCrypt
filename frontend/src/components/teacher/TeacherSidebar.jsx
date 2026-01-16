@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Home, Users, Calendar, ClipboardCheck, BookOpen, LogOut, Sun, Moon } from 'lucide-react'
+import { Home, Users, Calendar, ClipboardCheck, BookOpen, LogOut, Sun, Moon, FileText } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { TeacherContext } from '@/context/TeacherContext'
 import { cn } from '@/lib/utils'
@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/teacher/dashboard' },
+  { title: 'Leave Management', icon: FileText, url: '/teacher/leave-management' },
 ]
 
 export function TeacherSidebar() {
@@ -14,9 +15,9 @@ export function TeacherSidebar() {
   const { teacher } = useContext(TeacherContext)
   const location = useLocation()
   const navigate = useNavigate()
-  
+
   const isActive = (url) => location.pathname === url
-  
+
   const handleLogout = () => {
     navigate('/')
   }

@@ -18,7 +18,7 @@ const DAYS = [
 
 const SESSION_TYPES = ['LECTURE', 'LAB', 'TUTORIAL', 'Online'];
 
-const AddEntryDialog = ({ open, onClose, onSuccess, selectedClass, slots }) => {
+const AddEntryDialog = ({ open, onOpenChange, onSuccess, selectedClass, slots }) => {
   const [loading, setLoading] = useState(false);
   const [teachers, setTeachers] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -131,13 +131,18 @@ const AddEntryDialog = ({ open, onClose, onSuccess, selectedClass, slots }) => {
       valid_from: new Date().toISOString().split('T')[0],
       valid_to: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     });
-    onClose();
+    onOpenChange(false);
   };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+    >
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between z-10">
           <div>

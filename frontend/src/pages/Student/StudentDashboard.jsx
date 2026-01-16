@@ -79,12 +79,22 @@ const StudentDashboard = () => {
     // TODO: Call backend to mark attendance
   };
 
+  const isExpanded = useSidebarState();
+  const { student } = useContext(StudentContext); 
+  
+  // Debug log
+  console.log('StudentDashboard - student object:', student);
+  console.log('StudentDashboard - student._id:', student?._id);
+
   return (
     <div className="flex min-h-screen w-full">
       <StudentSidebar />
-      <main className="flex-1 min-h-screen w-full ml-64 bg-background">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
-          <h1 className="text-lg font-semibold">Student Dashboard</h1>
+      <main className={cn(
+        "flex-1 min-h-screen bg-background transition-all duration-300",
+        isExpanded ? "ml-64" : "ml-20"
+      )}>
+        <header className="sticky top-0 z-10 flex h-16 mt-1 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-backdrop-filter:bg-background/60">
+          <h1 className="text-lg font-semibold">Dashboard</h1>
         </header>
         <div className="p-6 max-w-7xl mx-auto">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
