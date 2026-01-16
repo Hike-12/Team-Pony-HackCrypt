@@ -1,20 +1,8 @@
-import { Home, Users, Calendar, FileText, Settings, LogOut, User, Moon, Sun, BookOpen, BarChart3, Shield } from "lucide-react"
+import { Home, Users, Calendar, FileText, Settings, LogOut, User, Moon, Sun, BookOpen, BarChart3, Shield, Menu } from "lucide-react"
 import { useTheme } from "@/context/ThemeContext"
 import { cn } from "@/lib/utils"
 import { useLocation, useNavigate } from "react-router-dom"
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  useSidebar,
-} from "@/components/ui/sidebar"
+import { useState } from "react"
 
 // Menu items.
 const items = [
@@ -32,14 +20,14 @@ const items = [
     title: "Teachers",
     url: "/admin/teachers",
     icon: BookOpen,
-  },
+  }
 ]
 
 export function AdminSidebar() {
   const { theme, setTheme } = useTheme();
-  const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const isActive = (url) => {
     return location.pathname === url;
@@ -50,72 +38,100 @@ export function AdminSidebar() {
   };
 
   const handleLogout = () => {
-    // Add logout logic here
+    localStorage.removeItem('token');
+    localStorage.removeItem('adminData');
     navigate("/");
   };
 
+  const handleNavigation = (url) => {
+    navigate(url);
+  };
+
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-lg font-bold text-primary py-4 mb-4">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              <span>Admin Panel</span>
-            </div>
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={isActive(item.url)}
-                    className={cn(
-                      state === "expanded" && isActive(item.url) && "bg-accent/50 border-l-4 border-primary pl-2"
-                    )}
-                  >
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild className="w-full">
-              <button 
-                onClick={toggleTheme}
-                className="flex items-center w-full cursor-pointer"
-              >
-                {theme === "dark" ? (
-                  <Moon className={cn("h-[1.2rem] w-[1.2rem]", state === "expanded" && "ml-2")} />
-                ) : (
-                  <Sun className={cn("h-[1.2rem] w-[1.2rem]", state === "expanded" && "ml-2")} />
-                )}
-                {state === "expanded" && <span>Theme</span>}
-              </button>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild className="w-full">
-              <button 
-                onClick={handleLogout}
-                className="flex items-center w-full mb-4 cursor-pointer text-destructive hover:text-destructive/90"
-              >
-                <LogOut className={cn(state === "expanded" && "ml-2")} />
-                {state === "expanded" && <span>Logout</span>}
-              </button>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+    <div className={cn(
+      "fixed left-0 top-0 h-screen transition-all duration-300 ease-in-out",
+      "bg-card border-r border-border flex flex-col",
+      isExpanded ? "w-64" : "w-20"
+    )}>
+      {/* Header */}
+      <div className="p-4 border-b border-border flex items-center justify-between">
+        <div className={cn(
+          "flex items-center gap-2 text-primary transition-opacity duration-200",
+          isExpanded ? "opacity-100" : "opacity-0 w-0"
+        )}>
+          <Shield className="h-6 w-6 flex-shrink-0" />
+          <span className="text-lg font-bold whitespace-nowrap">Admin</span>
+        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="p-2 hover:bg-accent rounded-lg transition-colors"
+        >
+          <Menu className="h-5 w-5 text-muted-foreground" />
+        </button>
+      </div>
+
+      {/* Navigation Items */}
+      <nav className="flex-1 p-3 space-y-2 overflow-y-auto">
+        {items.map((item) => (
+          <button
+            key={item.title}
+            onClick={() => handleNavigation(item.url)}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full",
+              isActive(item.url)
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            )}
+            title={!isExpanded ? item.title : ""}
+          >
+            <item.icon className="h-5 w-5 flex-shrink-0" />
+            <span className={cn(
+              "font-medium transition-opacity duration-200",
+              isExpanded ? "opacity-100" : "opacity-0 w-0"
+            )}>
+              {item.title}
+            </span>
+          </button>
+        ))}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-border space-y-2">
+        <button
+          onClick={toggleTheme}
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 w-full rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200"
+          )}
+          title={!isExpanded ? "Toggle Theme" : ""}
+        >
+          {theme === "dark" ? (
+            <Sun className="h-5 w-5 flex-shrink-0" />
+          ) : (
+            <Moon className="h-5 w-5 flex-shrink-0" />
+          )}
+          <span className={cn(
+            "font-medium transition-opacity duration-200",
+            isExpanded ? "opacity-100" : "opacity-0 w-0"
+          )}>
+            {theme === "dark" ? "Light" : "Dark"}
+          </span>
+        </button>
+        <button
+          onClick={handleLogout}
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 w-full rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200"
+          )}
+          title={!isExpanded ? "Logout" : ""}
+        >
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <span className={cn(
+            "font-medium transition-opacity duration-200",
+            isExpanded ? "opacity-100" : "opacity-0 w-0"
+          )}>
+            Logout
+          </span>
+        </button>
+      </div>
+    </div>
   );
 }

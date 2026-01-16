@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import TimetableCalendar from '@/components/admin/TimetableCalendar';
 import FileUploadDialog from '@/components/admin/FileUploadDialog';
 import AddEntryDialog from '@/components/admin/AddEntryDialog';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { Calendar, Upload, Plus, Settings } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
@@ -140,9 +141,11 @@ const AdminDashboard = () => {
   const selectedClassData = classes.find(c => c._id === selectedClass);
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background flex">
+      <AdminSidebar />
       <Toaster position="top-right" richColors />
       
+      <div className="flex-1 ml-64 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -258,6 +261,8 @@ const AdminDashboard = () => {
         selectedClass={selectedClass}
         slots={slots}
       />
+      </div>
+      
     </div>
   );
 };

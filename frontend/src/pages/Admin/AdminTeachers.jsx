@@ -2,16 +2,13 @@ import React from 'react';
 import { AdminTeacherTable } from '@/components/admin/AdminTeacherTable';
 import { AdminTeacherForm } from '@/components/admin/AdminTeacherForm';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 
 export default function AdminTeachers() {
   return (
-    <SidebarProvider>
+    <div className="flex min-h-screen">
       <AdminSidebar />
-      <main className="flex flex-1 flex-col min-h-screen bg-background transition-all duration-200 ease-in-out">
+      <main className="flex-1 ml-64 min-h-screen bg-background">
         <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <SidebarTrigger />
-          <div className="h-6 w-px bg-border" />
           <h1 className="text-lg font-semibold">Manage Teachers</h1>
         </header>
         <div className="flex-1 space-y-6 p-6">
@@ -23,6 +20,6 @@ export default function AdminTeachers() {
           </section>
         </div>
       </main>
-    </SidebarProvider>
+    </div>
   );
 }
