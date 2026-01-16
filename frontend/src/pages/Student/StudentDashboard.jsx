@@ -125,10 +125,11 @@ const StudentDashboard = () => {
                 </div>
               </div>
             ) : !enrollmentStatus?.enrolled ? (
-              <FaceEnrollment
-                studentId={student?.student_id || student?.id}
-                onEnrollmentComplete={handleEnrollmentComplete}
-              />
+  <div className="text-center space-y-4">
+    <p className="text-muted-foreground">
+      Face enrollment is pending. Please contact your admin to enroll your face for attendance.
+    </p>
+  </div>
             ) : (
               <div className="rounded-xl bg-card border p-6 shadow-sm">
                 <h2 className="text-xl font-bold mb-4 text-foreground">Mark Attendance</h2>
