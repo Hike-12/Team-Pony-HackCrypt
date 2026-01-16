@@ -109,10 +109,19 @@ const StudentTimetable = () => {
         setCurrentWeekStart(prev => addDays(prev, direction * 7));
     };
 
+    const [selectedDay, setSelectedDay] = useState(() => {
+        const day = new Date().getDay(); // 0=Sun, 1=Mon
+        return (day === 0 || day > 6) ? 0 : day - 1;
+    });
+
+    useEffect(() => {
+        // Sync selected day with day tabs if needed, or keep persistent
+    }, []);
+
     return (
         <div className="flex min-h-screen w-full bg-background">
             <StudentSidebar />
-            <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-64 ml-0 bg-background/50">
+            <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-64 ml-0 bg-background/50 pb-24 md:pb-8">
                 {/* Header */}
                 <motion.header
                     initial={{ opacity: 0, y: -20 }}
@@ -174,10 +183,118 @@ const StudentTimetable = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3 }}
-                            className="rounded-xl border bg-card shadow-sm overflow-hidden"
                         >
-                            {/* Timetable Grid */}
-                            <div className="overflow-x-auto">
+                            {/* Mobile Day Tabs */}
+                            <div className="md:hidden mb-6 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+                                <div className="flex gap-2 min-w-max">
+                                    {weekDays.map((day, index) => {
+                                        const isSelected = selectedDay === index;
+                                        const date = addDays(currentWeekStart, index);
+                                        const isToday = format(new Date(), 'dd/MM') === format(date, 'dd/MM');
+                                        
+                                        return (
+                                            <button
+                                                key={day}
+                                                onClick={() => setSelectedDay(index)}
+                                                className={cn(
+                                                    "flex flex-col items-center justify-center min-w-[4.5rem] py-3 rounded-2xl border transition-all duration-300",
+                                                    isSelected 
+                                                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25 scale-105" 
+                                                        : "bg-card border-border text-muted-foreground hover:bg-secondary/50"
+                                                )}
+                                            >
+                                                <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">{day.slice(0, 3)}</span>
+                                                <span className={cn("text-lg font-bold", isSelected ? "text-primary-foreground" : "text-foreground")}>
+                                                    {format(date, 'dd')}
+                                                </span>
+                                                {isToday && (
+                                                     <span className="w-1 h-1 rounded-full bg-current mt-1 opacity-60" />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Mobile View: Vertical Cards */}
+                            <div className="md:hidden space-y-4">
+                                {sortedSlots.map((slot) => {
+                                    const dayEntries = getEntriesForDayAndSlot(selectedDay, slot._id);
+                                    
+                                    if (dayEntries.length === 0) return null; // Hide empty slots on mobile for cleaner look
+
+                                    return (
+                                        <div key={slot._id} className="space-y-2">
+                                            <div className="flex items-center gap-2 px-1">
+                                                <Clock className="w-3 h-3 text-muted-foreground" />
+                                                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                                    {slot.start_time} - {slot.end_time}
+                                                </span>
+                                            </div>
+
+                                            {dayEntries.map(entry => {
+                                                 const subjectName = entry.teacher_subject_id?.subject_id?.name || 'Subject';
+                                                 const subjectCode = entry.teacher_subject_id?.subject_id?.code;
+                                                 const teacherName = entry.teacher_subject_id?.teacher_id?.full_name || 'Teacher';
+                                                 const roomNo = entry.room_label || entry.room || 'TBA';
+                                                 const sessionType = entry.session_type || 'LECTURE';
+
+                                                return (
+                                                    <motion.div
+                                                        key={entry._id}
+                                                        layout
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className={cn(
+                                                            "p-4 rounded-2xl border shadow-sm flex flex-col gap-3",
+                                                            getColorClass(sessionType)
+                                                        )}
+                                                    >
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <h3 className="font-bold text-lg leading-tight">{subjectName}</h3>
+                                                                {subjectCode && <p className="text-xs opacity-80 font-medium mt-1">{subjectCode}</p>}
+                                                            </div>
+                                                            <span className={cn(
+                                                                "px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border",
+                                                                getSessionBadgeStyle(sessionType)
+                                                            )}>
+                                                                {sessionType}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-4 text-sm font-medium opacity-90 pt-2 border-t border-black/5 dark:border-white/5 mt-1">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <User className="w-4 h-4" />
+                                                                <span>{teacherName}</span>
+                                                            </div>
+                                                            {roomNo && (
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <MapPin className="w-4 h-4" />
+                                                                    <span>Room {roomNo}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </motion.div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })}
+
+                                {sortedSlots.every(slot => getEntriesForDayAndSlot(selectedDay, slot._id).length === 0) && (
+                                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
+                                        <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
+                                            <Calendar className="w-8 h-8" />
+                                        </div>
+                                        <p className="font-medium">No classes scheduled for today.</p>
+                                        <p className="text-sm">Enjoy your free time!</p>
+                                     </div>
+                                )}
+                            </div>
+
+                            {/* Desktop View: Table */}
+                            <div className="hidden md:block rounded-xl border bg-card shadow-sm overflow-hidden">
                                 <table className="w-full min-w-[1000px]">
                                     <thead>
                                         <tr className="bg-secondary/30 border-b">
@@ -230,7 +347,7 @@ const StudentTimetable = () => {
                                                     const dayEntries = getEntriesForDayAndSlot(dayIndex, slot._id);
                                                     const date = addDays(currentWeekStart, dayIndex);
                                                     const isToday = format(new Date(), 'dd/MM') === format(date, 'dd/MM');
-
+                                                    /* ...existing desktop cell rendering... */
                                                     return (
                                                         <td key={`${day}-${slot._id}`} className={cn(
                                                             "px-3 py-3 border-r border-border/50 last:border-r-0 align-top h-36 md:h-32 transition-colors",
