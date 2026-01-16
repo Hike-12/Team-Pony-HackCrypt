@@ -80,7 +80,6 @@ const StudentDashboard = () => {
   };
 
   const isExpanded = useSidebarState();
-  const { student } = useContext(StudentContext); 
   
   // Debug log
   console.log('StudentDashboard - student object:', student);
