@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Home, Users, Calendar, ClipboardCheck, BookOpen, LogOut, Sun, Moon, FileText } from 'lucide-react'
+import { Home, Users, Calendar, ClipboardCheck, BookOpen, LogOut, Sun, Moon, FileText, QrCode } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { TeacherContext } from '@/context/TeacherContext'
 import { cn } from '@/lib/utils'
@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/teacher/dashboard' },
   { title: 'Schedule', icon: Calendar, url: '/teacher/schedule' },
+  { title: 'QR Attendance', icon: QrCode, url: '/teacher/qr-attendance' },
   { title: 'Leave Management', icon: FileText, url: '/teacher/leave-management' },
 ]
 

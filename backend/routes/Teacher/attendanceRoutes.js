@@ -1,10 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const { verifyStudentAttendance, getCurrentLecture, getUserStudentId } = require('../../controllers/Teacher/attendanceController');
-const { authenticateToken, isTeacher } = require('../../middleware/authMiddleware');
+const { 
+    startQRAttendance, 
+    refreshQRToken, 
+    stopQRAttendance, 
+    scanQRAttendance,
+    getSessionAttendance 
+} = require('../../controllers/Teacher/qrAttendanceController');
+const { authenticateToken, isTeacher, isStudent } = require('../../middleware/authMiddleware');
 
 // Apply authentication middleware to all routes
 router.use(authenticateToken);
+
+// QR Attendance routes (students can scan)
+router.post('/qr/scan', isStudent, scanQRAttendance);
+
+// Teacher-only routes
 router.use(isTeacher);
 
 // Convert User ID to Student ID (used when QR contains user_id)
@@ -15,5 +27,11 @@ router.post('/verify-student', verifyStudentAttendance);
 
 // Get current active lecture for the teacher
 router.get('/current-lecture', getCurrentLecture);
+
+// QR Attendance - Teacher routes
+router.post('/qr/start', startQRAttendance);
+router.get('/qr/refresh/:sessionId', refreshQRToken);
+router.post('/qr/stop/:sessionId', stopQRAttendance);
+router.get('/qr/session/:sessionId/attendance', getSessionAttendance);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Home, Calendar, BookOpen, BarChart3, User, LogOut, Sun, Moon, FileText, ClipboardList, MapPin } from 'lucide-react'
+import { Home, Calendar, BookOpen, BarChart3, User, LogOut, Sun, Moon, FileText, ClipboardList, MapPin, QrCode } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { StudentContext } from '@/context/StudentContext'
 import { cn } from '@/lib/utils'
@@ -9,6 +9,7 @@ const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/student/dashboard' },
   { title: 'Time Table', icon: Calendar, url: '/student/timetable' },
   { title: 'Attendance', icon: MapPin, url: '/student/attendance' },
+  { title: 'QR Attendance', icon: QrCode, url: '/student/qr-attendance' },
   { title: 'Leave', icon: FileText, url: '/student/leave/apply' },
   { title: 'Leave History', icon: ClipboardList, url: '/student/leave/history' },
   { title: 'Profile', icon: User, url: '/student/profile' },

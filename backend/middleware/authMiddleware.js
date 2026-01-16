@@ -52,3 +52,17 @@ exports.isTeacher = (req, res, next) => {
         });
     }
 };
+
+/**
+ * Middleware to verify user is a student
+ */
+exports.isStudent = (req, res, next) => {
+    if (req.user && req.user.role === 'STUDENT') {
+        next();
+    } else {
+        res.status(403).json({ 
+            success: false,
+            message: 'Access denied. Student role required.' 
+        });
+    }
+};

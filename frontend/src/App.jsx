@@ -18,9 +18,11 @@ import LeaveHistory from "@/pages/Student/LeaveHistory";
 import StudentProfile from "@/pages/Student/Profile";
 import StudentTimetable from "@/pages/Student/StudentTimetable";
 import AttendanceVerification from "@/pages/Student/AttendanceVerification";
+import StudentQRAttendance from "@/pages/Student/QRAttendance";
 
 import LeaveManagement from "@/pages/Teacher/LeaveManagement";
 import TeacherSchedule from "@/pages/Teacher/TeacherSchedule";
+import TeacherQRAttendance from "@/pages/Teacher/QRAttendance";
 
 
 import { Toaster } from '@/components/ui/sonner';
@@ -46,6 +48,7 @@ const App = () => {
                 >
                   <Route path="/student/dashboard" element={<StudentDashboard />} />
                   <Route path="/student/attendance" element={<AttendanceVerification />} />
+                  <Route path="/student/qr-attendance" element={<StudentQRAttendance />} />
                   <Route path="/student/timetable" element={<StudentTimetable />} />
                   <Route path="/student/leave/apply" element={<LeaveApplication />} />
                   <Route path="/student/leave/history" element={<LeaveHistory />} />
@@ -56,6 +59,7 @@ const App = () => {
                 <Route element={<TeacherProtectedRoute />}>
                   <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
                   <Route path="/teacher/schedule" element={<TeacherSchedule />} />
+                  <Route path="/teacher/qr-attendance" element={<TeacherQRAttendance />} />
                   <Route path="/teacher/leave-management" element={<LeaveManagement />} />
                 </Route>
 
