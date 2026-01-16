@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { StudentSidebar } from '@/components/student/StudentSidebar';
+import { StudentContext } from '@/context/StudentContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { FaCheckCircle, FaClock, FaTimesCircle, FaFileAlt, FaCalendarAlt, FaSlash, FaTrashAlt } from 'react-icons/fa';
 
 const LeaveHistory = () => {
+    const { student } = useContext(StudentContext);
     const [leaves, setLeaves] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -14,12 +16,16 @@ const LeaveHistory = () => {
     useEffect(() => {
         fetchLeaveHistory();
         fetchStats();
-    }, []);
+    }, [student]); // Add student to dependency array to re-fetch if student context changes
 
     const fetchLeaveHistory = async () => {
+        if (!student || !student.student_id) {
+            setLoading(false);
+            return;
+        }
+
         try {
-            const studentId = 'STUDENT_ID_HERE';
-            const response = await fetch(`http://localhost:8000/api/student/leave/my-applications/${studentId}`);
+            const response = await fetch(`http://localhost:8000/api/student/leave/my-applications/${student.student_id}`);
             const data = await response.json();
             if (data.success) setLeaves(data.data);
         } catch (error) {
@@ -30,9 +36,11 @@ const LeaveHistory = () => {
     };
 
     const fetchStats = async () => {
+        if (!student || !student.student_id) {
+            return;
+        }
         try {
-            const studentId = 'STUDENT_ID_HERE';
-            const response = await fetch(`http://localhost:8000/api/student/leave/stats/${studentId}`);
+            const response = await fetch(`http://localhost:8000/api/student/leave/stats/${student.student_id}`);
             const data = await response.json();
             if (data.success) setStats(data.data);
         } catch (error) { }
@@ -40,11 +48,16 @@ const LeaveHistory = () => {
 
     const handleCancelLeave = async (leaveId) => {
         if (!confirm('Are you sure you want to cancel this leave?')) return;
+        if (!student || !student.student_id) {
+            toast.error('Please login to cancel leave');
+            return;
+        }
+
         try {
             const response = await fetch(`http://localhost:8000/api/student/leave/${leaveId}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ student_id: 'STUDENT_ID_HERE' })
+                body: JSON.stringify({ student_id: student.student_id })
             });
             const data = await response.json();
             if (data.success) {
@@ -87,8 +100,8 @@ const LeaveHistory = () => {
                                 key={f}
                                 onClick={() => setFilter(f)}
                                 className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${filter === f
-                                        ? 'bg-primary text-primary-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                     }`}
                             >
                                 {f.charAt(0) + f.slice(1).toLowerCase()}

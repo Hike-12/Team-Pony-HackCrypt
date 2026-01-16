@@ -7,12 +7,9 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/student/dashboard' },
-  { title: 'My Classes', icon: BookOpen, url: '#' },
   { title: 'Leave', icon: FileText, url: '/student/leave/apply' },
   { title: 'Leave History', icon: ClipboardList, url: '/student/leave/history' },
-  { title: 'Attendance', icon: Calendar, url: '#' },
-  { title: 'Performance', icon: BarChart3, url: '#' },
-  { title: 'Profile', icon: User, url: '#' },
+  { title: 'Profile', icon: User, url: '/student/profile' },
 ]
 
 export function StudentSidebar() {

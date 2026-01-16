@@ -430,7 +430,20 @@ exports.getSubjects = async (req, res) => {
 exports.getClasses = async (req, res) => {
   try {
     const classes = await Class.find();
-    res.json({ success: true, data: classes });
+    
+    // Get timetable entry counts for each class
+    const classesWithTimetableInfo = await Promise.all(
+      classes.map(async (cls) => {
+        const entryCount = await TimetableEntry.countDocuments({ class_id: cls._id });
+        return {
+          ...cls.toObject(),
+          entry_count: entryCount,
+          has_timetable: entryCount > 0
+        };
+      })
+    );
+    
+    res.json({ success: true, data: classesWithTimetableInfo });
   } catch (error) {
     console.error('Error fetching classes:', error);
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
