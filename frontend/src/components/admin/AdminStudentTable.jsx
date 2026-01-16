@@ -401,7 +401,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
               <label className="text-sm font-medium text-muted-foreground">Student Image</label>
               <div className="flex items-start gap-4">
                 {editImagePreview && (
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <img
                       src={editImagePreview}
                       alt="Current"

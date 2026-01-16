@@ -132,7 +132,7 @@ const StudentTimetable = () => {
                                 >
                                     <ChevronLeft className="w-5 h-5" />
                                 </button>
-                                <div className="px-4 py-2 min-w-[180px] text-center">
+                                <div className="px-4 py-2 min-w-45 text-center">
                                     <p className="text-sm font-medium text-foreground">{weekInfo}</p>
                                 </div>
                                 <button
@@ -183,7 +183,7 @@ const StudentTimetable = () => {
 
                                                 return (
                                                     <th key={day} className={cn(
-                                                        "px-4 py-5 text-center min-w-[180px] border-r last:border-r-0 transition-colors",
+                                                        "px-4 py-5 text-center min-w-45 border-r last:border-r-0 transition-colors",
                                                         isToday ? "bg-primary/5" : "bg-transparent"
                                                     )}>
                                                         <div className="flex flex-col items-center gap-1.5">
@@ -225,7 +225,7 @@ const StudentTimetable = () => {
                                                     return (
                                                         <td key={`${day}-${slot._id}`} className={cn(
                                                             "px-3 py-3 border-r last:border-r-0 align-top h-32",
-                                                            isToday ? "bg-primary/[0.02]" : ""
+                                                            isToday ? "bg-primary/2" : ""
                                                         )}>
                                                             {dayEntries.length > 0 ? (
                                                                 <div className="space-y-2 h-full">
@@ -243,7 +243,7 @@ const StudentTimetable = () => {
                                                                                 animate={{ opacity: 1, scale: 1 }}
                                                                                 transition={{ delay: (slotIndex * 0.05) + (dayIndex * 0.02) }}
                                                                                 className={cn(
-                                                                                    "h-full w-full rounded-xl p-3.5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden flex flex-col justify-between group/card bg-gradient-to-br",
+                                                                                    "h-full w-full rounded-xl p-3.5 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden flex flex-col justify-between group/card bg-linear-to-br",
                                                                                     getColorClass(sessionType)
                                                                                 )}
                                                                             >
@@ -305,7 +305,7 @@ const StudentTimetable = () => {
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="flex flex-col items-center justify-center min-h-[400px] bg-card/50 rounded-2xl border border-dashed border-muted-foreground/20 backdrop-blur-sm"
+                            className="flex flex-col items-center justify-center min-h-100 bg-card/50 rounded-2xl border border-dashed border-muted-foreground/20 backdrop-blur-sm"
                         >
                             <div className="w-24 h-24 rounded-full bg-muted/50 flex items-center justify-center mb-6 shadow-inner">
                                 <Calendar className="w-10 h-10 text-muted-foreground/60" />

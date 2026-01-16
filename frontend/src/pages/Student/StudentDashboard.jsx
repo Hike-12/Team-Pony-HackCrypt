@@ -179,14 +179,14 @@ const StudentDashboard = () => {
           {/* Attendance Section */}
           <div>
             {loading ? (
-              <div className="rounded-lg border bg-card p-8 shadow-sm h-full flex items-center justify-center min-h-[420px]">
+              <div className="rounded-lg border bg-card p-8 shadow-sm h-full flex items-center justify-center min-h-105">
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                   <p className="text-sm text-muted-foreground font-medium">Loading biometric data...</p>
                 </div>
               </div>
             ) : !enrollmentStatus?.enrolled ? (
-              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-8 shadow-sm h-full flex items-center justify-center min-h-[420px]">
+              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-8 shadow-sm h-full flex items-center justify-center min-h-105">
                 <div className="text-center space-y-4 max-w-md">
                   <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
                     <Camera className="w-8 h-8 text-destructive" />
@@ -198,7 +198,7 @@ const StudentDashboard = () => {
                 </div>
               </div>
             ) : (
-              <div className="rounded-lg border bg-card p-6 shadow-sm h-full min-h-[420px]">
+              <div className="rounded-lg border bg-card p-6 shadow-sm h-full min-h-105">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-md bg-primary flex items-center justify-center">
                     <Camera className="w-5 h-5 text-primary-foreground" />
