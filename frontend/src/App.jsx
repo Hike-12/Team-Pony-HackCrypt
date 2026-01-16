@@ -6,7 +6,7 @@ import StudentAuth from "@/pages/Student/Auth";
 import TeacherAuth from "@/pages/Teacher/Auth";
 import StudentDashboard from "@/pages/Student/StudentDashboard";
 import TeacherDashboard from "@/pages/Teacher/TeacherDashboard";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import {Toaster} from '@/components/ui/sonner';
 import { StudentProvider } from './context/StudentContext';
 import { TeacherProvider } from './context/TeacherContext';
@@ -30,8 +30,8 @@ const App = () => {
               <Route path="/teacher/login" element={<TeacherAuth />} />
               <Route element={<TeacherProtectedRoute />}>
                   <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
               </Route>
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
