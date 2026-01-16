@@ -8,6 +8,12 @@ import { toast } from "sonner";
 import { FaUser, FaLock } from "react-icons/fa";
 import { StudentContext } from '../../context/StudentContext';
 import Navbar from '@/components/landing/Navbar';
+import PixelBlast from '@/components/ui/PixelBlast';
+
+const getTheme = () =>
+  typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+    ? 'dark'
+    : 'light';
 
 const StudentAuth = () => {
   const [rollNo, setRollNo] = useState('');
@@ -15,9 +21,14 @@ const StudentAuth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { loginStudent } = useContext(StudentContext);
+  
+  React.useEffect(() => {
+    console.log('StudentAuth page loaded');
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    console.log('Student login attempt with rollNo:', rollNo);
     setLoading(true);
 
     try {
@@ -32,10 +43,12 @@ const StudentAuth = () => {
       const data = await response.json();
 
       if (response.ok) {
+        console.log('Student login successful, response data:', data);
         toast.success("Login Successful!");
         loginStudent(data.user, data.token);
         navigate('/student/dashboard');
       } else {
+        console.log('Student login failed, error:', data.message);
         toast.error(data.message || "Login Failed");
       }
     } catch (error) {
@@ -47,7 +60,20 @@ const StudentAuth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="relative min-h-screen">
+      <div className="fixed inset-0 -z-10 pointer-events-none">
+        <PixelBlast
+          variant="square"
+          pixelSize={3}
+          color={getTheme() === 'dark' ? 'var(--accent)' : 'var(--accent)'}
+          patternScale={2}
+          patternDensity={1}
+          liquid={false}
+          enableRipples={true}
+          edgeFade={0.5}
+          style={{ width: '100vw', height: '100vh' }}
+        />
+      </div>
       <Navbar />
       <div className="flex items-center justify-center min-h-screen p-4 pt-20">
         <Card className="w-full max-w-md shadow-lg">
@@ -62,7 +88,7 @@ const StudentAuth = () => {
               <div className="space-y-2">
                 <Label htmlFor="rollNo">Roll Number</Label>
                 <div className="relative">
-                  <FaUser className="absolute left-3 top-3 text-gray-500" />
+                  <FaUser className="absolute left-3 top-3 text-muted-foreground" />
                   <Input 
                     id="rollNo" 
                     type="text" 
@@ -77,7 +103,7 @@ const StudentAuth = () => {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <FaLock className="absolute left-3 top-3 text-gray-500" />
+                  <FaLock className="absolute left-3 top-3 text-muted-foreground" />
                   <Input 
                     id="password" 
                     type="password" 
@@ -95,7 +121,7 @@ const StudentAuth = () => {
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                   Contact administration if you forgot your credentials.
               </p>
           </CardFooter>

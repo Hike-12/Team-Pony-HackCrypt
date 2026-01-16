@@ -4,29 +4,23 @@ import Cookies from 'js-cookie';
 export const StudentContext = createContext();
 
 export const StudentProvider = ({ children }) => {
-    const [student, setStudent] = useState(null);
-
-    useEffect(() => {
-        // Load from LocalStorage or Cookie on mount
+    const [student, setStudent] = useState(() => {
         const storedUser = localStorage.getItem('studentUser');
         const storedToken = Cookies.get('studentToken');
+        return (storedUser && storedToken) ? JSON.parse(storedUser) : null;
+    });
 
-        if (storedUser && storedToken) {
-           setStudent(JSON.parse(storedUser));
-        }
+    useEffect(() => {
+        // Keeps state in sync if needed, mostly for future proofing or if cookies change externally
     }, []);
 
     const loginStudent = (userData, token) => {
         setStudent(userData);
-        // Store in Context (already done by setState)
-        
-        // Store in LocalStorage
         localStorage.setItem('studentUser', JSON.stringify(userData));
-        localStorage.setItem('studentToken', token); // Also keeping token in LS for consistency if needed, but cookie is primary for auth usually
-
-        // Store in Cookie
-        Cookies.set('studentToken', token, { expires: 1 }); // Expires in 1 day
+        localStorage.setItem('studentToken', token);
+        Cookies.set('studentToken', token, { expires: 1 });
         Cookies.set('studentId', userData.id, { expires: 1 });
+        console.log('Student logged in:', { id: userData?.id || null, name: userData?.name || null, roll_no: userData?.roll_no || null });
     };
 
     const logoutStudent = () => {
@@ -35,6 +29,7 @@ export const StudentProvider = ({ children }) => {
         localStorage.removeItem('studentToken');
         Cookies.remove('studentToken');
         Cookies.remove('studentId');
+        console.log('Student logged out');
     };
 
     return (
