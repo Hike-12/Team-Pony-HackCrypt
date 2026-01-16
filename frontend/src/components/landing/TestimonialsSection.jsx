@@ -7,125 +7,66 @@ const SQRT_5000 = Math.sqrt(5000);
 const testimonials = [
   {
     tempId: 0,
-    testimonial: "My favorite solution in the market. We work 5x faster with COMPANY.",
-    by: "Alex, CEO at TechCorp",
+    testimonial: "Attendance marking is now seamless. Students complete verification in under 30 seconds with our facial recognition system.",
+    by: "Dr. Sarah Patel, Dean of Students at Metro University",
     imgSrc: "https://i.pravatar.cc/150?img=1"
   },
   {
     tempId: 1,
-    testimonial: "I'm confident my data is safe with COMPANY. I can't say that about other providers.",
-    by: "Dan, CTO at SecureNet",
+    testimonial: "We've completely eliminated proxy attendance. The multi-factor verification is absolutely tamper-proof.",
+    by: "Prof. James Chen, Department Head at Tech Institute",
     imgSrc: "https://i.pravatar.cc/150?img=2"
   },
   {
     tempId: 2,
-    testimonial: "I know it's cliche, but we were lost before we found COMPANY. Can't thank you guys enough!",
-    by: "Stephanie, COO at InnovateCo",
+    testimonial: "Our faculty loves the teacher portal. Marking attendance and rescheduling classes is incredibly simple now.",
+    by: "Dr. Priya Sharma, Academic Director at Central College",
     imgSrc: "https://i.pravatar.cc/150?img=3"
   },
   {
     tempId: 3,
-    testimonial: "COMPANY's products make planning for the future seamless. Can't recommend them enough!",
-    by: "Marie, CFO at FuturePlanning",
+    testimonial: "The liveness detection catches every spoofing attempt. Our compliance audits pass without issues now.",
+    by: "Dr. Robert Singh, Registrar at State University",
     imgSrc: "https://i.pravatar.cc/150?img=4"
   },
   {
     tempId: 4,
-    testimonial: "If I could give 11 stars, I'd give 12.",
-    by: "Andre, Head of Design at CreativeSolutions",
+    testimonial: "The MoveNet body posture analysis is genius. It prevents students from standing in for each other.",
+    by: "Ms. Elena Torres, HOD IT at Innovation Academy",
     imgSrc: "https://i.pravatar.cc/150?img=5"
   },
   {
     tempId: 5,
-    testimonial: "SO SO SO HAPPY WE FOUND YOU GUYS!!!! I'd bet you've saved me 100 hours so far.",
-    by: "Jeremy, Product Manager at TimeWise",
-    imgSrc: "https://i.pravatar.cc/150?img=6"
+    testimonial: "Analytics dashboard gives us real-time insights. We can now identify attendance patterns and intervene early.",
+    by: "Dr. Amit Kumar, Principal at Excellence College",
+    imgSrc: "https://i.pravatar.cc/150?img=12"
   },
   {
     tempId: 6,
-    testimonial: "Took some convincing, but now that we're on COMPANY, we're never going back.",
-    by: "Pam, Marketing Director at BrandBuilders",
+    testimonial: "The system adapted beautifully to variations in lighting and camera quality across our campus.",
+    by: "Mr. David Mitchell, Operations Manager at Global Institute",
     imgSrc: "https://i.pravatar.cc/150?img=7"
   },
   {
     tempId: 7,
-    testimonial: "I would be lost without COMPANY's in-depth analytics. The ROI is EASILY 100X for us.",
-    by: "Daniel, Data Scientist at AnalyticsPro",
+    testimonial: "Student compliance has improved dramatically. They appreciate the fairness and transparency of the system.",
+    by: "Prof. Neha Verma, Student Affairs at Premier University",
     imgSrc: "https://i.pravatar.cc/150?img=8"
   },
   {
     tempId: 8,
-    testimonial: "It's just the best. Period.",
-    by: "Fernando, UX Designer at UserFirst",
+    testimonial: "The biometric workflow is so intuitive that even first-year students have no issues using it.",
+    by: "Dr. Michael Brown, Technical Lead at Digital Learning Hub",
     imgSrc: "https://i.pravatar.cc/150?img=9"
   },
   {
     tempId: 9,
-    testimonial: "I switched 5 years ago and never looked back.",
-    by: "Andy, DevOps Engineer at CloudMasters",
+    testimonial: "Secure encryption and audit trails give us complete peace of mind about data compliance.",
+    by: "Ms. Lisa Anderson, Compliance Officer at Federal State College",
     imgSrc: "https://i.pravatar.cc/150?img=10"
   },
-  {
-    tempId: 10,
-    testimonial: "I've been searching for a solution like COMPANY for YEARS. So glad I finally found one!",
-    by: "Pete, Sales Director at RevenueRockets",
-    imgSrc: "https://i.pravatar.cc/150?img=11"
-  },
-  {
-    tempId: 11,
-    testimonial: "It's so simple and intuitive, we got the team up to speed in 10 minutes.",
-    by: "Marina, HR Manager at TalentForge",
-    imgSrc: "https://i.pravatar.cc/150?img=12"
-  },
-  {
-    tempId: 12,
-    testimonial: "COMPANY's customer support is unparalleled. They're always there when we need them.",
-    by: "Olivia, Customer Success Manager at ClientCare",
-    imgSrc: "https://i.pravatar.cc/150?img=13"
-  },
-  {
-    tempId: 13,
-    testimonial: "The efficiency gains we've seen since implementing COMPANY are off the charts!",
-    by: "Raj, Operations Manager at StreamlineSolutions",
-    imgSrc: "https://i.pravatar.cc/150?img=14"
-  },
-  {
-    tempId: 14,
-    testimonial: "COMPANY has revolutionized how we handle our workflow. It's a game-changer!",
-    by: "Lila, Workflow Specialist at ProcessPro",
-    imgSrc: "https://i.pravatar.cc/150?img=15"
-  },
-  {
-    tempId: 15,
-    testimonial: "The scalability of COMPANY's solution is impressive. It grows with our business seamlessly.",
-    by: "Trevor, Scaling Officer at GrowthGurus",
-    imgSrc: "https://i.pravatar.cc/150?img=16"
-  },
-  {
-    tempId: 16,
-    testimonial: "I appreciate how COMPANY continually innovates. They're always one step ahead.",
-    by: "Naomi, Innovation Lead at FutureTech",
-    imgSrc: "https://i.pravatar.cc/150?img=17"
-  },
-  {
-    tempId: 17,
-    testimonial: "The ROI we've seen with COMPANY is incredible. It's paid for itself many times over.",
-    by: "Victor, Finance Analyst at ProfitPeak",
-    imgSrc: "https://i.pravatar.cc/150?img=18"
-  },
-  {
-    tempId: 18,
-    testimonial: "COMPANY's platform is so robust, yet easy to use. It's the perfect balance.",
-    by: "Yuki, Tech Lead at BalancedTech",
-    imgSrc: "https://i.pravatar.cc/150?img=19"
-  },
-  {
-    tempId: 19,
-    testimonial: "We've tried many solutions, but COMPANY stands out in terms of reliability and performance.",
-    by: "Zoe, Performance Manager at ReliableSystems",
-    imgSrc: "https://i.pravatar.cc/150?img=20"
-  }
-];
+]
+   
 
 const TestimonialCard = ({ 
   position, 
