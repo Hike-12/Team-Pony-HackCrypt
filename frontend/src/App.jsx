@@ -16,7 +16,10 @@ import AdminTeacherSubjects from "@/pages/Admin/AdminTeacherSubjects";
 import LeaveApplication from "@/pages/Student/LeaveApplication";
 import LeaveHistory from "@/pages/Student/LeaveHistory";
 import StudentProfile from "@/pages/Student/Profile";
+import StudentTimetable from "@/pages/Student/StudentTimetable";
+
 import LeaveManagement from "@/pages/Teacher/LeaveManagement";
+import TeacherSchedule from "@/pages/Teacher/TeacherSchedule";
 
 
 import { Toaster } from '@/components/ui/sonner';
@@ -41,6 +44,7 @@ const App = () => {
                  element={<StudentProtectedRoute />}
                 >
                   <Route path="/student/dashboard" element={<StudentDashboard />} />
+                  <Route path="/student/timetable" element={<StudentTimetable />} />
                   <Route path="/student/leave/apply" element={<LeaveApplication />} />
                   <Route path="/student/leave/history" element={<LeaveHistory />} />
                   <Route path="/student/profile" element={<StudentProfile />} />
@@ -49,6 +53,7 @@ const App = () => {
                 <Route path="/teacher/login" element={<TeacherAuth />} />
                 <Route element={<TeacherProtectedRoute />}>
                   <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+                  <Route path="/teacher/schedule" element={<TeacherSchedule />} />
                   <Route path="/teacher/leave-management" element={<LeaveManagement />} />
                 </Route>
 

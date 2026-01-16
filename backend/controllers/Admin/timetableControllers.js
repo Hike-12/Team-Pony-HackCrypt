@@ -100,6 +100,13 @@ exports.getAllEntries = async (req, res) => {
 
     let filter = {};
     if (class_id) filter.class_id = class_id;
+    
+    // If teacher_id is provided, we need to find all teacher_subject_ids for this teacher first
+    if (teacher_id) {
+      const teacherSubjects = await TeacherSubject.find({ teacher_id: teacher_id });
+      const teacherSubjectIds = teacherSubjects.map(ts => ts._id);
+      filter.teacher_subject_id = { $in: teacherSubjectIds };
+    }
 
     const entries = await TimetableEntry.find(filter)
       .populate({
