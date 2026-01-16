@@ -1,15 +1,12 @@
 import React from 'react'
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TeacherSidebar } from '@/components/teacher/TeacherSidebar'
 
 const TeacherDashboard = () => {
   return (
-    <SidebarProvider>
+    <div className="flex min-h-screen">
       <TeacherSidebar />
-      <main className="flex flex-1 flex-col min-h-screen bg-background transition-all duration-200 ease-in-out">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <SidebarTrigger />
-          <div className="h-6 w-px bg-border" />
+      <main className="flex-1 ml-64 min-h-screen bg-background">
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
           <h1 className="text-lg font-semibold">Teacher Dashboard</h1>
         </header>
         <div className="p-4">
@@ -39,7 +36,7 @@ const TeacherDashboard = () => {
           </div>
         </div>
       </main>
-    </SidebarProvider>
+    </div>
   )
 }
 

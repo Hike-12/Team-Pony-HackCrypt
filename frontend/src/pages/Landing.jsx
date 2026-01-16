@@ -23,7 +23,7 @@ const Landing = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen w-full">
       <div className="fixed inset-0 -z-10 pointer-events-none">
         <PixelBlast
           variant="square"
@@ -38,12 +38,14 @@ const Landing = () => {
         />
       </div>
       <Navbar />
-      <HeroSection />
-      <AboutSection />
-      <FeaturesSection />
-      <TestimonialsSection />
-      <CTASection />
-      <Footer />
+      <main className="w-full">
+        <HeroSection />
+        <AboutSection />
+        <FeaturesSection />
+        <TestimonialsSection />
+        <CTASection />
+        <Footer />
+      </main>
     </div>
   )
 }

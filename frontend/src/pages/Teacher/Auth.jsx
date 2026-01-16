@@ -60,7 +60,7 @@ const TeacherAuth = () => {
   };
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen w-full flex flex-col">
       <div className="fixed inset-0 -z-10 pointer-events-none">
         <PixelBlast
           variant="square"
@@ -74,8 +74,8 @@ const TeacherAuth = () => {
           style={{ width: '100vw', height: '100vh' }}
         />
       </div>
-      {/* <Navbar /> */}
-      <div className="flex items-center justify-center min-h-screen p-4 pt-20">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-lg border-primary/20">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center text-primary">Teacher Portal</CardTitle>
