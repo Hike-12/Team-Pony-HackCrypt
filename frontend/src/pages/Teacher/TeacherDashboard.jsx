@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { TeacherContext } from '@/context/TeacherContext'
 import { TeacherSidebar } from '@/components/teacher/TeacherSidebar'
 
 const TeacherDashboard = () => {
+  const { teacher } = useContext(TeacherContext)
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen w-full">
       <TeacherSidebar />
-      <main className="flex-1 ml-64 min-h-screen bg-background">
+      <main className="flex-1 min-h-screen w-full ml-64 bg-background">
         <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
           <h1 className="text-lg font-semibold">Teacher Dashboard</h1>
         </header>
@@ -29,7 +31,12 @@ const TeacherDashboard = () => {
             </div>
           </div>
           <div className="rounded-xl bg-card border p-8">
-            <h2 className="text-2xl font-bold mb-4">Welcome, Teacher!</h2>
+            <h2 className="text-2xl font-bold mb-2">Welcome, {teacher?.name || 'Teacher'}!</h2>
+            <div className="mb-4">
+              <p className="text-muted-foreground">
+                <span className="font-semibold">Department:</span> {teacher?.department || 'Not specified'}
+              </p>
+            </div>
             <p className="text-muted-foreground">
               This is your teacher dashboard. Manage your classes, take attendance, and track student performance.
             </p>

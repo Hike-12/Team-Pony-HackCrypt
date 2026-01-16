@@ -18,6 +18,8 @@ const {
   getTeachers,
   getSubjects,
   getClasses,
+  createClass,
+  deleteAllClasses,
   getOrCreateTeacherSubject
 } = require('../../controllers/Admin/timetableControllers');
 
@@ -83,6 +85,8 @@ router.post('/create-from-parsed', createFromParsedData);
 router.get('/teachers', getTeachers);
 router.get('/subjects', getSubjects);
 router.get('/classes', getClasses);
+router.post('/classes', createClass);
+router.delete('/classes', deleteAllClasses);
 router.post('/teacher-subject', getOrCreateTeacherSubject);
 
 module.exports = router;

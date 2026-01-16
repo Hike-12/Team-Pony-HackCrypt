@@ -1,19 +1,17 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Home, Users, Calendar, ClipboardCheck, BookOpen, LogOut, Sun, Moon } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
+import { TeacherContext } from '@/context/TeacherContext'
 import { cn } from '@/lib/utils'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/teacher/dashboard' },
-  { title: 'My Classes', icon: BookOpen, url: '#' },
-  { title: 'Attendance', icon: ClipboardCheck, url: '#' },
-  { title: 'Students', icon: Users, url: '#' },
-  { title: 'Schedule', icon: Calendar, url: '#' },
 ]
 
 export function TeacherSidebar() {
   const { theme, setTheme } = useTheme()
+  const { teacher } = useContext(TeacherContext)
   const location = useLocation()
   const navigate = useNavigate()
   
@@ -32,8 +30,8 @@ export function TeacherSidebar() {
             <span className="text-lg font-bold">T</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Teacher Portal</span>
-            <span className="text-xs text-muted-foreground">Classroom</span>
+            <span className="text-sm font-semibold">{teacher?.name || 'Teacher'}</span>
+            <span className="text-xs text-muted-foreground">{teacher?.department || 'Department'}</span>
           </div>
         </div>
       </div>

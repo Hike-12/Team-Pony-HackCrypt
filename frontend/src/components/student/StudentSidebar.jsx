@@ -6,10 +6,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/student/dashboard' },
-  { title: 'My Classes', icon: BookOpen, url: '#' },
-  { title: 'Attendance', icon: Calendar, url: '#' },
-  { title: 'Performance', icon: BarChart3, url: '#' },
-  { title: 'Profile', icon: User, url: '#' },
 ]
 
 export function StudentSidebar() {
