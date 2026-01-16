@@ -14,6 +14,7 @@ app.use(express.json());
 // Routes
 app.use('/api/student/auth', require('./routes/Student/authRoutes'));
 app.use('/api/teacher/auth', require('./routes/Teacher/authRoutes'));
+app.use('/api/admin/timetable', require('./routes/Admin/timetableRoutes'));
 
 const PORT = process.env.PORT || 8000;
 

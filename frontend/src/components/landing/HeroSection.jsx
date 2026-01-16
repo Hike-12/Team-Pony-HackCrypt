@@ -31,7 +31,7 @@ export default function HeroSection() {
             <main className="overflow-hidden">
                 <section>
                     <div className="relative pt-24">
-                        <div className="mx-auto max-w-5xl px-6">
+                        <div className="mx-auto max-w-5xl">
                             <div className="sm:mx-auto lg:mr-auto lg:mt-0">
                                 <TextEffect
                                     preset="fade-in-blur"
