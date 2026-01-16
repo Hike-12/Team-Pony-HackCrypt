@@ -4,28 +4,23 @@ import Cookies from 'js-cookie';
 export const TeacherContext = createContext();
 
 export const TeacherProvider = ({ children }) => {
-    const [teacher, setTeacher] = useState(null);
-
-    useEffect(() => {
-        // Load from LocalStorage or Cookie on mount
+    const [teacher, setTeacher] = useState(() => {
         const storedUser = localStorage.getItem('teacherUser');
         const storedToken = Cookies.get('teacherToken');
+        return (storedUser && storedToken) ? JSON.parse(storedUser) : null;
+    });
 
-        if (storedUser && storedToken) {
-           setTeacher(JSON.parse(storedUser));
-        }
+    useEffect(() => {
+        // Keeps state in sync if needed
     }, []);
 
     const loginTeacher = (userData, token) => {
         setTeacher(userData);
-        
-        // Store in LocalStorage
         localStorage.setItem('teacherUser', JSON.stringify(userData));
         localStorage.setItem('teacherToken', token);
-
-        // Store in Cookie
-        Cookies.set('teacherToken', token, { expires: 1 }); // Expires in 1 day
+        Cookies.set('teacherToken', token, { expires: 1 });
         Cookies.set('teacherId', userData.id, { expires: 1 });
+        console.log('Teacher logged in:', { id: userData?.id || null, name: userData?.name || null, email: userData?.email || null });
     };
 
     const logoutTeacher = () => {
@@ -34,6 +29,7 @@ export const TeacherProvider = ({ children }) => {
         localStorage.removeItem('teacherToken');
         Cookies.remove('teacherToken');
         Cookies.remove('teacherId');
+        console.log('Teacher logged out');
     };
 
     return (

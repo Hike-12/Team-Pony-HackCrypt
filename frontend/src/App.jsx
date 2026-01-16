@@ -10,6 +10,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import {Toaster} from '@/components/ui/sonner';
 import { StudentProvider } from './context/StudentContext';
 import { TeacherProvider } from './context/TeacherContext';
+import { StudentProtectedRoute, TeacherProtectedRoute } from './components/ProtectedRoute';
 
 const App = () => {
   return (
@@ -20,11 +21,17 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Landing />} />
+              
               <Route path="/student/login" element={<StudentAuth />} />
+              <Route element={<StudentProtectedRoute />}>
+                 <Route path="/student/dashboard" element={<StudentDashboard />} />
+              </Route>
+              
               <Route path="/teacher/login" element={<TeacherAuth />} />
-              <Route path="/student/dashboard" element={<StudentDashboard />} />
-              <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route element={<TeacherProtectedRoute />}>
+                  <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+              </Route>
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

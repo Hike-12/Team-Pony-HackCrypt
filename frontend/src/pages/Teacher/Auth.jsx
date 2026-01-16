@@ -8,6 +8,12 @@ import { toast } from "sonner";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import { TeacherContext } from '../../context/TeacherContext';
 import Navbar from '@/components/landing/Navbar';
+import PixelBlast from '@/components/ui/PixelBlast';
+
+const getTheme = () =>
+  typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+    ? 'dark'
+    : 'light';
 
 const TeacherAuth = () => {
   const [email, setEmail] = useState('');
@@ -15,9 +21,14 @@ const TeacherAuth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { loginTeacher } = useContext(TeacherContext);
+  
+  React.useEffect(() => {
+    console.log('TeacherAuth page loaded');
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    console.log('Teacher login attempt with email:', email);
     setLoading(true);
 
     try {
@@ -32,10 +43,12 @@ const TeacherAuth = () => {
       const data = await response.json();
 
       if (response.ok) {
+        console.log('Teacher login successful, response data:', data);
         toast.success("Login Successful!");
         loginTeacher(data.user, data.token);
         navigate('/teacher/dashboard');
       } else {
+        console.log('Teacher login failed, error:', data.message);
         toast.error(data.message || "Login Failed");
       }
     } catch (error) {
@@ -47,8 +60,21 @@ const TeacherAuth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Navbar />
+    <div className="relative min-h-screen">
+      <div className="fixed inset-0 -z-10 pointer-events-none">
+        <PixelBlast
+          variant="square"
+          pixelSize={3}
+          color={getTheme() === 'dark' ? 'var(--accent)' : 'var(--accent)'}
+          patternScale={2}
+          patternDensity={1}
+          liquid={false}
+          enableRipples={true}
+          edgeFade={0.5}
+          style={{ width: '100vw', height: '100vh' }}
+        />
+      </div>
+      {/* <Navbar /> */}
       <div className="flex items-center justify-center min-h-screen p-4 pt-20">
         <Card className="w-full max-w-md shadow-lg border-primary/20">
           <CardHeader className="space-y-1">
@@ -62,7 +88,7 @@ const TeacherAuth = () => {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <FaEnvelope className="absolute left-3 top-3 text-gray-500" />
+                  <FaEnvelope className="absolute left-3 top-3 text-muted-foreground" />
                   <Input 
                     id="email" 
                     type="email" 
@@ -77,7 +103,7 @@ const TeacherAuth = () => {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <FaLock className="absolute left-3 top-3 text-gray-500" />
+                  <FaLock className="absolute left-3 top-3 text-muted-foreground" />
                   <Input 
                     id="password" 
                     type="password" 
@@ -95,7 +121,7 @@ const TeacherAuth = () => {
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                   Authorized personnel only.
               </p>
           </CardFooter>
