@@ -10,12 +10,13 @@ connectDB();
 
 app.use(cors({
     origin: ['http://localhost:5173', 'http://localhost:5174'],
-    credentials: true  
+    credentials: true
 }));
 app.use(express.json());
 
 // Routes
 app.use('/api/student/auth', require('./routes/Student/authRoutes'));
+app.use('/api/student/leave', require('./routes/Student/leaveRoutes'));
 app.use('/api/teacher/auth', require('./routes/Teacher/authRoutes'));
 app.use('/api/admin/students', require('./routes/adminStudentRoutes'));
 app.use('/api/admin/teachers', require('./routes/adminTeacherRoutes'));

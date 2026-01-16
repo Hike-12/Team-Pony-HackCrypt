@@ -1,11 +1,13 @@
 import React from 'react'
-import { Home, Calendar, BookOpen, BarChart3, User, LogOut, Sun, Moon } from 'lucide-react'
+import { Home, Calendar, BookOpen, BarChart3, User, LogOut, Sun, Moon, FileText, ClipboardList } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { cn } from '@/lib/utils'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/student/dashboard' },
+  { title: 'Apply Leave', icon: FileText, url: '/student/leave/apply' },
+  { title: 'Leave History', icon: ClipboardList, url: '/student/leave/history' },
   { title: 'My Classes', icon: BookOpen, url: '#' },
   { title: 'Attendance', icon: Calendar, url: '#' },
   { title: 'Performance', icon: BarChart3, url: '#' },
@@ -16,9 +18,9 @@ export function StudentSidebar() {
   const { theme, setTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
-  
+
   const isActive = (url) => location.pathname === url
-  
+
   const handleLogout = () => {
     navigate('/')
   }
