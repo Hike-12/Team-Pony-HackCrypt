@@ -9,7 +9,7 @@ exports.login = async (req, res) => {
 
         if (!email || !password) {
             return res.status(400).json({ message: 'Please provide email and password' });
-       }
+        }
 
         // 1. Find User by email
         const user = await User.findOne({ email });
@@ -37,15 +37,16 @@ exports.login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        res.json({ 
-            token, 
-            user: { 
-                id: user._id, 
-                role: user.role, 
+        res.json({
+            token,
+            user: {
+                id: user._id,
+                teacher_id: teacher ? teacher._id : null,
+                role: user.role,
                 name: teacher ? teacher.full_name : 'Teacher',
                 email: user.email,
                 department: teacher ? teacher.department : null
-            } 
+            }
         });
 
     } catch (error) {
