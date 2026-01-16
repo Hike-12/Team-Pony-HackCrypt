@@ -8,6 +8,6 @@ const timetableSlotSchema = new mongoose.Schema({
 });
 
 timetableSlotSchema.index({ start_time: 1, end_time: 1 }, { unique: true });
-timetableSlotSchema.index({ slot_name: 1 }, { unique: true });
+
 
 module.exports = mongoose.model('TimetableSlot', timetableSlotSchema);
