@@ -1,9 +1,12 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { TeacherContext } from '@/context/TeacherContext'
 import { TeacherSidebar } from '@/components/teacher/TeacherSidebar'
+import QRScanner from '@/components/teacher/QRScanner'
+import { QrCode } from 'lucide-react'
 
 const TeacherDashboard = () => {
   const { teacher } = useContext(TeacherContext)
+  const [showQRScanner, setShowQRScanner] = useState(false)
   return (
     <div className="flex min-h-screen w-full">
       <TeacherSidebar />
@@ -37,12 +40,26 @@ const TeacherDashboard = () => {
                 <span className="font-semibold">Department:</span> {teacher?.department || 'Not specified'}
               </p>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-6">
               This is your teacher dashboard. Manage your classes, take attendance, and track student performance.
             </p>
+            
+            {/* QR Scanner Button */}
+            <button
+              onClick={() => setShowQRScanner(true)}
+              className="bg-primary text-primary-foreground px-6 py-3 rounded-md hover:bg-primary/90 transition-colors font-medium flex items-center gap-2 shadow-md"
+            >
+              <QrCode className="h-5 w-5" />
+              Scan QR for Attendance
+            </button>
           </div>
         </div>
       </main>
+
+      {/* QR Scanner Modal */}
+      {showQRScanner && (
+        <QRScanner onClose={() => setShowQRScanner(false)} />
+      )}
     </div>
   )
 }
