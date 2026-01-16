@@ -19,6 +19,7 @@ app.use(express.json());
 app.use('/api/student/auth', require('./routes/Student/authRoutes'));
 app.use('/api/student', require('./routes/Student/authRoutes'));
 app.use('/api/student/leave', require('./routes/Student/leaveRoutes'));
+app.use('/api/student/biometric', require('./routes/Student/biometricRoutes'));
 app.use('/api/student/webauthn', require('./routes/Student/webauthnRoutes')); 
 app.use('/api/teacher/auth', require('./routes/Teacher/authRoutes'));
 app.use('/api/teacher/leave', require('./routes/Teacher/leaveRoutes'));
