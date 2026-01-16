@@ -38,7 +38,7 @@ const App = () => {
 
                 <Route path="/student/login" element={<StudentAuth />} />
                 <Route
-                //  element={<StudentProtectedRoute />}
+                 element={<StudentProtectedRoute />}
                 >
                   <Route path="/student/dashboard" element={<StudentDashboard />} />
                   <Route path="/student/leave/apply" element={<LeaveApplication />} />
