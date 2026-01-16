@@ -1,38 +1,44 @@
 import React from 'react'
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { TeacherSidebar } from '@/components/teacher/TeacherSidebar'
-import { Separator } from '@/components/ui/separator'
 
 const TeacherDashboard = () => {
   return (
     <SidebarProvider>
       <TeacherSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
+      <main className="flex flex-1 flex-col min-h-screen bg-background transition-all duration-200 ease-in-out">
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <SidebarTrigger />
+          <div className="h-6 w-px bg-border" />
           <h1 className="text-lg font-semibold">Teacher Dashboard</h1>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50 flex items-center justify-center">
-              <p className="text-muted-foreground">Today's Classes</p>
+        <div className="p-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-4">
+            <div className="p-4 border rounded-lg shadow-sm bg-card text-card-foreground">
+              <h3 className="font-semibold text-sm text-muted-foreground">Today's Classes</h3>
+              <p className="text-2xl font-bold mt-2">5</p>
             </div>
-            <div className="aspect-video rounded-xl bg-muted/50 flex items-center justify-center">
-              <p className="text-muted-foreground">Total Students</p>
+            <div className="p-4 border rounded-lg shadow-sm bg-card text-card-foreground">
+              <h3 className="font-semibold text-sm text-muted-foreground">Total Students</h3>
+              <p className="text-2xl font-bold mt-2 text-chart-1">156</p>
             </div>
-            <div className="aspect-video rounded-xl bg-muted/50 flex items-center justify-center">
-              <p className="text-muted-foreground">Pending Tasks</p>
+            <div className="p-4 border rounded-lg shadow-sm bg-card text-card-foreground">
+              <h3 className="font-semibold text-sm text-muted-foreground">Pending Tasks</h3>
+              <p className="text-2xl font-bold mt-2 text-chart-2">8</p>
+            </div>
+            <div className="p-4 border rounded-lg shadow-sm bg-card text-card-foreground">
+              <h3 className="font-semibold text-sm text-muted-foreground">Attendance Rate</h3>
+              <p className="text-2xl font-bold mt-2 text-green-600 dark:text-green-500">92%</p>
             </div>
           </div>
-          <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min p-8">
+          <div className="rounded-xl bg-card border p-8">
             <h2 className="text-2xl font-bold mb-4">Welcome, Teacher!</h2>
             <p className="text-muted-foreground">
               This is your teacher dashboard. Manage your classes, take attendance, and track student performance.
             </p>
           </div>
         </div>
-      </SidebarInset>
+      </main>
     </SidebarProvider>
   )
 }

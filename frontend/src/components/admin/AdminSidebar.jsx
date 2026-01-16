@@ -1,5 +1,5 @@
 import React from 'react'
-import { Home, Users, Calendar, FileText, Settings, LogOut } from 'lucide-react'
+import { Home, Users, Calendar, FileText, Settings, LogOut, Sun, Moon } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -13,12 +13,26 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from '@/components/ui/sidebar'
+import { useTheme } from '@/context/ThemeContext'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/admin/dashboard' },
 ]
 
 export function AdminSidebar() {
+
+    function ThemeToggle() {
+        const { theme, setTheme } = useTheme()
+        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      
+        return (
+          <SidebarMenuButton onClick={() => setTheme(isDark ? 'light' : 'dark')}>
+            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            <span>{isDark ? 'Light' : 'Dark'}</span>
+          </SidebarMenuButton>
+        )
+      }
+      
   return (
     <Sidebar>
       <SidebarHeader>
@@ -55,6 +69,9 @@ export function AdminSidebar() {
       <SidebarSeparator />
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <ThemeToggle />
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton>
               <LogOut />
