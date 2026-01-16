@@ -28,7 +28,7 @@ const Landing = () => {
         <PixelBlast
           variant="square"
           pixelSize={3}
-          color={theme === 'dark' ? '#333333' : '#cccccc'} 
+          color={theme === 'dark' ? '#2e444b' : '#2e444b'} 
           patternScale={2}
           patternDensity={1}
           liquid={false}
