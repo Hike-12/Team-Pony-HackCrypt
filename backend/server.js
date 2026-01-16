@@ -11,6 +11,10 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+// Routes
+app.use('/api/student/auth', require('./routes/Student/authRoutes'));
+app.use('/api/teacher/auth', require('./routes/Teacher/authRoutes'));
+
 const PORT = process.env.PORT || 8000;
 
 app.get('/', (req, res) => {
