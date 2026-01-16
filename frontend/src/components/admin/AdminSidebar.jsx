@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, FileText, Settings, LogOut, User, Moon, Sun, BookOpen, BarChart3, Shield, Menu } from "lucide-react"
+import { Home, Users, Calendar, FileText, Settings, LogOut, User, Moon, Sun, BookOpen, BarChart3, Shield, Menu, GraduationCap, Book } from "lucide-react"
 import { useTheme } from "@/context/ThemeContext"
 import { cn } from "@/lib/utils"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -20,6 +20,16 @@ const items = [
     title: "Teachers",
     url: "/admin/teachers",
     icon: BookOpen,
+  },
+  {
+    title: "Classes",
+    url: "/admin/classes",
+    icon: GraduationCap,
+  },
+  {
+    title: "Subjects",
+    url: "/admin/subjects",
+    icon: Book,
   }
 ]
 

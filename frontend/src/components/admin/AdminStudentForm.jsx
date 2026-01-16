@@ -21,7 +21,7 @@ export function AdminStudentForm({ onStudentAdded }) {
   useEffect(() => {
     async function fetchClasses() {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/classes`, { credentials: 'include' });
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/classes`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch classes');
         const data = await res.json();
         setClasses(data);

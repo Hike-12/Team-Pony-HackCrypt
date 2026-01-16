@@ -9,6 +9,8 @@ import TeacherDashboard from "@/pages/Teacher/TeacherDashboard";
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import AdminStudents from "@/pages/Admin/AdminStudents";
 import AdminTeachers from "@/pages/Admin/AdminTeachers";
+import AdminClasses from "@/pages/Admin/AdminClasses";
+import AdminSubjects from "@/pages/Admin/AdminSubjects";
 import LeaveApplication from "@/pages/Student/LeaveApplication";
 import LeaveHistory from "@/pages/Student/LeaveHistory";
 import StudentProfile from "@/pages/Student/Profile";
@@ -49,6 +51,8 @@ const App = () => {
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/students" element={<AdminStudents />} />
                 <Route path="/admin/teachers" element={<AdminTeachers />} />
+                <Route path="/admin/classes" element={<AdminClasses />} />
+                <Route path="/admin/subjects" element={<AdminSubjects />} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
