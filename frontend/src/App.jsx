@@ -9,7 +9,11 @@ import TeacherDashboard from "@/pages/Teacher/TeacherDashboard";
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import AdminStudents from "@/pages/Admin/AdminStudents";
 import AdminTeachers from "@/pages/Admin/AdminTeachers";
-import {Toaster} from '@/components/ui/sonner';
+import LeaveApplication from "@/pages/Student/LeaveApplication";
+import LeaveHistory from "@/pages/Student/LeaveHistory";
+
+
+import { Toaster } from '@/components/ui/sonner';
 import { StudentProvider } from './context/StudentContext';
 import { TeacherProvider } from './context/TeacherContext';
 import { StudentProtectedRoute, TeacherProtectedRoute } from './components/ProtectedRoute';
@@ -20,12 +24,12 @@ const App = () => {
     <>
       <Toaster position="top-right" />
       <SidebarProvider>
-          <StudentProvider>
+        <StudentProvider>
           <TeacherProvider>
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Landing />} />
-                
+
                 <Route path="/student/login" element={<StudentAuth />} />
                 <Route element={<StudentProtectedRoute />}>
                   <Route path="/student/dashboard" element={<StudentDashboard />} />

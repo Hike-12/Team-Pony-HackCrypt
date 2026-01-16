@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Home, Calendar, BookOpen, BarChart3, User, LogOut, Sun, Moon } from 'lucide-react'
+import { Home, Calendar, BookOpen, BarChart3, User, LogOut, Sun, Moon, FileText, ClipboardList } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { StudentContext } from '@/context/StudentContext'
 import { cn } from '@/lib/utils'
@@ -7,6 +7,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/student/dashboard' },
+  { title: 'My Classes', icon: BookOpen, url: '#' },
+  { title: 'Attendance', icon: Calendar, url: '#' },
+  { title: 'Performance', icon: BarChart3, url: '#' },
+  { title: 'Profile', icon: User, url: '#' },
 ]
 
 export function StudentSidebar() {
@@ -14,9 +18,9 @@ export function StudentSidebar() {
   const { student } = useContext(StudentContext)
   const location = useLocation()
   const navigate = useNavigate()
-  
+
   const isActive = (url) => location.pathname === url
-  
+
   const handleLogout = () => {
     navigate('/')
   }

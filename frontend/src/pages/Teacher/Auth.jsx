@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,11 +16,19 @@ const getTheme = () =>
     : 'light';
 
 const TeacherAuth = () => {
+  const [theme, setTheme] = useState(getTheme()); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { loginTeacher } = useContext(TeacherContext);
+
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => setTheme(getTheme()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
   
   React.useEffect(() => {
     console.log('TeacherAuth page loaded');
@@ -65,7 +73,7 @@ const TeacherAuth = () => {
         <PixelBlast
           variant="square"
           pixelSize={3}
-          color={getTheme() === 'dark' ? 'var(--accent)' : 'var(--accent)'}
+          color={theme === 'dark' ? '#2e444b' : '#2e448b'} 
           patternScale={2}
           patternDensity={1}
           liquid={false}
@@ -93,7 +101,7 @@ const TeacherAuth = () => {
                     id="email" 
                     type="email" 
                     placeholder="teacher@example.com" 
-                    className="pl-10"
+                    className="pl-10 mt-1"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -108,7 +116,7 @@ const TeacherAuth = () => {
                     id="password" 
                     type="password" 
                     placeholder="••••••••" 
-                    className="pl-10"
+                    className="pl-10 mt-1"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
