@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { StudentContext } from '@/context/StudentContext';
 import { BiometricVerification } from '@/components/student/BiometricVerification';
+import { LocationVerification } from '@/components/student/LocationVerification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, MapPin, Camera, Fingerprint, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -102,21 +103,11 @@ export default function AttendanceVerification() {
           <div className="space-y-6">
             {/* Step 1: Geofencing */}
             {currentStep === 1 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    Step 1: Location Verification
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Your geofencing component */}
-                  <p className="text-muted-foreground">Geofencing component will go here</p>
-                  <button onClick={() => handleStepSuccess('geofencing', { verified: true })}>
-                    Simulate Success
-                  </button>
-                </CardContent>
-              </Card>
+              <LocationVerification
+                classId={student?.class_id}
+                onSuccess={(result) => handleStepSuccess('geofencing', result)}
+                onError={(error) => console.error('Location verification failed:', error)}
+              />
             )}
 
             {/* Step 2: Face Recognition */}
