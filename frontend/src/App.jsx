@@ -6,6 +6,7 @@ import StudentAuth from "@/pages/Student/Auth";
 import TeacherAuth from "@/pages/Teacher/Auth";
 import StudentDashboard from "@/pages/Student/StudentDashboard";
 import TeacherDashboard from "@/pages/Teacher/TeacherDashboard";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
 import {Toaster} from '@/components/ui/sonner';
 import { StudentProvider } from './context/StudentContext';
 import { TeacherProvider } from './context/TeacherContext';
