@@ -37,6 +37,7 @@ exports.getAllStudents = async (req, res) => {
       class_id: s.class_id?._id,
       class_name: s.class_id ? `${s.class_id.name}` : 'N/A',
       division: s.class_id?.division || 'N/A',
+      batch_year: s.class_id?.batch_year || 'N/A',
       email: s.user_id?.email,
       image_url: s.image_url,
       id_qr_url: s.id_qr_url,

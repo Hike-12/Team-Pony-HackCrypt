@@ -164,6 +164,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Phone</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Class</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Division</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Batch</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground text-right">Actions</th>
                 </tr>
               </thead>
@@ -190,6 +191,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.phone || 'N/A'}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.class_name || 'N/A'}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.division || 'N/A'}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{student.batch_year || 'N/A'}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 justify-end">
                         <button

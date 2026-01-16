@@ -1,97 +1,144 @@
 import React from 'react';
+import { format, startOfWeek, addDays } from 'date-fns';
+import { cn } from '@/lib/utils';
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-const stringToColor = (str) => {
+// Helper for pastel colors
+const getSubjectColor = (subjectName) => {
+    if (!subjectName) return 'hsl(0, 0%, 95%)'; // Gray for empty
     let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < subjectName.length; i++) {
+        hash = subjectName.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
-    return '#' + '00000'.substring(0, 6 - c.length) + c;
+    const h = Math.abs(hash) % 360; 
+    // Pastel: Saturation ~70%, Lightness ~93%
+    return `hsl(${h}, 70%, 93%)`;
 };
 
-// Pastel colors are better for backgrounds
-const getPastelColor = (str) => {
+const getBorderColor = (subjectName) => {
+     if (!subjectName) return 'hsl(0, 0%, 80%)';
     let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < subjectName.length; i++) {
+        hash = subjectName.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const h = hash % 360;
-    return `hsl(${h}, 70%, 90%)`;
-};
+    const h = Math.abs(hash) % 360; 
+    // Darker border for definition
+    return `hsl(${h}, 60%, 80%)`;
+}
 
 const TimetableGrid = ({ slots, entries, role }) => {
-    // Organize entries by Day -> SlotId
-    const schedule = {};
-    entries.forEach(entry => {
-        if (!schedule[entry.day_of_week]) schedule[entry.day_of_week] = {};
-        const slotId = entry.slot_id._id || entry.slot_id; // Handle populated/unpopulated
-        schedule[entry.day_of_week][slotId] = entry;
+    const today = new Date();
+    // Assuming week starts on Monday (1). standard JS startOfWeek defaults to Sunday (0).
+    const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 1 });
+    
+    // Generate days with dates
+    const weekDays = Array.from({ length: 7 }).map((_, i) => {
+        const date = addDays(startOfCurrentWeek, i);
+        return {
+            name: format(date, 'EEEE'), // Monday
+            short: format(date, 'EEE'), // Mon
+            dateStr: format(date, 'dd/MM'), // 16/01
+            dayIndex: i + 1 // 1=Mon, 7=Sun to match DB
+        };
     });
 
-    const sortedSlots = [...slots].sort((a, b) => a.sort_order - b.sort_order);
+    // Organize entries
+    const schedule = {};
+    entries.forEach(entry => {
+        const d = entry.day_of_week; 
+        // Handle both populated and unpopulated slot_id
+        const s = entry.slot_id?._id || entry.slot_id;
+        if (!schedule[d]) schedule[d] = {};
+        schedule[d][s] = entry;
+    });
+
+    // Sort slots
+    const sortedSlots = [...slots].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
     return (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white dark:bg-gray-900 dark:border-gray-800">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-                <thead className="bg-gray-50 dark:bg-gray-950">
-                    <tr>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                            Time / Day
-                        </th>
-                        {DAYS.map((day, index) => (
-                            <th key={day} className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                                {day}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-800">
-                    {sortedSlots.map((slot) => (
-                        <tr key={slot._id} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white border-r dark:border-gray-800 bg-gray-50/30">
-                                <div className="flex flex-col">
-                                    <span className="font-bold">{slot.slot_name}</span>
-                                    <span className="text-gray-500 text-xs dark:text-gray-500">{slot.start_time} - {slot.end_time}</span>
-                                </div>
-                            </td>
-                            {DAYS.map((day, dayIndex) => {
-                                const entry = schedule[dayIndex + 1]?.[slot._id];
-                                return (
-                                    <td key={`${day}-${slot._id}`} className="px-2 py-2 h-24 align-top w-40">
-                                        {entry ? (
-                                            <div 
-                                                className="h-full w-full rounded-lg p-3 shadow-sm border border-black/5 hover:shadow-md transition-shadow relative overflow-hidden group"
-                                                style={{ 
-                                                    backgroundColor: getPastelColor(entry.teacher_subject_id?.subject_id?.name || 'Subject'),
-                                                    borderLeft: `4px solid ${stringToColor(entry.teacher_subject_id?.subject_id?.name || 'Subject')}`
-                                                }}
-                                            >
-                                                <div className="font-bold text-gray-900 text-sm truncate" title={entry.teacher_subject_id?.subject_id?.name}>
-                                                    {entry.teacher_subject_id?.subject_id?.name || 'Unknown Subject'}
+        <div className="bg-card rounded-xl border shadow-sm overflow-hidden select-none">
+            {/* Header */}
+            <div className="grid grid-cols-8 divide-x divide-border border-b bg-muted/30 text-center">
+                <div className="p-4 flex items-center justify-center font-semibold text-muted-foreground text-sm uppercase tracking-wider">
+                    Time
+                </div>
+                {weekDays.map((day) => (
+                    <div key={day.dayIndex} className={cn("p-3 flex flex-col justify-center items-center min-w-[100px]", 
+                        // Highlight today
+                        format(today, 'dd/MM') === day.dateStr && "bg-primary/5"
+                    )}>
+                        <span className="text-sm font-bold text-foreground">{day.name}</span>
+                        <span className="text-xs text-muted-foreground font-medium bg-secondary/50 px-2 py-0.5 rounded-full mt-1">
+                            {day.dateStr}
+                        </span>
+                    </div>
+                ))}
+            </div>
+
+            {/* Grid Body */}
+            <div className="divide-y divide-border">
+                {sortedSlots.map((slot) => (
+                    <div key={slot._id} className="grid grid-cols-8 divide-x divide-border min-h-[120px]">
+                        {/* Time Column */}
+                        <div className="p-3 flex flex-col justify-center items-center text-xs text-muted-foreground font-medium bg-muted/5">
+                            <span className="text-sm font-bold text-foreground/80">{slot.start_time}</span>
+                            <div className="h-6 w-px bg-border my-1"></div>
+                            <span className="text-sm font-bold text-muted-foreground">{slot.end_time}</span>
+                        </div>
+
+                        {/* Days Columns */}
+                        {weekDays.map((day) => {
+                            const entry = schedule[day.dayIndex]?.[slot._id];
+                            
+                            // If no entry, render empty cell
+                            if (!entry) return <div key={day.dayIndex} className="bg-card/20 hover:bg-muted/10 transition-colors" />;
+
+                            const subjectName = entry.teacher_subject_id?.subject_id?.name || 'Subject';
+                            const bgColor = getSubjectColor(subjectName);
+                            const borderColor = getBorderColor(subjectName);
+
+                            return (
+                                <div key={day.dayIndex} className="p-1 relative group bg-card/20">
+                                    <div 
+                                        className="h-full w-full rounded-lg p-2.5 text-xs flex flex-col gap-1.5 border hover:shadow-md transition-all duration-200 cursor-pointer"
+                                        style={{ 
+                                            backgroundColor: bgColor,
+                                            borderColor: borderColor
+                                        }}
+                                    >
+                                        <div className="font-bold text-foreground text-sm leading-tight line-clamp-2" title={subjectName}>
+                                            {subjectName}
+                                        </div>
+                                        
+                                        <div className="mt-auto space-y-1">
+                                            {/* Role Based Details */}
+                                            {role === 'STUDENT' ? (
+                                                <div className="flex items-center gap-1.5 opacity-80 text-foreground/90">
+                                                    <span className="text-[10px] w-4 h-4 rounded-full bg-white/50 flex items-center justify-center">👨‍🏫</span>
+                                                    <span className="truncate font-medium">
+                                                        {entry.teacher_subject_id?.teacher_id?.full_name?.split(' ')[0] || 'Teacher'}
+                                                    </span>
                                                 </div>
-                                                <div className="text-xs text-gray-700 mt-1 font-medium">
-                                                    {entry.session_type} • {entry.room_label}
+                                            ) : (
+                                                 <div className="flex items-center gap-1.5 opacity-80 text-foreground/90">
+                                                    <span className="text-[10px] w-4 h-4 rounded-full bg-white/50 flex items-center justify-center">🎓</span>
+                                                    <span className="truncate font-medium">
+                                                        {entry.class_id?.name || entry.teacher_subject_id?.class_id?.name} {entry.class_id?.division || entry.teacher_subject_id?.class_id?.division}
+                                                    </span>
                                                 </div>
-                                                <div className="text-xs text-gray-600 mt-2 truncate">
-                                                    {role === 'STUDENT' ? (
-                                                        <>👨‍🏫 {entry.teacher_subject_id?.teacher_id?.full_name}</>
-                                                    ) : (
-                                                        <>🎓 {entry.teacher_subject_id?.class_id?.name} {entry.teacher_subject_id?.class_id?.division}</>
-                                                    )}
-                                                </div>
+                                            )}
+                                            
+                                            <div className="flex items-center justify-between pt-1 border-t border-black/5 mt-1">
+                                                <span className="font-semibold text-[10px] uppercase tracking-wider opacity-70 bg-white/40 px-1.5 py-0.5 rounded">{entry.room_label}</span>
+                                                <span className="font-semibold text-[10px] opacity-70">{entry.session_type}</span>
                                             </div>
-                                        ) : (
-                                            <div className="h-full w-full rounded-lg border-2 border-dashed border-gray-100 dark:border-gray-800"></div>
-                                        )}
-                                    </td>
-                                );
-                            })}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
