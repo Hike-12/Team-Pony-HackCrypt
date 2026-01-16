@@ -1,144 +1,168 @@
 import React from 'react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { MapPin, User, GraduationCap } from 'lucide-react';
 
-// Helper for pastel colors
-const getSubjectColor = (subjectName) => {
-    if (!subjectName) return 'hsl(0, 0%, 95%)'; // Gray for empty
-    let hash = 0;
-    for (let i = 0; i < subjectName.length; i++) {
-        hash = subjectName.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const h = Math.abs(hash) % 360; 
-    // Pastel: Saturation ~70%, Lightness ~93%
-    return `hsl(${h}, 70%, 93%)`;
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const DAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const getColorClass = (sessionType) => {
+  const colors = {
+    'LECTURE': 'from-blue-500 to-blue-600',
+    'LAB': 'from-green-500 to-green-600',
+    'TUTORIAL': 'from-purple-500 to-purple-600',
+    'Online': 'from-orange-500 to-orange-600'
+  };
+  return colors[sessionType] || 'from-gray-500 to-gray-600';
 };
-
-const getBorderColor = (subjectName) => {
-     if (!subjectName) return 'hsl(0, 0%, 80%)';
-    let hash = 0;
-    for (let i = 0; i < subjectName.length; i++) {
-        hash = subjectName.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const h = Math.abs(hash) % 360; 
-    // Darker border for definition
-    return `hsl(${h}, 60%, 80%)`;
-}
 
 const TimetableGrid = ({ slots, entries, role }) => {
     const today = new Date();
-    // Assuming week starts on Monday (1). standard JS startOfWeek defaults to Sunday (0).
     const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 1 });
     
-    // Generate days with dates
-    const weekDays = Array.from({ length: 7 }).map((_, i) => {
-        const date = addDays(startOfCurrentWeek, i);
-        return {
-            name: format(date, 'EEEE'), // Monday
-            short: format(date, 'EEE'), // Mon
-            dateStr: format(date, 'dd/MM'), // 16/01
-            dayIndex: i + 1 // 1=Mon, 7=Sun to match DB
-        };
-    });
-
     // Organize entries
     const schedule = {};
     entries.forEach(entry => {
-        const d = entry.day_of_week; 
-        // Handle both populated and unpopulated slot_id
+        const d = entry.day_of_week;
         const s = entry.slot_id?._id || entry.slot_id;
         if (!schedule[d]) schedule[d] = {};
         schedule[d][s] = entry;
     });
 
-    // Sort slots
     const sortedSlots = [...slots].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
     return (
-        <div className="bg-card rounded-xl border shadow-sm overflow-hidden select-none">
-            {/* Header */}
-            <div className="grid grid-cols-8 divide-x divide-border border-b bg-muted/30 text-center">
-                <div className="p-4 flex items-center justify-center font-semibold text-muted-foreground text-sm uppercase tracking-wider">
-                    Time
-                </div>
-                {weekDays.map((day) => (
-                    <div key={day.dayIndex} className={cn("p-3 flex flex-col justify-center items-center min-w-[100px]", 
-                        // Highlight today
-                        format(today, 'dd/MM') === day.dateStr && "bg-primary/5"
-                    )}>
-                        <span className="text-sm font-bold text-foreground">{day.name}</span>
-                        <span className="text-xs text-muted-foreground font-medium bg-secondary/50 px-2 py-0.5 rounded-full mt-1">
-                            {day.dateStr}
-                        </span>
-                    </div>
-                ))}
-            </div>
-
-            {/* Grid Body */}
-            <div className="divide-y divide-border">
-                {sortedSlots.map((slot) => (
-                    <div key={slot._id} className="grid grid-cols-8 divide-x divide-border min-h-[120px]">
-                        {/* Time Column */}
-                        <div className="p-3 flex flex-col justify-center items-center text-xs text-muted-foreground font-medium bg-muted/5">
-                            <span className="text-sm font-bold text-foreground/80">{slot.start_time}</span>
-                            <div className="h-6 w-px bg-border my-1"></div>
-                            <span className="text-sm font-bold text-muted-foreground">{slot.end_time}</span>
-                        </div>
-
-                        {/* Days Columns */}
-                        {weekDays.map((day) => {
-                            const entry = schedule[day.dayIndex]?.[slot._id];
+        <div className="w-full overflow-x-auto rounded-lg border border-border bg-card shadow-sm">
+            <table className="w-full divide-y divide-border">
+                <thead className="bg-muted/40 divide-x divide-border">
+                    <tr>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground w-40">
+                            Time / Day
+                        </th>
+                        {DAYS.map((day, idx) => {
+                            const date = addDays(startOfCurrentWeek, idx);
+                            const dateStr = format(date, 'dd/MM');
+                            const isToday = format(today, 'dd/MM') === dateStr;
                             
-                            // If no entry, render empty cell
-                            if (!entry) return <div key={day.dayIndex} className="bg-card/20 hover:bg-muted/10 transition-colors" />;
-
-                            const subjectName = entry.teacher_subject_id?.subject_id?.name || 'Subject';
-                            const bgColor = getSubjectColor(subjectName);
-                            const borderColor = getBorderColor(subjectName);
-
                             return (
-                                <div key={day.dayIndex} className="p-1 relative group bg-card/20">
-                                    <div 
-                                        className="h-full w-full rounded-lg p-2.5 text-xs flex flex-col gap-1.5 border hover:shadow-md transition-all duration-200 cursor-pointer"
-                                        style={{ 
-                                            backgroundColor: bgColor,
-                                            borderColor: borderColor
-                                        }}
-                                    >
-                                        <div className="font-bold text-foreground text-sm leading-tight line-clamp-2" title={subjectName}>
-                                            {subjectName}
-                                        </div>
-                                        
-                                        <div className="mt-auto space-y-1">
-                                            {/* Role Based Details */}
-                                            {role === 'STUDENT' ? (
-                                                <div className="flex items-center gap-1.5 opacity-80 text-foreground/90">
-                                                    <span className="text-[10px] w-4 h-4 rounded-full bg-white/50 flex items-center justify-center">👨‍🏫</span>
-                                                    <span className="truncate font-medium">
-                                                        {entry.teacher_subject_id?.teacher_id?.full_name?.split(' ')[0] || 'Teacher'}
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                 <div className="flex items-center gap-1.5 opacity-80 text-foreground/90">
-                                                    <span className="text-[10px] w-4 h-4 rounded-full bg-white/50 flex items-center justify-center">🎓</span>
-                                                    <span className="truncate font-medium">
-                                                        {entry.class_id?.name || entry.teacher_subject_id?.class_id?.name} {entry.class_id?.division || entry.teacher_subject_id?.class_id?.division}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            
-                                            <div className="flex items-center justify-between pt-1 border-t border-black/5 mt-1">
-                                                <span className="font-semibold text-[10px] uppercase tracking-wider opacity-70 bg-white/40 px-1.5 py-0.5 rounded">{entry.room_label}</span>
-                                                <span className="font-semibold text-[10px] opacity-70">{entry.session_type}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <th 
+                                    key={day} 
+                                    className={cn(
+                                        "px-4 py-4 text-center text-sm font-semibold divide-x divide-border",
+                                        "border-l border-border",
+                                        isToday && "bg-primary/10"
+                                    )}
+                                >
+                                    <div className="text-foreground">{DAY_SHORT[idx]}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">{day}</div>
+                                    <div className="text-xs font-bold text-primary mt-1">{dateStr}</div>
+                                </th>
                             );
                         })}
-                    </div>
-                ))}
-            </div>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                    {sortedSlots.map((slot) => (
+                        <tr key={slot._id} className="divide-x divide-border hover:bg-muted/20 transition-colors">
+                            <td className="px-6 py-4 bg-muted/5 text-sm font-semibold text-foreground whitespace-nowrap min-w-40">
+                                <div className="flex flex-col gap-1">
+                                    <span className="font-bold">{slot.slot_name}</span>
+                                    <span className="text-xs text-muted-foreground">{slot.start_time} - {slot.end_time}</span>
+                                </div>
+                            </td>
+                            {DAYS.map((day, idx) => {
+                                const dayNum = idx + 1; // 1=Mon, 7=Sun
+                                const entry = schedule[dayNum]?.[slot._id];
+                                const date = addDays(startOfCurrentWeek, idx);
+                                const dateStr = format(date, 'dd/MM');
+                                const isToday = format(today, 'dd/MM') === dateStr;
+
+                                if (!entry) {
+                                    return (
+                                        <td 
+                                            key={`${day}-empty`} 
+                                            className={cn(
+                                                "px-2 py-3 h-32 align-top border-l border-border",
+                                                isToday && "bg-primary/5"
+                                            )}
+                                        />
+                                    );
+                                }
+
+                                const subjectName = entry.teacher_subject_id?.subject_id?.name || 
+                                    (role === 'TEACHER' ? entry.teacher_subject_id?.subject_id?.name : 'Subject');
+                                const subjectCode = entry.teacher_subject_id?.subject_id?.code || '';
+                                
+                                const teacherName = entry.teacher_subject_id?.teacher_id?.full_name || 'Teacher';
+                                const className = entry.teacher_subject_id?.class_id?.name || entry.class_id?.name || 'Class';
+                                const division = entry.teacher_subject_id?.class_id?.division || entry.class_id?.division || '';
+                                
+                                const bgClass = getColorClass(entry.session_type);
+
+                                return (
+                                    <td 
+                                        key={`${day}-${slot._id}`} 
+                                        className={cn(
+                                            "px-2 py-3 h-32 align-top border-l border-border",
+                                            isToday && "bg-primary/5"
+                                        )}
+                                    >
+                                        <div 
+                                            className={cn(
+                                                "h-full w-full rounded-xl p-3 shadow-sm hover:shadow-md transition-all duration-200 border border-white/20 relative overflow-hidden flex flex-col justify-between group bg-linear-to-br text-white",
+                                                bgClass
+                                            )}
+                                        >
+                                            <div className="relative z-10">
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <h3 className="font-bold text-sm leading-tight line-clamp-2" title={subjectName}>
+                                                        {subjectName}
+                                                    </h3>
+                                                </div>
+                                                {subjectCode && (
+                                                    <div className="text-[10px] text-white/80 font-medium mt-0.5 tracking-wide">
+                                                        {subjectCode}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="relative z-10 mt-auto space-y-1.5 pt-2">
+                                                <div className="flex items-center gap-1.5 text-xs font-medium text-white/90">
+                                                    {role === 'STUDENT' ? (
+                                                        <>
+                                                            <User className="h-3 w-3 opacity-75 shrink-0" />
+                                                            <span className="truncate">{teacherName.split(' ')[0]}</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <GraduationCap className="h-3 w-3 opacity-75 shrink-0" />
+                                                            <span className="truncate">{className} {division}</span>
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center gap-1.5 text-xs font-medium text-white/90">
+                                                    <MapPin className="h-3 w-3 opacity-75 shrink-0" />
+                                                    <span className="truncate">{entry.room_label}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="absolute bottom-2 right-2 z-10">
+                                                <span className="text-[9px] font-bold uppercase tracking-wider bg-white/20 px-1.5 py-0.5 rounded-sm backdrop-blur-sm border border-white/10 text-white/90">
+                                                    {entry.session_type?.substring(0, 3)}
+                                                </span>
+                                            </div>
+
+                                            <div className="absolute -right-4 -top-4 w-16 h-16 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-300" />
+                                            <div className="absolute -left-4 -bottom-4 w-12 h-12 bg-black/5 rounded-full blur-xl" />
+                                        </div>
+                                    </td>
+                                );
+                            })}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };

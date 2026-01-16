@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import TimetableGrid from '../../components/TimetableGrid';
 import { StudentSidebar } from '../../components/student/StudentSidebar';
 import { StudentContext } from '../../context/StudentContext';
+import { format, startOfWeek } from 'date-fns';
 
 const StudentTimetable = () => {
     const { student } = useContext(StudentContext);
@@ -60,32 +61,38 @@ const StudentTimetable = () => {
         }
     };
 
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekInfo = `${format(weekStart, 'dd MMM')} - ${format(new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000), 'dd MMM yyyy')}`;
+
     return (
         <div className="flex min-h-screen w-full">
             <StudentSidebar />
             <main className="flex-1 min-h-screen w-full ml-64 bg-background">
-                <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
-                    <div className="flex flex-col justify-center">
-                        <h1 className="text-lg font-semibold">Class Timetable</h1>
-                        <p className="text-xs text-muted-foreground">Week of {new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long' })}</p>
+                <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+                    <div className="px-6 py-4">
+                        <h1 className="text-2xl font-bold text-foreground">My Class Timetable</h1>
+                        <p className="text-sm text-muted-foreground mt-1">Week of {weekInfo}</p>
                     </div>
                 </header>
-                <div className="p-8">
+                <div className="p-6">
                     {loading ? (
-                        <div className="flex items-center justify-center p-12">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <div className="flex items-center justify-center p-16">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary"></div>
+                                <p className="text-muted-foreground text-sm">Loading timetable...</p>
+                            </div>
                         </div>
                     ) : entries.length > 0 ? (
-                        <div className="bg-card rounded-xl border shadow-sm p-1 overflow-hidden">
-                             <TimetableGrid slots={slots} entries={entries} role="STUDENT" />
-                        </div>
+                        <TimetableGrid slots={slots} entries={entries} role="STUDENT" />
                     ) : (
-                        <div className="flex flex-col items-center justify-center p-16 bg-card rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
-                             <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
-                                <span className="text-2xl">📅</span>
+                        <div className="flex flex-col items-center justify-center p-12 bg-card rounded-lg border border-dashed">
+                             <div className="mb-4">
+                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                                    <span className="text-3xl">📅</span>
+                                </div>
                              </div>
-                             <h3 className="text-lg font-medium text-foreground">No Classes Scheduled</h3>
-                             <p className="text-muted-foreground mt-1">Your timetable is currently empty.</p>
+                             <h3 className="text-lg font-semibold text-foreground">No Classes Scheduled</h3>
+                             <p className="text-muted-foreground mt-2 text-center max-w-sm">Your timetable is currently empty. Check back later or contact your administrator.</p>
                         </div>
                     )}
                 </div>
