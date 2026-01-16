@@ -12,13 +12,16 @@ import {
     FaChalkboardTeacher, 
     FaCalendarAlt,
     FaEnvelope,
-    FaImage
+    FaImage,
+    FaQrcode,
+    FaTimes
 } from 'react-icons/fa';
 
 const Profile = () => {
     const { student } = useContext(StudentContext);
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showQRModal, setShowQRModal] = useState(false);
 
     useEffect(() => {
         fetchProfile();
@@ -97,6 +100,73 @@ const Profile = () => {
                 <p className="text-base font-semibold text-foreground truncate">{value || 'N/A'}</p>
             </div>
         </div>
+    );
+
+    // QR Code Modal Component
+    const QRModal = () => (
+        <>
+            {/* Backdrop */}
+            <div 
+                className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+                    showQRModal ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+                onClick={() => setShowQRModal(false)}
+            />
+            
+            {/* Modal */}
+            <div 
+                className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${
+                    showQRModal ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+            >
+                <div
+                    className={`relative bg-background border-2 border-primary rounded-2xl shadow-2xl transform transition-all duration-300 ${
+                        showQRModal ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'
+                    }`}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Close Button */}
+                    <button
+                        onClick={() => setShowQRModal(false)}
+                        className="absolute -top-4 -right-4 h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:bg-primary/90 transition-all duration-200 hover:scale-110 z-10"
+                    >
+                        <FaTimes className="h-5 w-5" />
+                    </button>
+
+                    {/* Content */}
+                    <div className="p-8">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                                Student ID Card
+                            </div>
+                            
+                            {profileData?.id_qr_url ? (
+                                <div className="relative group">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <img 
+                                        src={profileData.id_qr_url} 
+                                        alt="Student QR Code"
+                                        className="relative w-80 h-80 object-contain p-4 rounded-xl bg-white"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="w-80 h-80 flex items-center justify-center bg-muted rounded-xl">
+                                    <div className="text-center">
+                                        <FaQrcode className="h-16 w-16 text-muted-foreground mx-auto mb-2" />
+                                        <p className="text-muted-foreground">QR Code not available</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="text-center mt-4">
+                                <p className="text-lg font-semibold">{profileData?.full_name}</p>
+                                <p className="text-sm text-muted-foreground">Roll No: {profileData?.roll_no}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
     );
 
     if (loading) {
@@ -246,6 +316,32 @@ const Profile = () => {
                         </CardContent>
                     </Card>
 
+                    {/* QR Code Section */}
+                    {profileData?.id_qr_url && (
+                        <Card className="mb-6 animate-in fade-in-50 duration-1000">
+                            <CardContent className="p-6">
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                    <div className="h-1 w-1 rounded-full bg-primary"></div>
+                                    Student ID
+                                </h3>
+                                <Separator className="mb-4" />
+                                <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all duration-300">
+                                    <div>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">Digital ID Card</p>
+                                        <p className="text-base font-semibold text-foreground">Click the icon to view your QR code</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowQRModal(true)}
+                                        className="group relative h-16 w-16 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 ml-4"
+                                    >
+                                        <FaQrcode className="h-8 w-8 text-primary-foreground transition-transform duration-300 group-hover:scale-110" />
+                                        <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse" />
+                                    </button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Info Note */}
                     <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-4 animate-in fade-in-50 duration-1000">
                         <div className="flex gap-3">
@@ -265,6 +361,9 @@ const Profile = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* QR Modal */}
+                <QRModal />
             </main>
         </div>
     );
