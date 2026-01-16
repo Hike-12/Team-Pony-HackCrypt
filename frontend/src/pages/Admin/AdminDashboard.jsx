@@ -6,50 +6,6 @@ import FileUploadDialog from '@/components/admin/FileUploadDialog';
 import AddEntryDialog from '@/components/admin/AddEntryDialog';
 import { Calendar, Upload, Plus, Settings } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Users, GraduationCap, BookOpen, Calendar, Bell, TrendingUp, Activity, Shield } from 'lucide-react'
-
-// Stat Card Component
-const StatCard = ({ title, value, description, icon: Icon, color, trend }) => (
-  <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      <Icon className={`h-5 w-5 ${color}`} />
-    </CardHeader>
-    <CardContent>
-      <div className="text-3xl font-bold">
-        {value}
-      </div>
-      {description && (
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
-      )}
-      {trend && (
-        <div className="flex items-center gap-1 mt-2">
-          <TrendingUp className="h-3 w-3 text-green-500" />
-          <span className="text-xs text-green-500 font-medium">{trend}</span>
-        </div>
-      )}
-    </CardContent>
-  </Card>
-)
-
-// Quick Action Card
-const QuickActionCard = ({ title, description, icon: Icon, color }) => (
-  <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-    <CardContent className="pt-6">
-      <div className="flex items-start gap-4">
-        <div className={`p-3 rounded-lg ${color} bg-opacity-10 group-hover:scale-110 transition-transform`}>
-          <Icon className={`h-6 w-6 ${color}`} />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-semibold mb-1">{title}</h3>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-)
 
 const AdminDashboard = () => {
   const [view, setView] = useState('week'); // week, month, day
@@ -235,40 +191,75 @@ const AdminDashboard = () => {
               </select>
             </div>
 
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest system events and updates</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { action: 'New attendance session created', user: 'Prof. Smith', time: '5 minutes ago', type: 'success' },
-                    { action: 'Student enrollment approved', user: 'Admin Team', time: '15 minutes ago', type: 'info' },
-                    { action: 'Attendance report generated', user: 'System', time: '1 hour ago', type: 'success' },
-                    { action: 'Edit request pending review', user: 'John Doe', time: '2 hours ago', type: 'warning' },
-                  ].map((activity, index) => (
-                    <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
-                      <div className={`h-2 w-2 rounded-full mt-2 ${
-                        activity.type === 'success' ? 'bg-green-500' :
-                        activity.type === 'warning' ? 'bg-yellow-500' :
-                        'bg-blue-500'
-                      }`} />
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{activity.action}</p>
-                        <p className="text-xs text-muted-foreground">{activity.user} • {activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={view === 'day' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setView('day')}
+              >
+                Day
+              </Button>
+              <Button
+                variant={view === 'week' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setView('week')}
+              >
+                Week
+              </Button>
+              <Button
+                variant={view === 'month' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setView('month')}
+              >
+                Month
+              </Button>
+            </div>
           </div>
-        </div>
-      </main>
-    </SidebarProvider>
-  )
-}
+        </Card>
+
+        {/* Timetable Calendar */}
+        {selectedClass && (
+          <TimetableCalendar
+            view={view}
+            classData={selectedClassData}
+            slots={slots}
+            entries={entries}
+            loading={loading}
+            onEntryUpdate={handleEntryUpdate}
+            onEntryDelete={handleEntryDelete}
+          />
+        )}
+
+        {!selectedClass && (
+          <Card className="p-12 text-center">
+            <Calendar className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              No Class Selected
+            </h3>
+            <p className="text-muted-foreground">
+              Please select a class to view its timetable
+            </p>
+          </Card>
+        )}
+      </div>
+
+      {/* Dialogs */}
+      <FileUploadDialog
+        open={showUploadDialog}
+        onClose={() => setShowUploadDialog(false)}
+        onSuccess={handleFileUploadSuccess}
+        selectedClass={selectedClass}
+      />
+
+      <AddEntryDialog
+        open={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        onSuccess={handleEntryAdded}
+        selectedClass={selectedClass}
+        slots={slots}
+      />
+    </div>
+  );
+};
 
 export default AdminDashboard;
