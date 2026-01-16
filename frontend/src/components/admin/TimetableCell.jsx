@@ -25,7 +25,7 @@ const TimetableCell = ({ id, entry, onEdit, onDelete }) => {
     return (
       <div
         ref={setDroppableRef}
-        className={`min-h-[100px] bg-card p-2 border-t border-border transition-colors ${
+        className={`min-h-25 bg-card p-2 border-t border-border transition-colors ${
           isOver ? 'bg-accent/20 border-accent' : ''
         }`}
       >
@@ -37,11 +37,11 @@ const TimetableCell = ({ id, entry, onEdit, onDelete }) => {
   }
 
   return (
-    <div ref={setDroppableRef} className="min-h-[100px] bg-card p-2 border-t border-border">
+    <div ref={setDroppableRef} className="min-h-25 bg-card p-2 border-t border-border">
       <div
         ref={setDraggableRef}
         style={style}
-        className={`h-full bg-gradient-to-br ${getColorClass(entry.session_type)} rounded-lg p-3 shadow-sm transition-all hover:shadow-md cursor-move group relative ${
+        className={`h-full bg-linear-to-br ${getColorClass(entry.session_type)} rounded-lg p-3 shadow-sm transition-all hover:shadow-md cursor-move group relative ${
           isDragging ? 'opacity-50' : ''
         }`}
       >
@@ -63,7 +63,7 @@ const TimetableCell = ({ id, entry, onEdit, onDelete }) => {
           
           <div className="mt-1 space-y-0.5">
             <div className="flex items-center gap-1 text-xs text-white/80">
-              <User className="w-3 h-3 flex-shrink-0" />
+              <User className="w-3 h-3 shrink-0" />
               <span className="truncate">
                 {entry.teacher_subject_id?.teacher_id?.full_name}
               </span>
@@ -71,7 +71,7 @@ const TimetableCell = ({ id, entry, onEdit, onDelete }) => {
             
             {entry.room_label && (
               <div className="flex items-center gap-1 text-xs text-white/80">
-                <MapPin className="w-3 h-3 flex-shrink-0" />
+                <MapPin className="w-3 h-3 shrink-0" />
                 <span>{entry.room_label}</span>
               </div>
             )}

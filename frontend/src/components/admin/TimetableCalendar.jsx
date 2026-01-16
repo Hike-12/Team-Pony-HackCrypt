@@ -85,7 +85,7 @@ const TimetableCalendar = ({
   const renderWeekView = () => {
     return (
       <div className="overflow-x-auto">
-        <div className="min-w-[800px]">
+        <div className="min-w-200">
           {/* Header with days */}
           <div className="grid grid-cols-8 gap-px bg-border rounded-t-lg overflow-hidden">
             <div className="bg-card p-4 font-semibold text-foreground">
@@ -191,7 +191,7 @@ const TimetableCalendar = ({
             return (
               <Card key={slot._id} className="p-4">
                 <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-24">
+                  <div className="shrink-0 w-24">
                     <div className="text-sm font-medium text-foreground">
                       {slot.slot_name}
                     </div>
@@ -298,7 +298,7 @@ const TimetableCalendar = ({
             const dayEntries = entries.filter(e => e.day_of_week === dayOfWeek);
             
             return (
-              <Card key={idx} className="min-h-[120px] p-2">
+              <Card key={idx} className="min-h-30 p-2">
                 <div className="text-sm font-medium text-muted-foreground mb-2">
                   {format(date, 'd')}
                 </div>

@@ -5,11 +5,13 @@ import TimetableCalendar from '@/components/admin/TimetableCalendar';
 import FileUploadDialog from '@/components/admin/FileUploadDialog';
 import AddEntryDialog from '@/components/admin/AddEntryDialog';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { Calendar, Upload, Plus, Settings } from 'lucide-react';
+import { useSidebarState } from '@/hooks/useSidebarState';
+import { Calendar, Upload, Plus } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const AdminDashboard = () => {
-  const [view, setView] = useState('week'); // week, month, day
+  const [view, setView] = useState('week');
   const [selectedClass, setSelectedClass] = useState(null);
   const [classes, setClasses] = useState([]);
   const [slots, setSlots] = useState([]);
@@ -17,6 +19,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  
+  const isExpanded = useSidebarState();
 
   useEffect(() => {
     fetchInitialData();
@@ -141,128 +145,133 @@ const AdminDashboard = () => {
   const selectedClassData = classes.find(c => c._id === selectedClass);
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex w-full">
       <AdminSidebar />
       <Toaster position="top-right" richColors />
       
-      <div className="flex-1 ml-64 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Timetable Management</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage class schedules, slots, and entries
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowUploadDialog(true)}
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setShowAddDialog(true)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Entry
-            </Button>
-          </div>
-        </div>
-
-        {/* Class Selector & View Controls */}
-        <Card className="p-4">
+      <main className={cn(
+        "flex-1 p-6 transition-all duration-300",
+        isExpanded ? "ml-64" : "ml-20"
+      )}>
+        <div className={cn(
+          "mx-auto space-y-6 transition-all duration-300",
+          isExpanded ? "max-w-7xl" : "max-w-full"
+        )}>
+          {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <label className="text-sm font-medium text-foreground">
-                Select Class:
-              </label>
-              <select
-                value={selectedClass || ''}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                {classes.map((cls) => (
-                  <option key={cls._id} value={cls._id}>
-                    {cls.name} - {cls.division} (Batch {cls.batch_year})
-                  </option>
-                ))}
-              </select>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Timetable Management</h1>
+              <p className="text-muted-foreground mt-1">
+                Manage class schedules, slots, and entries
+              </p>
             </div>
-
             <div className="flex items-center gap-2">
               <Button
-                variant={view === 'day' ? 'default' : 'outline'}
+                variant="outline"
                 size="sm"
-                onClick={() => setView('day')}
+                onClick={() => setShowUploadDialog(true)}
               >
-                Day
+                <Upload className="w-4 h-4 mr-2" />
+                Import
               </Button>
               <Button
-                variant={view === 'week' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setView('week')}
+                onClick={() => setShowAddDialog(true)}
               >
-                Week
-              </Button>
-              <Button
-                variant={view === 'month' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setView('month')}
-              >
-                Month
+                <Plus className="w-4 h-4 mr-2" />
+                Add Entry
               </Button>
             </div>
           </div>
-        </Card>
 
-        {/* Timetable Calendar */}
-        {selectedClass && (
-          <TimetableCalendar
-            view={view}
-            classData={selectedClassData}
-            slots={slots}
-            entries={entries}
-            loading={loading}
-            onEntryUpdate={handleEntryUpdate}
-            onEntryDelete={handleEntryDelete}
-          />
-        )}
+          {/* Class Selector & View Controls */}
+          <Card className="p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <label className="text-sm font-medium text-foreground">
+                  Select Class:
+                </label>
+                <select
+                  value={selectedClass || ''}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                  className="px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {classes.map((cls) => (
+                    <option key={cls._id} value={cls._id}>
+                      {cls.name} - {cls.division} (Batch {cls.batch_year})
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        {!selectedClass && (
-          <Card className="p-12 text-center">
-            <Calendar className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">
-              No Class Selected
-            </h3>
-            <p className="text-muted-foreground">
-              Please select a class to view its timetable
-            </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={view === 'day' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setView('day')}
+                >
+                  Day
+                </Button>
+                <Button
+                  variant={view === 'week' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setView('week')}
+                >
+                  Week
+                </Button>
+                <Button
+                  variant={view === 'month' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setView('month')}
+                >
+                  Month
+                </Button>
+              </div>
+            </div>
           </Card>
-        )}
-      </div>
 
-      {/* Dialogs */}
-      <FileUploadDialog
-        open={showUploadDialog}
-        onClose={() => setShowUploadDialog(false)}
-        onSuccess={handleFileUploadSuccess}
-        selectedClass={selectedClass}
-      />
+          {/* Timetable Calendar */}
+          {selectedClass && (
+            <TimetableCalendar
+              view={view}
+              classData={selectedClassData}
+              slots={slots}
+              entries={entries}
+              loading={loading}
+              onEntryUpdate={handleEntryUpdate}
+              onEntryDelete={handleEntryDelete}
+            />
+          )}
 
-      <AddEntryDialog
-        open={showAddDialog}
-        onClose={() => setShowAddDialog(false)}
-        onSuccess={handleEntryAdded}
-        selectedClass={selectedClass}
-        slots={slots}
-      />
-      </div>
-      
+          {!selectedClass && (
+            <Card className="p-12 text-center">
+              <Calendar className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                No Class Selected
+              </h3>
+              <p className="text-muted-foreground">
+                Please select a class to view its timetable
+              </p>
+            </Card>
+          )}
+        </div>
+
+        {/* Dialogs */}
+        <FileUploadDialog
+          open={showUploadDialog}
+          onOpenChange={setShowUploadDialog}
+          onSuccess={handleFileUploadSuccess}
+          selectedClass={selectedClass}
+        />
+
+        <AddEntryDialog
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+          onSuccess={handleEntryAdded}
+          selectedClass={selectedClass}
+          slots={slots}
+        />
+      </main>
     </div>
   );
 };

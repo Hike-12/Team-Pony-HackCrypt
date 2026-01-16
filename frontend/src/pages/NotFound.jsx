@@ -21,7 +21,7 @@ const NotFound = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col">
+    <div className="relative min-h-screen w-full flex flex-col">
       <div className="fixed inset-0 -z-10 pointer-events-none">
         <PixelBlast
           variant="square"
@@ -36,9 +36,9 @@ const NotFound = () => {
         />
       </div>
       
-      {/* <Navbar /> */}
+      <Navbar />
       
-      <main className="flex-1 flex items-center justify-center px-6 py-20">
+      <main className="flex-1 flex items-center justify-center px-6 py-20 w-full">
         <div className="w-full max-w-5xl mx-auto">
           <div className="text-center space-y-8">
             {/* Large 404 Display */}
@@ -61,7 +61,7 @@ const NotFound = () => {
 
             {/* Decorative Element */}
             <div className="py-8">
-              <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+              <div className="h-px bg-linear-to-r from-transparent via-border to-transparent" />
             </div>
 
             {/* Error Details */}
@@ -121,9 +121,10 @@ const NotFound = () => {
           </div>
         </div>
       </main>
-
+      
+      <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default NotFound
+export default NotFound;

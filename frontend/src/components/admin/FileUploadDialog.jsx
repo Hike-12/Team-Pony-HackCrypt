@@ -194,7 +194,7 @@ const FileUploadDialog = ({ open, onClose, onSuccess, selectedClass }) => {
 
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                 <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                   <div className="text-sm text-foreground">
                     <p className="font-medium mb-1">AI-Powered Parsing</p>
                     <p className="text-muted-foreground">
@@ -240,7 +240,7 @@ const FileUploadDialog = ({ open, onClose, onSuccess, selectedClass }) => {
             <>
               <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
                 <div className="flex gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
                   <div className="text-sm text-foreground">
                     <p className="font-medium mb-1">File Parsed Successfully</p>
                     <p className="text-muted-foreground">
@@ -274,7 +274,7 @@ const FileUploadDialog = ({ open, onClose, onSuccess, selectedClass }) => {
                   <h3 className="font-semibold text-foreground mb-3">
                     Timetable Entries ({parsedData.entries.length})
                   </h3>
-                  <div className="max-h-[300px] overflow-y-auto space-y-2">
+                  <div className="max-h-75 overflow-y-auto space-y-2">
                     {parsedData.entries.map((entry, idx) => (
                       <div key={idx} className="p-3 bg-muted rounded-lg text-sm">
                         <div className="flex items-start justify-between gap-2">

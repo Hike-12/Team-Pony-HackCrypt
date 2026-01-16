@@ -2,7 +2,7 @@ import { Home, Users, Calendar, FileText, Settings, LogOut, User, Moon, Sun, Boo
 import { useTheme } from "@/context/ThemeContext"
 import { cn } from "@/lib/utils"
 import { useLocation, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 // Menu items.
 const items = [
@@ -27,7 +27,20 @@ export function AdminSidebar() {
   const { theme, setTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(true);
+  
+  // Initialize from localStorage
+  const [isExpanded, setIsExpanded] = useState(() => {
+    const stored = localStorage.getItem('sidebar-expanded');
+    return stored !== null ? stored === 'true' : true;
+  });
+
+  // Persist to localStorage and dispatch event when state changes
+  useEffect(() => {
+    localStorage.setItem('sidebar-expanded', isExpanded.toString());
+    window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
+      detail: { isExpanded } 
+    }));
+  }, [isExpanded]);
 
   const isActive = (url) => {
     return location.pathname === url;
@@ -49,7 +62,7 @@ export function AdminSidebar() {
 
   return (
     <div className={cn(
-      "fixed left-0 top-0 h-screen transition-all duration-300 ease-in-out",
+      "fixed left-0 top-0 h-screen transition-all duration-300 ease-in-out z-50",
       "bg-card border-r border-border flex flex-col",
       isExpanded ? "w-64" : "w-20"
     )}>
@@ -59,7 +72,7 @@ export function AdminSidebar() {
           "flex items-center gap-2 text-primary transition-opacity duration-200",
           isExpanded ? "opacity-100" : "opacity-0 w-0"
         )}>
-          <Shield className="h-6 w-6 flex-shrink-0" />
+          <Shield className="h-6 w-6 shrink-0" />
           <span className="text-lg font-bold whitespace-nowrap">Admin</span>
         </div>
         <button
@@ -84,7 +97,7 @@ export function AdminSidebar() {
             )}
             title={!isExpanded ? item.title : ""}
           >
-            <item.icon className="h-5 w-5 flex-shrink-0" />
+            <item.icon className="h-5 w-5 shrink-0" />
             <span className={cn(
               "font-medium transition-opacity duration-200",
               isExpanded ? "opacity-100" : "opacity-0 w-0"
@@ -105,9 +118,9 @@ export function AdminSidebar() {
           title={!isExpanded ? "Toggle Theme" : ""}
         >
           {theme === "dark" ? (
-            <Sun className="h-5 w-5 flex-shrink-0" />
+            <Sun className="h-5 w-5 shrink-0" />
           ) : (
-            <Moon className="h-5 w-5 flex-shrink-0" />
+            <Moon className="h-5 w-5 shrink-0" />
           )}
           <span className={cn(
             "font-medium transition-opacity duration-200",
@@ -123,7 +136,7 @@ export function AdminSidebar() {
           )}
           title={!isExpanded ? "Logout" : ""}
         >
-          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <LogOut className="h-5 w-5 shrink-0" />
           <span className={cn(
             "font-medium transition-opacity duration-200",
             isExpanded ? "opacity-100" : "opacity-0 w-0"

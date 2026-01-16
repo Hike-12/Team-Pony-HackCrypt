@@ -6,7 +6,7 @@ const TeacherDashboard = () => {
     <div className="flex min-h-screen">
       <TeacherSidebar />
       <main className="flex-1 ml-64 min-h-screen bg-background">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
           <h1 className="text-lg font-semibold">Teacher Dashboard</h1>
         </header>
         <div className="p-4">
