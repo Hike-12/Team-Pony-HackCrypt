@@ -31,8 +31,12 @@ const App = () => {
                 <Route path="/" element={<Landing />} />
 
                 <Route path="/student/login" element={<StudentAuth />} />
-                <Route element={<StudentProtectedRoute />}>
+                <Route
+                //  element={<StudentProtectedRoute />}
+                 >
                   <Route path="/student/dashboard" element={<StudentDashboard />} />
+                  <Route path="/student/leave/apply" element={<LeaveApplication />} />
+                  <Route path="/student/leave/history" element={<LeaveHistory />} />
                 </Route>
                 
                 <Route path="/teacher/login" element={<TeacherAuth />} />
