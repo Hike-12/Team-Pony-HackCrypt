@@ -3,6 +3,8 @@ const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const cloudinary = require('../../config/cloudinary');
+const QRCode = require('qrcode');
+const StudentBiometric = require('../../models/StudentBiometric');
 
 // Configure multer to use memory storage
 const storage = multer.memoryStorage();
@@ -24,24 +26,33 @@ exports.getAllStudents = async (req, res) => {
     const students = await Student.find()
       .populate('user_id', 'email is_active')
       .populate('class_id', 'name division batch_year');
+
+      const biometrics = await StudentBiometric.find({});
     
     // Transform to include email in response
-    const studentsWithDetails = students.map(s => ({
-      _id: s._id,
-      user_id: s.user_id?._id,
-      roll_no: s.roll_no,
-      full_name: s.full_name,
-      gender: s.gender,
-      phone: s.phone,
-      class_id: s.class_id?._id,
-      class_name: s.class_id ? `${s.class_id.name} ${s.class_id.division}` : 'N/A',
-      email: s.user_id?.email,
-      image_url: s.image_url,
-      is_active: s.user_id?.is_active,
-      created_at: s.created_at
-    }));
+    const studentsWithDetails = students.map(s => {
+      const biometric = biometrics.find(b => b.student_id.toString() === s._id.toString());
+      return {
+        _id: s._id,
+        user_id: s.user_id?._id,
+        roll_no: s.roll_no,
+        full_name: s.full_name,
+        gender: s.gender,
+        phone: s.phone,
+        class_id: s.class_id?._id,
+        class_name: s.class_id ? `${s.class_id.name}` : 'N/A',
+        division: s.class_id?.division || 'N/A',
+        email: s.user_id?.email,
+        image_url: s.image_url,
+        id_qr_url: s.id_qr_url,
+        is_active: s.user_id?.is_active,
+        face_enrolled: biometric?.face_enrolled || false,
+        created_at: s.created_at
+      };
+    });
     res.json(studentsWithDetails);
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -107,6 +118,38 @@ exports.createStudent = async (req, res) => {
       });
       await user.save();
 
+      // Generate QR code data with student information
+      const qrData = JSON.stringify({
+        user_id: user._id.toString(),
+        type: 'student'
+      });
+
+      // Generate QR code as buffer
+      const qrCodeBuffer = await QRCode.toBuffer(qrData, {
+        errorCorrectionLevel: 'H',
+        type: 'png',
+        width: 500,
+        margin: 2
+      });
+
+      // Upload QR code to Cloudinary
+      const qrUploadPromise = new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'student_qr_codes',
+            resource_type: 'image',
+            public_id: `student_${user._id}_qr`
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(qrCodeBuffer);
+      });
+
+      const qrUploadResult = await qrUploadPromise;
+
       // Create the Student linked to the User
       const student = new Student({
         user_id: user._id,
@@ -115,7 +158,8 @@ exports.createStudent = async (req, res) => {
         gender,
         phone,
         class_id,
-        image_url: uploadResult.secure_url
+        image_url: uploadResult.secure_url,
+        id_qr_url: qrUploadResult.secure_url
       });
       await student.save();
 
@@ -134,6 +178,7 @@ exports.createStudent = async (req, res) => {
         class_name: student.class_id ? `${student.class_id.name} ${student.class_id.division}` : 'N/A',
         email: user.email,
         image_url: student.image_url,
+        id_qr_url: student.id_qr_url,
         is_active: user.is_active,
         created_at: student.created_at
       });
@@ -163,6 +208,7 @@ exports.getStudentById = async (req, res) => {
       class_name: student.class_id ? `${student.class_id.name} ${student.class_id.division}` : 'N/A',
       email: student.user_id?.email,
       image_url: student.image_url,
+      id_qr_url: student.id_qr_url,
       is_active: student.user_id?.is_active,
       created_at: student.created_at
     });
@@ -241,6 +287,7 @@ exports.updateStudent = async (req, res) => {
         class_name: updatedStudent.class_id ? `${updatedStudent.class_id.name} ${updatedStudent.class_id.division}` : 'N/A',
         email: updatedStudent.user_id?.email,
         image_url: updatedStudent.image_url,
+        id_qr_url: updatedStudent.id_qr_url,
         is_active: updatedStudent.user_id?.is_active,
         created_at: updatedStudent.created_at
       });

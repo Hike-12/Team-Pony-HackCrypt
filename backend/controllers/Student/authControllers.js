@@ -44,7 +44,7 @@ exports.login = async (req, res) => {
             token, 
             user: { 
                 id: user._id,
-                student_id: student._id,
+                student_id : student._id,
                 role: user.role, 
                 name: student.full_name, 
                 roll_no: student.roll_no,
@@ -84,6 +84,7 @@ exports.getProfile = async (req, res) => {
             gender: student.gender,
             class_name: student.class_id?.name || 'Not assigned',
             image_url: student.image_url,
+            id_qr_url: student.id_qr_url,
             email: user?.email || 'N/A',
             created_at: student.created_at
         };

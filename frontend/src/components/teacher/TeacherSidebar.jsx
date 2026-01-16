@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/teacher/dashboard' },
+  { title: 'Schedule', icon: Calendar, url: '/teacher/schedule' },
   { title: 'Leave Management', icon: FileText, url: '/teacher/leave-management' },
 ]
 
