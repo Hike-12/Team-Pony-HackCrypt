@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
-export function AdminTeacherTable() {
+export const AdminTeacherTable = forwardRef(function AdminTeacherTable(props, ref) {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,12 +26,17 @@ export function AdminTeacherTable() {
     }
   }
 
+  // Expose fetchTeachers to parent via ref
+  useImperativeHandle(ref, () => ({
+    refresh: fetchTeachers
+  }));
+
   useEffect(() => {
     fetchTeachers();
   }, []);
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this teacher?')) return;
+    if (!window.confirm('Delete this teacher? This will also delete their user account.')) return;
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/teachers/${id}`, {
         method: 'DELETE',
@@ -68,6 +73,7 @@ export function AdminTeacherTable() {
             <thead>
               <tr className="bg-muted/50 border-b border-border">
                 <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Full Name</th>
+                <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Email</th>
                 <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Department</th>
                 <th className="px-4 py-3 text-sm font-semibold text-muted-foreground text-right">Actions</th>
               </tr>
@@ -76,6 +82,7 @@ export function AdminTeacherTable() {
               {teachers.map(teacher => (
                 <tr key={teacher._id} className="border-b border-border hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3 text-sm font-medium text-foreground">{teacher.full_name}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{teacher.email || 'N/A'}</td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">{teacher.department || 'N/A'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
@@ -99,7 +106,7 @@ export function AdminTeacherTable() {
               ))}
               {teachers.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-4 py-12 text-center">
+                  <td colSpan={4} className="px-4 py-12 text-center">
                     <p className="text-muted-foreground">No teachers found. Add a teacher to get started.</p>
                   </td>
                 </tr>
@@ -110,4 +117,4 @@ export function AdminTeacherTable() {
       )}
     </motion.section>
   );
-}
+});
