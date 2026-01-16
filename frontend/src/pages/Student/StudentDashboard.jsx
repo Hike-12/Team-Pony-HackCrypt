@@ -127,9 +127,9 @@ const StudentDashboard = () => {
   return (
     <div className="flex min-h-screen w-full">
       <StudentSidebar />
-      <main className="flex-1 min-h-screen w-full ml-64 bg-background">
+      <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-64 ml-0 bg-background pb-20 md:pb-0">
         {/* Header */}
-        <header className="sticky top-0 z-10 flex h-16 mt-1 items-center justify-between border-b bg-background/95 px-8 backdrop-blur-sm supports-backdrop-filter:bg-background/60 shadow-sm">
+        <header className="sticky top-0 z-10 flex h-16 mt-1 items-center justify-between border-b bg-background/95 px-4 md:px-8 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <Activity className="w-5 h-5 text-primary-foreground" />
@@ -147,7 +147,7 @@ const StudentDashboard = () => {
           )}
         </header>
 
-        <div className="p-8 max-w-7xl mx-auto space-y-6">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
           {/* Stats Cards - All Same Height */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
