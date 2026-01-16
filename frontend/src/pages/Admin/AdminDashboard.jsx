@@ -92,21 +92,16 @@ const AdminDashboard = () => {
       <Toaster position="top-right" richColors />
       
       <main className={cn(
-        "flex-1 p-6 transition-all duration-300",
+        "flex-1 min-h-screen bg-background transition-all duration-300",
         isExpanded ? "ml-64" : "ml-20"
       )}>
+        <header className="sticky top-0 z-10 flex h-16 mt-1 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-backdrop-filter:bg-background/60">
+          <h1 className="text-lg font-semibold">Dashboard</h1>
+        </header>
         <div className={cn(
-          "mx-auto space-y-8 transition-all duration-300",
+          "mx-auto space-y-8 p-6 transition-all duration-300",
           isExpanded ? "max-w-7xl" : "max-w-full"
         )}>
-          {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Welcome back! Here's an overview of your system
-            </p>
-          </div>
-
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {statCards.map((stat, index) => {

@@ -4,12 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { StudentContext } from '@/context/StudentContext';
-import { 
-    FaUser, 
-    FaIdCard, 
-    FaPhone, 
-    FaVenusMars, 
-    FaChalkboardTeacher, 
+import {
+    FaUser,
+    FaIdCard,
+    FaPhone,
+    FaVenusMars,
+    FaChalkboardTeacher,
     FaCalendarAlt,
     FaEnvelope,
     FaImage,
@@ -30,7 +30,7 @@ const Profile = () => {
     const fetchProfile = async () => {
         try {
             const studentId = student?.student_id || student?.id;
-            
+
             if (!studentId) {
                 // Use data from context if no backend available
                 setProfileData({
@@ -49,7 +49,7 @@ const Profile = () => {
 
             const response = await fetch(`http://localhost:8000/api/student/auth/profile/${studentId}`);
             const data = await response.json();
-            
+
             if (data.success) {
                 setProfileData(data.data);
             } else {
@@ -106,23 +106,20 @@ const Profile = () => {
     const QRModal = () => (
         <>
             {/* Backdrop */}
-            <div 
-                className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${
-                    showQRModal ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                }`}
+            <div
+                className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${showQRModal ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
                 onClick={() => setShowQRModal(false)}
             />
-            
+
             {/* Modal */}
-            <div 
-                className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${
-                    showQRModal ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                }`}
+            <div
+                className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${showQRModal ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
             >
                 <div
-                    className={`relative bg-background border-2 border-primary rounded-2xl shadow-2xl transform transition-all duration-300 ${
-                        showQRModal ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'
-                    }`}
+                    className={`relative bg-background border-2 border-primary rounded-2xl shadow-2xl transform transition-all duration-300 ${showQRModal ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'
+                        }`}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Close Button */}
@@ -139,12 +136,12 @@ const Profile = () => {
                             <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                                 Student ID Card
                             </div>
-                            
+
                             {profileData?.id_qr_url ? (
                                 <div className="relative group">
                                     <div className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    <img 
-                                        src={profileData.id_qr_url} 
+                                    <img
+                                        src={profileData.id_qr_url}
                                         alt="Student QR Code"
                                         className="relative w-80 h-80 object-contain p-4 rounded-xl bg-white"
                                     />
@@ -188,8 +185,8 @@ const Profile = () => {
     return (
         <div className="flex min-h-screen w-full">
             <StudentSidebar />
-            <main className="flex-1 min-h-screen w-full ml-64 bg-background">
-                <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
+            <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-64 ml-0 bg-background pb-20 md:pb-0">
+                <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 md:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                     <h1 className="text-lg font-semibold">My Profile</h1>
                 </header>
 
@@ -202,8 +199,8 @@ const Profile = () => {
                                 <div className="relative group">
                                     <div className="h-32 w-32 rounded-full border-4 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center transition-all duration-300 group-hover:border-primary/40 group-hover:shadow-lg">
                                         {profileData?.image_url ? (
-                                            <img 
-                                                src={profileData.image_url} 
+                                            <img
+                                                src={profileData.image_url}
                                                 alt={profileData.full_name}
                                                 className="h-full w-full object-cover"
                                             />
@@ -249,27 +246,27 @@ const Profile = () => {
                             </h3>
                             <Separator className="mb-4" />
                             <div className="grid gap-4 md:grid-cols-2">
-                                <ProfileField 
-                                    icon={FaIdCard} 
-                                    label="Roll Number" 
+                                <ProfileField
+                                    icon={FaIdCard}
+                                    label="Roll Number"
                                     value={profileData?.roll_no}
                                     iconColor="text-blue-600 dark:text-blue-400"
                                 />
-                                <ProfileField 
-                                    icon={FaUser} 
-                                    label="Full Name" 
+                                <ProfileField
+                                    icon={FaUser}
+                                    label="Full Name"
                                     value={profileData?.full_name}
                                     iconColor="text-purple-600 dark:text-purple-400"
                                 />
-                                <ProfileField 
-                                    icon={FaVenusMars} 
-                                    label="Gender" 
+                                <ProfileField
+                                    icon={FaVenusMars}
+                                    label="Gender"
                                     value={profileData?.gender ? profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1) : 'N/A'}
                                     iconColor="text-pink-600 dark:text-pink-400"
                                 />
-                                <ProfileField 
-                                    icon={FaPhone} 
-                                    label="Phone Number" 
+                                <ProfileField
+                                    icon={FaPhone}
+                                    label="Phone Number"
                                     value={profileData?.phone || 'Not provided'}
                                     iconColor="text-green-600 dark:text-green-400"
                                 />
@@ -286,28 +283,28 @@ const Profile = () => {
                             </h3>
                             <Separator className="mb-4" />
                             <div className="grid gap-4 md:grid-cols-2">
-                                <ProfileField 
-                                    icon={FaChalkboardTeacher} 
-                                    label="Class" 
+                                <ProfileField
+                                    icon={FaChalkboardTeacher}
+                                    label="Class"
                                     value={profileData?.class_name || 'Not assigned'}
                                     iconColor="text-orange-600 dark:text-orange-400"
                                 />
-                                <ProfileField 
-                                    icon={FaEnvelope} 
-                                    label="Email" 
+                                <ProfileField
+                                    icon={FaEnvelope}
+                                    label="Email"
                                     value={profileData?.email || 'Not provided'}
                                     iconColor="text-red-600 dark:text-red-400"
                                 />
-                                <ProfileField 
-                                    icon={FaCalendarAlt} 
-                                    label="Enrolled Since" 
+                                <ProfileField
+                                    icon={FaCalendarAlt}
+                                    label="Enrolled Since"
                                     value={formatDate(profileData?.created_at)}
                                     iconColor="text-teal-600 dark:text-teal-400"
                                 />
                                 {profileData?.image_url && (
-                                    <ProfileField 
-                                        icon={FaImage} 
-                                        label="Profile Image" 
+                                    <ProfileField
+                                        icon={FaImage}
+                                        label="Profile Image"
                                         value="Available"
                                         iconColor="text-indigo-600 dark:text-indigo-400"
                                     />

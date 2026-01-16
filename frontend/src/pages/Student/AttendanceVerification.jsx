@@ -1,10 +1,12 @@
 import React, { useState, useContext } from 'react';
 import { StudentContext } from '@/context/StudentContext';
+import { StudentSidebar } from '@/components/student/StudentSidebar';
 import { BiometricVerification } from '@/components/student/BiometricVerification';
 import { LocationVerification } from '@/components/student/LocationVerification';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, MapPin, Camera, Fingerprint, CreditCard } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { CheckCircle, MapPin, Camera, Fingerprint, CreditCard, ChevronRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AttendanceVerification() {
   const { student } = useContext(StudentContext);
@@ -17,149 +19,211 @@ export default function AttendanceVerification() {
   });
 
   const steps = [
-    { 
-      id: 1, 
-      name: 'Geofencing', 
+    {
+      id: 1,
+      name: 'Location Check',
       icon: MapPin,
-      description: 'Verify your location'
+      description: 'Geofencing Verification',
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10'
     },
-    { 
-      id: 2, 
-      name: 'Face Recognition', 
+    {
+      id: 2,
+      name: 'Face Match',
       icon: Camera,
-      description: 'Verify your face'
+      description: 'Identity Verification',
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-500/10'
     },
-    { 
-      id: 3, 
-      name: 'ID Card Scan', 
+    {
+      id: 3,
+      name: 'ID Scan',
       icon: CreditCard,
-      description: 'Scan your ID card'
+      description: 'Document Verification',
+      color: 'text-amber-500',
+      bgColor: 'bg-amber-500/10'
     },
-    { 
-      id: 4, 
-      name: 'Biometric', 
+    {
+      id: 4,
+      name: 'Final Approval',
       icon: Fingerprint,
-      description: 'Verify biometric'
+      description: 'Biometric Auth',
+      color: 'text-emerald-500',
+      bgColor: 'bg-emerald-500/10'
     },
   ];
 
   const handleStepSuccess = (step, result) => {
-    setStepResults(prev => ({ ...prev, [step]: result }));
-    
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      // All steps completed - submit attendance
-      submitAttendance();
-    }
+    setTimeout(() => {
+      setStepResults(prev => ({ ...prev, [step]: result }));
+      if (currentStep < 4) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        submitAttendance();
+      }
+    }, 600);
   };
 
   const submitAttendance = async () => {
-    // Submit all verification results to backend
     console.log('Submitting attendance with results:', stepResults);
-    // API call to mark attendance
+    // API call placeholder
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Mark Attendance</CardTitle>
-          <CardDescription>
-            Complete all 4 verification steps to mark your attendance
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Progress Steps */}
-          <div className="flex items-center justify-between mb-8">
-            {steps.map((step, index) => (
-              <React.Fragment key={step.id}>
-                <div className="flex flex-col items-center">
-                  <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-colors",
-                    currentStep > step.id ? "bg-green-500 text-white" :
-                    currentStep === step.id ? "bg-primary text-primary-foreground" :
-                    "bg-muted text-muted-foreground"
-                  )}>
-                    {currentStep > step.id ? (
-                      <CheckCircle className="h-6 w-6" />
-                    ) : (
-                      <step.icon className="h-6 w-6" />
-                    )}
-                  </div>
-                  <span className="text-xs font-medium text-center">{step.name}</span>
+    <div className="flex min-h-screen w-full bg-background font-sans">
+      <StudentSidebar />
+      <main className="flex-1 w-full transition-all duration-300 md:ml-64 ml-0 flex flex-col min-h-screen">
+
+        {/* Header */}
+        <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-foreground">Attendance Verification</h1>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                <span className="flex h-2 w-2 rounded-full bg-green-500" />
+                Secure Environment Active
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 p-6 md:p-12 flex items-center justify-center bg-muted/20">
+          {/* Main Split Card */}
+          <Card className="w-full max-w-5xl overflow-hidden border shadow-xl flex flex-col md:flex-row min-h-[550px] bg-card">
+
+            {/* Left Panel: Progress Information */}
+            <div className="md:w-1/3 bg-muted/30 border-r p-6 md:p-8 flex flex-col justify-between relative">
+              <div className="space-y-6 md:space-y-8">
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight mb-1">Verification Steps</h2>
+                  <p className="text-sm text-muted-foreground">Complete all checks to mark your attendance.</p>
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={cn(
-                    "flex-1 h-1 mx-2 transition-colors",
-                    currentStep > step.id ? "bg-green-500" : "bg-muted"
-                  )} />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
 
-          {/* Step Content */}
-          <div className="space-y-6">
-            {/* Step 1: Geofencing */}
-            {currentStep === 1 && (
-              <LocationVerification
-                classId={student?.class_id}
-                onSuccess={(result) => handleStepSuccess('geofencing', result)}
-                onError={(error) => console.error('Location verification failed:', error)}
-              />
-            )}
+                <div className="space-y-4 relative">
+                  {/* Connecting Line */}
+                  <div className="absolute left-6 top-4 bottom-4 w-px bg-border -z-10 ml-0.5" />
 
-            {/* Step 2: Face Recognition */}
-            {currentStep === 2 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Camera className="h-5 w-5" />
-                    Step 2: Face Recognition
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Your friend's face recognition component */}
-                  <p className="text-muted-foreground">Face recognition component will go here</p>
-                  <button onClick={() => handleStepSuccess('faceRecognition', { verified: true })}>
-                    Simulate Success
-                  </button>
-                </CardContent>
-              </Card>
-            )}
+                  {steps.map((step) => {
+                    const isCompleted = currentStep > step.id;
+                    const isCurrent = currentStep === step.id;
 
-            {/* Step 3: ID Card Scan */}
-            {currentStep === 3 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
-                    Step 3: ID Card Verification
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* ID card scanning component */}
-                  <p className="text-muted-foreground">ID card scanning component will go here</p>
-                  <button onClick={() => handleStepSuccess('idCard', { verified: true })}>
-                    Simulate Success
-                  </button>
-                </CardContent>
-              </Card>
-            )}
+                    return (
+                      <div key={step.id} className={cn("relative flex items-center gap-4 py-1 transition-opacity duration-300",
+                        isCurrent ? "opacity-100" : isCompleted ? "opacity-60" : "opacity-40"
+                      )}>
+                        <div className={cn(
+                          "w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all duration-300 shrink-0 bg-background z-10",
+                          isCompleted ? "border-green-500 text-green-500" :
+                            isCurrent ? cn("border-primary text-primary shadow-lg", step.color) : "border-muted text-muted-foreground"
+                        )}>
+                          {isCompleted ? <CheckCircle className="w-6 h-6" /> : <step.icon className="w-6 h-6" />}
+                        </div>
+                        <div>
+                          <p className={cn("text-sm font-bold", isCurrent ? "text-foreground" : "text-muted-foreground")}>{step.name}</p>
+                          <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/70">{step.description}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
 
-            {/* Step 4: Biometric */}
-            {currentStep === 4 && (
-              <BiometricVerification
-                studentId={student?._id}
-                sessionId="session_123"
-                onSuccess={(result) => handleStepSuccess('biometric', result)}
-                onError={(error) => console.error('Biometric failed:', error)}
-              />
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              {/* Footer Info */}
+              <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground bg-background/50 p-3 rounded-lg border">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Please ensure you are in a well-lit area for facial verification.</span>
+              </div>
+            </div>
+
+            {/* Right Panel: Active Step Content */}
+            <div className="md:w-2/3 p-6 md:p-10 flex flex-col relative bg-background">
+              <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentStep}
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="w-full"
+                  >
+                    {/* Header for Active Step */}
+                    <div className="text-center mb-10">
+                      {(() => {
+                        const StepIcon = steps[currentStep - 1].icon;
+                        return (
+                          <div className={cn("w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 bg-muted animate-pulse-slow", steps[currentStep - 1].bgColor)}>
+                            <StepIcon className={cn("w-8 h-8", steps[currentStep - 1].color)} />
+                          </div>
+                        );
+                      })()}
+                      <h2 className="text-2xl font-bold tracking-tight mb-2">{steps[currentStep - 1].name}</h2>
+                      <p className="text-muted-foreground">{steps[currentStep - 1].description}</p>
+                    </div>
+
+                    {/* Content Renderers */}
+                    <div className="w-full">
+                      {currentStep === 1 && (
+                        <LocationVerification
+                          classId={student?.class_id}
+                          onSuccess={(result) => handleStepSuccess('geofencing', result)}
+                          onError={(error) => console.error('Location verification failed:', error)}
+                        />
+                      )}
+
+                      {currentStep === 2 && (
+                        <div className="space-y-6 text-center">
+                          <div className="relative mx-auto w-64 h-64 bg-black rounded-3xl overflow-hidden shadow-2xl ring-4 ring-zinc-100 dark:ring-zinc-800 flex items-center justify-center group cursor-pointer" onClick={() => handleStepSuccess('faceRecognition', { verified: true })}>
+                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Camera className="w-16 h-16 text-zinc-700 group-hover:text-zinc-500 transition-colors" />
+                            <p className="absolute bottom-6 text-xs text-zinc-500 font-mono">Tap to Simulate</p>
+                          </div>
+                          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                            Position your face within the frame. Ensure good lighting conditions.
+                          </p>
+                        </div>
+                      )}
+
+                      {currentStep === 3 && (
+                        <div className="space-y-6 text-center">
+                          <div className="relative mx-auto w-full max-w-sm h-56 bg-zinc-50 dark:bg-zinc-900 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-4 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => handleStepSuccess('idCard', { verified: true })}>
+                            <div className="w-16 h-10 bg-zinc-200 dark:bg-zinc-800 rounded flex items-center justify-center">
+                              <CreditCard className="w-6 h-6 text-zinc-400" />
+                            </div>
+                            <span className="text-sm font-medium text-muted-foreground">Click to Simulate ID Scan</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                            Place your Student ID card on a flat surface and align it with the guide.
+                          </p>
+                        </div>
+                      )}
+
+                      {currentStep === 4 && (
+                        <BiometricVerification
+                          studentId={student?._id}
+                          sessionId="session_123"
+                          onSuccess={(result) => handleStepSuccess('biometric', result)}
+                          onError={(error) => console.error('Biometric failed:', error)}
+                        />
+                      )}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Step Indicator dots at bottom right */}
+              <div className="absolute bottom-6 right-6 flex gap-1">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className={cn("w-1.5 h-1.5 rounded-full transition-all", i === currentStep ? "bg-primary w-3" : "bg-muted-foreground/30")} />
+                ))}
+              </div>
+            </div>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 }
