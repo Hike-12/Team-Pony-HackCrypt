@@ -8,24 +8,24 @@ export default function AboutSection() {
                 <div className="grid gap-6 sm:grid-cols-2 md:gap-12 lg:gap-24">
                     <div className="relative space-y-4">
                         <p className="text-muted-foreground">
-                            Our advanced system uses <span className="text-accent-foreground font-bold">multi-factor biometric authentication</span> to eliminate proxy attendance and ensure academic integrity.
+                            Our system ensures <span className="text-accent-foreground font-bold">accurate and tamper-resistant</span> attendance tracking using multi-factor verification workflows.
                         </p>
-                        <p className="text-muted-foreground">Combining facial recognition with ID validation, fingerprint authentication, and behavioral verification provides comprehensive protection against spoofing attempts.</p>
+                        <p className="text-muted-foreground">Capable of detecting and preventing proxy attendance, handling variations in lighting and camera quality, and validating identity consistency across multiple factors.</p>
 
                         <div className="grid grid-cols-2 gap-3 pt-6 sm:gap-4">
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
                                     <Zap className="size-4" />
-                                    <h3 className="text-sm font-medium">Real-time Detection</h3>
+                                    <h3 className="text-sm font-medium">Liveness Detection</h3>
                                 </div>
-                                <p className="text-muted-foreground text-sm">Instant liveness detection and body posture analysis using MoveNet prevents fraudulent attempts.</p>
+                                <p className="text-muted-foreground text-sm">Advanced liveness detection prevents spoofing and proxy attendance attempts effectively.</p>
                             </div>
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2">
                                     <Cpu className="size-4" />
                                     <h3 className="text-sm font-medium">Secure Storage</h3>
                                 </div>
-                                <p className="text-muted-foreground text-sm">Attendance records stored with encryption and comprehensive audit trails for compliance.</p>
+                                <p className="text-muted-foreground text-sm">Demonstrates reliability, privacy awareness, and real-world applicability for smart campuses.</p>
                             </div>
                         </div>
                     </div>

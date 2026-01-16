@@ -37,17 +37,16 @@ export default function HeroSection() {
                                     preset="fade-in-blur"
                                     speedSegment={0.3}
                                     as="h1"
-                                    className="mt-8 max-w-2xl text-balance text-5xl font-medium md:text-6xl lg:mt-16">
-                                    Secure Attendance with Biometric Intelligence
+                                    className="mt-8 max-w-4xl text-balance text-5xl font-medium md:text-6xl lg:mt-16">
+                                    Intelligent Student Attendance Verification
                                 </TextEffect>
                                 <TextEffect
-                                    per="line"
                                     preset="fade-in-blur"
                                     speedSegment={0.3}
                                     delay={0.5}
                                     as="p"
                                     className="mt-8 max-w-2xl text-pretty text-lg">
-                                    Multi-factor verification through facial recognition, ID card validation, and fingerprint authentication. Prevent proxy attendance with liveness detection and body posture analysis powered by MoveNet.
+                                    Develop an intelligent attendance management system that ensures accurate and tamper-resistant tracking using multi-factor verification. Support facial recognition, ID card validation, and fingerprint authentication.
                                 </TextEffect>
 
                                 <AnimatedGroup
@@ -117,8 +116,8 @@ export default function HeroSection() {
                             </div>
                         </AnimatedGroup>
                     </div>
-                </section>
-            </main>
+                </section >
+            </main >
         </>
     );
 }
