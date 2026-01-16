@@ -1,40 +1,53 @@
-import React from 'react'
-import { StudentSidebar } from '@/components/student/StudentSidebar'
+import React, { useContext } from 'react';
+import { StudentSidebar } from '@/components/student/StudentSidebar';
+import { useSidebarState } from '@/hooks/useSidebarState';
+import { cn } from '@/lib/utils';
+import { StudentContext } from '@/context/StudentContext';
+import { BiometricEnrollment } from '@/components/student/BiometricEnrollment';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 
 const StudentDashboard = () => {
+  const isExpanded = useSidebarState();
+  const { student } = useContext(StudentContext); 
+  
+  // Debug log
+  console.log('StudentDashboard - student object:', student);
+  console.log('StudentDashboard - student._id:', student?._id);
+
   return (
     <div className="flex min-h-screen w-full">
       <StudentSidebar />
-      <main className="flex-1 min-h-screen w-full ml-64 bg-background">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
-          <h1 className="text-lg font-semibold">Student Dashboard</h1>
+      <main className={cn(
+        "flex-1 min-h-screen bg-background transition-all duration-300",
+        isExpanded ? "ml-64" : "ml-20"
+      )}>
+        <header className="sticky top-0 z-10 flex h-16 mt-1 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-backdrop-filter:bg-background/60">
+          <h1 className="text-lg font-semibold">Dashboard</h1>
         </header>
-        <div className="p-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-4">
-            <div className="p-4 border rounded-lg shadow-sm bg-card text-card-foreground">
-              <h3 className="font-semibold text-sm text-muted-foreground">Attendance Rate</h3>
-              <p className="text-2xl font-bold mt-2 text-chart-1">89%</p>
-            </div>
-            <div className="p-4 border rounded-lg shadow-sm bg-card text-card-foreground">
-              <h3 className="font-semibold text-sm text-muted-foreground">Classes Today</h3>
-              <p className="text-2xl font-bold mt-2">4</p>
-            </div>
-            <div className="p-4 border rounded-lg shadow-sm bg-card text-card-foreground">
-              <h3 className="font-semibold text-sm text-muted-foreground">Performance Score</h3>
-              <p className="text-2xl font-bold mt-2 text-green-600 dark:text-green-500">A+</p>
-            </div>
-            <div className="p-4 border rounded-lg shadow-sm bg-card text-card-foreground">
-              <h3 className="font-semibold text-sm text-muted-foreground">Assignments Due</h3>
-              <p className="text-2xl font-bold mt-2 text-chart-2">3</p>
-            </div>
-          </div>
-          <div className="rounded-xl bg-card border p-8">
-            <h2 className="text-2xl font-bold mb-4">Welcome, Student!</h2>
-            <p className="text-muted-foreground">
-              This is your student dashboard. Track your attendance, view classes, and monitor your academic progress.
-            </p>
-          </div>
+        
+        <div className={cn(
+          "mx-auto space-y-6 p-6 transition-all duration-300",
+          isExpanded ? "max-w-7xl" : "max-w-full"
+        )}>
+          {/* Welcome Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Welcome, {student?.name || 'Student'}!</CardTitle>
+              <CardDescription>Roll No: {student?.roll_no}</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Separator />
+
+          {/* Biometric Enrollment Section */}
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">Biometric Setup</h2>
+            <BiometricEnrollment studentId={student?._id} />
+          </section>
+
+          {/* Other dashboard content... */}
         </div>
       </main>
     </div>

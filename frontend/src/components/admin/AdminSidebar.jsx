@@ -32,6 +32,11 @@ const items = [
     icon: Book,
   },
   {
+    title: "Timetable",
+    url: "/admin/timetable",
+    icon: Calendar,
+  },
+  {
     title: "Teacher Subjects",
     url: "/admin/teacher-subjects",
     icon: Link,

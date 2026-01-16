@@ -11,6 +11,7 @@ import AdminStudents from "@/pages/Admin/AdminStudents";
 import AdminTeachers from "@/pages/Admin/AdminTeachers";
 import AdminClasses from "@/pages/Admin/AdminClasses";
 import AdminSubjects from "@/pages/Admin/AdminSubjects";
+import AdminTimetable from "@/pages/Admin/AdminTimetable";
 import AdminTeacherSubjects from "@/pages/Admin/AdminTeacherSubjects";
 import LeaveApplication from "@/pages/Student/LeaveApplication";
 import LeaveHistory from "@/pages/Student/LeaveHistory";
@@ -56,6 +57,7 @@ const App = () => {
                 <Route path="/admin/teachers" element={<AdminTeachers />} />
                 <Route path="/admin/classes" element={<AdminClasses />} />
                 <Route path="/admin/subjects" element={<AdminSubjects />} />
+                <Route path="/admin/timetable" element={<AdminTimetable />} />
                 <Route path="/admin/teacher-subjects" element={<AdminTeacherSubjects />} />
 
                 <Route path="*" element={<NotFound />} />

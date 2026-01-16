@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { X, Upload, FileText, Image, File, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-const FileUploadDialog = ({ open, onClose, onSuccess, selectedClass }) => {
+const FileUploadDialog = ({ open, onOpenChange, onSuccess, selectedClass }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [parsedData, setParsedData] = useState(null);
@@ -107,7 +107,7 @@ const FileUploadDialog = ({ open, onClose, onSuccess, selectedClass }) => {
     setParsedData(null);
     setUploading(false);
     setProcessing(false);
-    onClose();
+    onOpenChange(false);
   };
 
   const getFileIcon = () => {
@@ -124,7 +124,12 @@ const FileUploadDialog = ({ open, onClose, onSuccess, selectedClass }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+    >
       <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between z-10">
           <div>
