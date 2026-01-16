@@ -9,6 +9,8 @@ import TeacherDashboard from "@/pages/Teacher/TeacherDashboard";
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import AdminStudents from "@/pages/Admin/AdminStudents";
 import AdminTeachers from "@/pages/Admin/AdminTeachers";
+import AdminClasses from "@/pages/Admin/AdminClasses";
+import AdminSubjects from "@/pages/Admin/AdminSubjects";
 import {Toaster} from '@/components/ui/sonner';
 import { StudentProvider } from './context/StudentContext';
 import { TeacherProvider } from './context/TeacherContext';
@@ -39,6 +41,8 @@ const App = () => {
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/students" element={<AdminStudents />} />
                 <Route path="/admin/teachers" element={<AdminTeachers />} />
+                <Route path="/admin/classes" element={<AdminClasses />} />
+                <Route path="/admin/subjects" element={<AdminSubjects />} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
