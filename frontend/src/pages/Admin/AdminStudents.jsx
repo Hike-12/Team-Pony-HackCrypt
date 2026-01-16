@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { AdminStudentTable } from '@/components/admin/AdminStudentTable';
 import { AdminStudentForm } from '@/components/admin/AdminStudentForm';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
@@ -7,6 +7,14 @@ import { cn } from '@/lib/utils';
 
 export default function AdminStudents() {
   const isExpanded = useSidebarState();
+  const tableRef = useRef();
+
+  const handleStudentAdded = () => {
+    // Refresh the table when a new student is added
+    if (tableRef.current) {
+      tableRef.current.refresh();
+    }
+  };
 
   return (
     <div className="flex min-h-screen w-full">
@@ -23,10 +31,10 @@ export default function AdminStudents() {
           isExpanded ? "max-w-7xl" : "max-w-full"
         )}>
           <section>
-            <AdminStudentForm />
+            <AdminStudentForm onStudentAdded={handleStudentAdded} />
           </section>
           <section>
-            <AdminStudentTable />
+            <AdminStudentTable ref={tableRef} />
           </section>
         </div>
       </main>

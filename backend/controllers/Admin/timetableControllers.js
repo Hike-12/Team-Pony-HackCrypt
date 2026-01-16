@@ -438,6 +438,44 @@ exports.getClasses = async (req, res) => {
 };
 
 /**
+ * Create a new class
+ */
+exports.createClass = async (req, res) => {
+  try {
+    const { name, batch_year, division } = req.body;
+
+    if (!name || batch_year === undefined || !division) {
+      return res.status(400).json({ success: false, message: 'Name, batch_year, and division are required' });
+    }
+
+    const newClass = new Class({
+      name,
+      batch_year,
+      division
+    });
+
+    await newClass.save();
+    res.status(201).json({ success: true, data: newClass, message: 'Class created successfully' });
+  } catch (error) {
+    console.error('Error creating class:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+/**
+ * Delete all classes
+ */
+exports.deleteAllClasses = async (req, res) => {
+  try {
+    const result = await Class.deleteMany({});
+    res.json({ success: true, message: `${result.deletedCount} classes deleted successfully` });
+  } catch (error) {
+    console.error('Error deleting classes:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+/**
  * Get or create teacher-subject mapping
  */
 exports.getOrCreateTeacherSubject = async (req, res) => {

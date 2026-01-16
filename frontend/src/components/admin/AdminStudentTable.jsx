@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
-export function AdminStudentTable() {
+export const AdminStudentTable = forwardRef(function AdminStudentTable(props, ref) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,12 +26,17 @@ export function AdminStudentTable() {
     }
   }
 
+  // Expose fetchStudents to parent via ref
+  useImperativeHandle(ref, () => ({
+    refresh: fetchStudents
+  }));
+
   useEffect(() => {
     fetchStudents();
   }, []);
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this student?')) return;
+    if (!window.confirm('Delete this student? This will also delete their user account.')) return;
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/students/${id}`, {
         method: 'DELETE',
@@ -67,24 +72,38 @@ export function AdminStudentTable() {
           <table className="min-w-full text-left">
             <thead>
               <tr className="bg-muted/50 border-b border-border">
+                <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Image</th>
                 <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Roll No</th>
                 <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Full Name</th>
+                <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Email</th>
                 <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Gender</th>
                 <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Phone</th>
-                <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Class ID</th>
-                <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Device ID</th>
+                <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Class</th>
                 <th className="px-4 py-3 text-sm font-semibold text-muted-foreground text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-card">
               {students.map(student => (
                 <tr key={student._id} className="border-b border-border hover:bg-muted/20 transition-colors">
+                  <td className="px-4 py-3">
+                    {student.image_url ? (
+                      <img 
+                        src={student.image_url} 
+                        alt={student.full_name}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-border"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-semibold">
+                        {student.full_name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-sm font-medium text-foreground">{student.roll_no}</td>
                   <td className="px-4 py-3 text-sm text-foreground">{student.full_name}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{student.email || 'N/A'}</td>
                   <td className="px-4 py-3 text-sm text-muted-foreground capitalize">{student.gender}</td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">{student.phone || 'N/A'}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{student.class_id}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground font-mono text-xs">{student.device_id_hash || 'N/A'}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{student.class_name || 'N/A'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
                       <button
@@ -107,7 +126,7 @@ export function AdminStudentTable() {
               ))}
               {students.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center">
+                  <td colSpan={8} className="px-4 py-12 text-center">
                     <p className="text-muted-foreground">No students found. Add a student to get started.</p>
                   </td>
                 </tr>
@@ -118,4 +137,4 @@ export function AdminStudentTable() {
       )}
     </motion.section>
   );
-}
+});

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +16,20 @@ const getTheme = () =>
     : 'light';
 
 const StudentAuth = () => {
+  const [theme, setTheme] = useState(getTheme());
   const [rollNo, setRollNo] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { loginStudent } = useContext(StudentContext);
   
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => setTheme(getTheme()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
   React.useEffect(() => {
     console.log('StudentAuth page loaded');
   }, []);
@@ -65,7 +73,7 @@ const StudentAuth = () => {
         <PixelBlast
           variant="square"
           pixelSize={3}
-          color={getTheme() === 'dark' ? 'var(--accent)' : 'var(--accent)'}
+          color={theme === 'dark' ? '#2e444b' : '#2e448b'} 
           patternScale={2}
           patternDensity={1}
           liquid={false}
@@ -87,7 +95,7 @@ const StudentAuth = () => {
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="rollNo">Roll Number</Label>
-                <div className="relative">
+                <div className="relative mt-1">
                   <FaUser className="absolute left-3 top-3 text-muted-foreground" />
                   <Input 
                     id="rollNo" 
@@ -108,7 +116,7 @@ const StudentAuth = () => {
                     id="password" 
                     type="password" 
                     placeholder="••••••••" 
-                    className="pl-10"
+                    className="pl-10 mt-1"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
