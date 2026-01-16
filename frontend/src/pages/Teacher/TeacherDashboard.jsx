@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { TeacherContext } from '@/context/TeacherContext'
 import { TeacherSidebar } from '@/components/teacher/TeacherSidebar'
 import { Clock } from 'lucide-react'

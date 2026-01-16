@@ -68,6 +68,10 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
       name: classItem.name,
       division: classItem.division || '',
       batch_year: classItem.batch_year || new Date().getFullYear(),
+      latitude: classItem.location?.latitude || '',
+      longitude: classItem.location?.longitude || '',
+      allowed_radius: classItem.location?.allowed_radius || 50,
+      room_label: classItem.location?.room_label || '',
     });
     setEditOpen(true);
   };
@@ -76,11 +80,23 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
     if (!editingClass) return;
     setEditLoading(true);
     try {
+      const updateData = {
+        name: editFormData.name,
+        division: editFormData.division,
+        batch_year: editFormData.batch_year,
+        location: {
+          latitude: editFormData.latitude ? parseFloat(editFormData.latitude) : undefined,
+          longitude: editFormData.longitude ? parseFloat(editFormData.longitude) : undefined,
+          allowed_radius: editFormData.allowed_radius ? parseInt(editFormData.allowed_radius) : 50,
+          room_label: editFormData.room_label || '',
+        }
+      };
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/classes/${editingClass._id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify(updateData),
       });
       if (!res.ok) throw new Error('Failed to update class');
       toast.success('Class updated successfully');
@@ -129,9 +145,9 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
 
   return (
     <>
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }} 
-        animate={{ opacity: 1, y: 0 }} 
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
         className="rounded-xl bg-card border p-6 shadow-sm"
       >
@@ -230,39 +246,109 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Class</DialogTitle>
-            <DialogDescription>Update the class information below</DialogDescription>
+            <DialogDescription>Update the class information and location below</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-muted-foreground">Class Name</label>
-              <input
-                type="text"
-                value={editFormData.name || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              />
+          <div className="space-y-6">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-foreground">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">Class Name</label>
+                  <input
+                    type="text"
+                    value={editFormData.name || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    className="px-3 py-2 rounded-md border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">Division</label>
+                  <input
+                    type="text"
+                    value={editFormData.division || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, division: e.target.value })}
+                    className="px-3 py-2 rounded-md border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    placeholder="e.g., A, B, C"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-muted-foreground">Batch Year</label>
+                <input
+                  type="number"
+                  value={editFormData.batch_year || new Date().getFullYear()}
+                  onChange={(e) => setEditFormData({ ...editFormData, batch_year: parseInt(e.target.value) })}
+                  className="px-3 py-2 rounded-md border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                />
+              </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-muted-foreground">Division</label>
-              <input
-                type="text"
-                value={editFormData.division || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, division: e.target.value })}
-                className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                placeholder="e.g., A, B, C"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-muted-foreground">Batch Year</label>
-              <input
-                type="number"
-                value={editFormData.batch_year || new Date().getFullYear()}
-                onChange={(e) => setEditFormData({ ...editFormData, batch_year: parseInt(e.target.value) })}
-                className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              />
+
+            {/* Location Information */}
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-sm font-semibold text-foreground">Location Setup</h3>
+              <p className="text-xs text-muted-foreground">Set geofencing coordinates for attendance verification</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">Latitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={editFormData.latitude || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, latitude: e.target.value })}
+                    placeholder="e.g., 19.25559914"
+                    className="px-3 py-2 rounded-md border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">Longitude</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={editFormData.longitude || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, longitude: e.target.value })}
+                    placeholder="e.g., 72.86701151"
+                    className="px-3 py-2 rounded-md border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">Allowed Radius (m)</label>
+                  <input
+                    type="number"
+                    value={editFormData.allowed_radius || 50}
+                    onChange={(e) => setEditFormData({ ...editFormData, allowed_radius: e.target.value })}
+                    placeholder="50"
+                    className="px-3 py-2 rounded-md border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  />
+                  <p className="text-xs text-muted-foreground">Recommended: 50-150m for indoor GPS drift</p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">Room Label</label>
+                  <input
+                    type="text"
+                    value={editFormData.room_label || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, room_label: e.target.value })}
+                    placeholder="e.g., 502"
+                    className="px-3 py-2 rounded-md border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 rounded-md bg-muted/50 border">
+                <p className="text-xs font-medium text-foreground mb-2">Tips:</p>
+                <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>GPS works best outdoors or near windows</li>
+                  <li>Indoor GPS can drift 50-100m - adjust radius accordingly</li>
+                  <li>Test after setting to verify accuracy</li>
+                </ul>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -314,8 +400,8 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
             </DialogDescription>
           </DialogHeader>
           {locationClass && (
-            <ClassLocationSetup 
-              classData={locationClass} 
+            <ClassLocationSetup
+              classData={locationClass}
               onLocationUpdated={handleLocationUpdated}
             />
           )}
