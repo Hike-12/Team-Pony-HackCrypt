@@ -40,6 +40,7 @@ exports.login = async (req, res) => {
             token, 
             user: { 
                 id: user._id, 
+                student_id : student._id,
                 role: user.role, 
                 name: student.full_name, 
                 roll_no: student.roll_no,

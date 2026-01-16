@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext,useContext, useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 
 export const StudentContext = createContext();
@@ -38,3 +38,7 @@ export const StudentProvider = ({ children }) => {
         </StudentContext.Provider>
     );
 };
+
+export function useStudent() {
+    return useContext(StudentContext);
+}
