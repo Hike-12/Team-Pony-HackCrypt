@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { AdminTeacherTable } from '@/components/admin/AdminTeacherTable';
 import { AdminTeacherForm } from '@/components/admin/AdminTeacherForm';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
@@ -7,6 +7,14 @@ import { cn } from '@/lib/utils';
 
 export default function AdminTeachers() {
   const isExpanded = useSidebarState();
+  const tableRef = useRef();
+
+  const handleTeacherAdded = () => {
+    // Refresh the table when a new teacher is added
+    if (tableRef.current) {
+      tableRef.current.refresh();
+    }
+  };
 
   return (
     <div className="flex min-h-screen w-full">
@@ -23,10 +31,10 @@ export default function AdminTeachers() {
           isExpanded ? "max-w-7xl" : "max-w-full"
         )}>
           <section>
-            <AdminTeacherForm />
+            <AdminTeacherForm onTeacherAdded={handleTeacherAdded} />
           </section>
           <section>
-            <AdminTeacherTable />
+            <AdminTeacherTable ref={tableRef} />
           </section>
         </div>
       </main>

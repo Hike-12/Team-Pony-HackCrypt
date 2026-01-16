@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { FaUser, FaBuilding, FaPlus } from 'react-icons/fa';
+import { FaUser, FaBuilding, FaPlus, FaEnvelope, FaLock } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
-export function AdminTeacherForm() {
+export function AdminTeacherForm({ onTeacherAdded }) {
   const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [department, setDepartment] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,15 +23,22 @@ export function AdminTeacherForm() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
+          email,
+          password,
           full_name: fullName,
           department,
         }),
       });
-      if (!res.ok) throw new Error('Failed to add teacher');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add teacher');
       toast.success('Teacher added successfully!');
       setSuccess('Teacher added successfully');
       setFullName('');
+      setEmail('');
+      setPassword('');
       setDepartment('');
+      // Notify parent to refresh the table
+      if (onTeacherAdded) onTeacherAdded();
     } catch (err) {
       toast.error(err.message);
       setError(err.message);
@@ -60,6 +69,37 @@ export function AdminTeacherForm() {
             value={fullName}
             onChange={e => setFullName(e.target.value)}
             placeholder="Enter full name"
+            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <FaEnvelope className="w-4 h-4" />
+            Email
+          </label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="Enter email address"
+            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <FaLock className="w-4 h-4" />
+            Password
+          </label>
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Enter password"
+            minLength={6}
             className="px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           />
         </div>
