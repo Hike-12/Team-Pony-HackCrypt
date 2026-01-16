@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const cloudinary = require('../../config/cloudinary');
 const QRCode = require('qrcode');
+const StudentBiometric = require('../../models/StudentBiometric');
 
 // Configure multer to use memory storage
 const storage = multer.memoryStorage();
@@ -25,27 +26,33 @@ exports.getAllStudents = async (req, res) => {
     const students = await Student.find()
       .populate('user_id', 'email is_active')
       .populate('class_id', 'name division batch_year');
+
+      const biometrics = await StudentBiometric.find({});
     
     // Transform to include email in response
-    const studentsWithDetails = students.map(s => ({
-      _id: s._id,
-      user_id: s.user_id?._id,
-      roll_no: s.roll_no,
-      full_name: s.full_name,
-      gender: s.gender,
-      phone: s.phone,
-      class_id: s.class_id?._id,
-      class_name: s.class_id ? `${s.class_id.name}` : 'N/A',
-      division: s.class_id?.division || 'N/A',
-      batch_year: s.class_id?.batch_year || 'N/A',
-      email: s.user_id?.email,
-      image_url: s.image_url,
-      id_qr_url: s.id_qr_url,
-      is_active: s.user_id?.is_active,
-      created_at: s.created_at
-    }));
+    const studentsWithDetails = students.map(s => {
+      const biometric = biometrics.find(b => b.student_id.toString() === s._id.toString());
+      return {
+        _id: s._id,
+        user_id: s.user_id?._id,
+        roll_no: s.roll_no,
+        full_name: s.full_name,
+        gender: s.gender,
+        phone: s.phone,
+        class_id: s.class_id?._id,
+        class_name: s.class_id ? `${s.class_id.name}` : 'N/A',
+        division: s.class_id?.division || 'N/A',
+        email: s.user_id?.email,
+        image_url: s.image_url,
+        id_qr_url: s.id_qr_url,
+        is_active: s.user_id?.is_active,
+        face_enrolled: biometric?.face_enrolled || false,
+        created_at: s.created_at
+      };
+    });
     res.json(studentsWithDetails);
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: 'Server error' });
   }
 };

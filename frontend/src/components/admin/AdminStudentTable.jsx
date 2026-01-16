@@ -20,6 +20,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import FaceEnrollment from "@/components/student/FaceEnrollment"; // Reuse the component
+
+
 
 export const AdminStudentTable = forwardRef(function AdminStudentTable(props, ref) {
   const [students, setStudents] = useState([]);
@@ -32,6 +35,15 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
   const [editFormData, setEditFormData] = useState({});
   const [editLoading, setEditLoading] = useState(false);
   const [classes, setClasses] = useState([]);
+  const [enrollingStudent, setEnrollingStudent] = useState(null);
+
+function handleOpenFaceEnrollment(student) {
+  setEnrollingStudent(student);
+}
+
+function handleCloseEnrollment() {
+  setEnrollingStudent(null);
+}
 
   async function fetchStudents() {
     setLoading(true);
@@ -184,6 +196,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                         </div>
                       )}
                     </td>
+                    
                     <td className="px-4 py-3 text-sm font-medium text-foreground">{student.roll_no}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{student.full_name}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.email || 'N/A'}</td>
@@ -191,7 +204,25 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.phone || 'N/A'}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.class_name || 'N/A'}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.division || 'N/A'}</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{student.batch_year || 'N/A'}</td>
+                    <td className="px-4 py-3 text-center">
+        {student.face_enrolled ? (
+          <button
+            className="p-2 rounded-full bg-green-100 text-green-600 cursor-default"
+            title="Face enrolled"
+            disabled
+          >
+            <span role="img" aria-label="Enrolled">✅</span>
+          </button>
+        ) : (
+          <button
+            className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition"
+            title="Enroll Face"
+            onClick={() => handleOpenFaceEnrollment(student)}
+          >
+            <span role="img" aria-label="Enroll">📷</span>
+          </button>
+        )}
+      </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 justify-end">
                         <button
@@ -333,6 +364,25 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {enrollingStudent && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
+      <button
+        className="absolute top-2 right-2 text-xl"
+        onClick={handleCloseEnrollment}
+      >
+        ×
+      </button>
+      <FaceEnrollment
+        studentId={enrollingStudent._id}
+        onEnrollmentComplete={() => {
+          handleCloseEnrollment();
+          fetchStudents(); // Refresh the table to show enrolled status
+        }}
+      />
+    </div>
+  </div>
+)}
     </>
   );
 });
