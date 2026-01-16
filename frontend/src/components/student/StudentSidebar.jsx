@@ -1,20 +1,28 @@
-import React from 'react'
-import { Home, Calendar, BookOpen, BarChart3, User, LogOut, Sun, Moon } from 'lucide-react'
+import React, { useContext } from 'react'
+import { Home, Calendar, BookOpen, BarChart3, User, LogOut, Sun, Moon, FileText, ClipboardList } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
+import { StudentContext } from '@/context/StudentContext'
 import { cn } from '@/lib/utils'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const menuItems = [
   { title: 'Dashboard', icon: Home, url: '/student/dashboard' },
+  { title: 'My Classes', icon: BookOpen, url: '#' },
+  { title: 'Leave', icon: FileText, url: '/student/leave/apply' },
+  { title: 'Leave History', icon: ClipboardList, url: '/student/leave/history' },
+  { title: 'Attendance', icon: Calendar, url: '#' },
+  { title: 'Performance', icon: BarChart3, url: '#' },
+  { title: 'Profile', icon: User, url: '#' },
 ]
 
 export function StudentSidebar() {
   const { theme, setTheme } = useTheme()
+  const { student } = useContext(StudentContext)
   const location = useLocation()
   const navigate = useNavigate()
-  
+
   const isActive = (url) => location.pathname === url
-  
+
   const handleLogout = () => {
     navigate('/')
   }
@@ -25,11 +33,11 @@ export function StudentSidebar() {
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <span className="text-lg font-bold">S</span>
+            <span className="text-lg font-bold">{student?.name ? student.name.charAt(0).toUpperCase() : 'S'}</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Student Portal</span>
-            <span className="text-xs text-muted-foreground">My Learning</span>
+            <span className="text-sm font-semibold">{student?.name || 'Student'}</span>
+            <span className="text-xs text-muted-foreground">{student?.roll_no || 'Roll No'}</span>
           </div>
         </div>
       </div>

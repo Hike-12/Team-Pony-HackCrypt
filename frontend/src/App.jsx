@@ -11,7 +11,11 @@ import AdminStudents from "@/pages/Admin/AdminStudents";
 import AdminTeachers from "@/pages/Admin/AdminTeachers";
 import AdminClasses from "@/pages/Admin/AdminClasses";
 import AdminSubjects from "@/pages/Admin/AdminSubjects";
-import {Toaster} from '@/components/ui/sonner';
+import LeaveApplication from "@/pages/Student/LeaveApplication";
+import LeaveHistory from "@/pages/Student/LeaveHistory";
+
+
+import { Toaster } from '@/components/ui/sonner';
 import { StudentProvider } from './context/StudentContext';
 import { TeacherProvider } from './context/TeacherContext';
 import { StudentProtectedRoute, TeacherProtectedRoute } from './components/ProtectedRoute';
@@ -22,21 +26,25 @@ const App = () => {
     <>
       <Toaster position="top-right" />
       <SidebarProvider>
-          <StudentProvider>
+        <StudentProvider>
           <TeacherProvider>
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Landing />} />
-                
+
                 <Route path="/student/login" element={<StudentAuth />} />
-                {/* <Route element={<StudentProtectedRoute />}> */}
+                <Route
+                //  element={<StudentProtectedRoute />}
+                 >
                   <Route path="/student/dashboard" element={<StudentDashboard />} />
-                {/* </Route> */}
+                  <Route path="/student/leave/apply" element={<LeaveApplication />} />
+                  <Route path="/student/leave/history" element={<LeaveHistory />} />
+                </Route>
                 
                 <Route path="/teacher/login" element={<TeacherAuth />} />
-                {/* <Route element={<TeacherProtectedRoute />}> */}
+                <Route element={<TeacherProtectedRoute />}>
                     <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-                {/* </Route> */}
+                </Route>
                 
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/students" element={<AdminStudents />} />
