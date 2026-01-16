@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StudentSidebar } from '@/components/student/StudentSidebar';
 import FaceEnrollment from '@/components/student/FaceEnrollment';
 import AttendanceScanner from '@/components/student/AttendanceScanner';
+import { useSidebarState } from '@/hooks/useSidebarState';
+import { cn } from '@/lib/utils';
 import { useStudent } from '@/context/StudentContext';
 import { toast } from 'sonner';
 
@@ -80,7 +82,6 @@ const StudentDashboard = () => {
   };
 
   const isExpanded = useSidebarState();
-  const { student } = useContext(StudentContext); 
   
   // Debug log
   console.log('StudentDashboard - student object:', student);
@@ -119,7 +120,7 @@ const StudentDashboard = () => {
           {/* Face Enrollment/Attendance Section */}
           <div className="grid gap-6 md:grid-cols-2 mb-6">
             {loading ? (
-              <div className="rounded-xl bg-card border p-6 shadow-sm min-h-[300px] flex items-center justify-center">
+              <div className="rounded-xl bg-card border p-6 shadow-sm min-h-75 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                   <p className="text-muted-foreground text-sm">Loading biometric data...</p>
