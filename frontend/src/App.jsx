@@ -27,14 +27,14 @@ const App = () => {
                 <Route path="/" element={<Landing />} />
                 
                 <Route path="/student/login" element={<StudentAuth />} />
-                {/* <Route element={<StudentProtectedRoute />}> */}
+                <Route element={<StudentProtectedRoute />}>
                   <Route path="/student/dashboard" element={<StudentDashboard />} />
-                {/* </Route> */}
+                </Route>
                 
                 <Route path="/teacher/login" element={<TeacherAuth />} />
-                {/* <Route element={<TeacherProtectedRoute />}> */}
+                <Route element={<TeacherProtectedRoute />}>
                     <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
-                {/* </Route> */}
+                </Route>
                 
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/students" element={<AdminStudents />} />
