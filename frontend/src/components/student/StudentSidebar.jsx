@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import { motion } from 'framer-motion'
 import { Home, Calendar, BookOpen, BarChart3, User, LogOut, Sun, Moon, FileText, ClipboardList, MapPin, QrCode } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { StudentContext } from '@/context/StudentContext'
@@ -86,32 +87,49 @@ export function StudentSidebar() {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-card border-t border-border flex justify-around p-2 z-50 pb-safe">
-        {menuItems.slice(0, 5).map((item) => ( // Limit to 5 items for mobile spacing
-          <a
-            key={item.title}
-            href={item.url}
-            className={cn(
-              "flex flex-col items-center justify-center p-2 rounded-lg transition-colors w-full",
-              isActive(item.url)
-                ? "text-primary"
-                : "text-muted-foreground hover:bg-accent"
-            )}
-            title={item.title}
+      {/* Premium Mobile Floating Dock */}
+      <div className="md:hidden fixed bottom-6 left-4 right-4 z-50 flex justify-center pointer-events-none">
+        <div className="bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl rounded-2xl p-2 pointer-events-auto flex items-center gap-1 sm:gap-2 supports-[backdrop-filter]:bg-background/60 dark:bg-zinc-900/80 overflow-x-auto max-w-full scrollbar-hide">
+          {menuItems.map((item) => {
+            const active = isActive(item.url);
+            return (
+              <a
+                key={item.title}
+                href={item.url}
+                className={cn(
+                  "relative flex flex-col items-center justify-center min-w-[3rem] w-12 h-12 sm:w-14 sm:h-14 rounded-xl transition-all duration-300",
+                  active ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                )}
+              >
+                {active && (
+                  <motion.div
+                    layoutId="mobile-nav-active"
+                    className="absolute inset-0 bg-primary/10 rounded-xl"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <div className="relative z-10 flex flex-col items-center gap-0.5">
+                  <item.icon className={cn("h-5 w-5 transition-transform duration-300", active && "scale-110 fill-current")} strokeWidth={active ? 2.5 : 2} />
+                  {active && (
+                    <motion.div
+                      layoutId="mobile-nav-dot"
+                      className="w-1 h-1 rounded-full bg-primary mt-1"
+                    />
+                  )}
+                </div>
+              </a>
+            );
+          })}
+
+          <div className="w-[1px] h-8 bg-border/50 mx-1" />
+
+          <button
+            onClick={handleLogout}
+            className="flex flex-col items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
           >
-            <item.icon className={cn("h-5 w-5", isActive(item.url) && "fill-current")} />
-            <span className="text-[10px] uppercase font-bold mt-1 max-w-[60px] truncate">{item.title}</span>
-          </a>
-        ))}
-        <button
-          onClick={handleLogout}
-          className="flex flex-col items-center justify-center p-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive w-full"
-          title="Logout"
-        >
-          <LogOut className="h-5 w-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Exit</span>
-        </button>
+            <LogOut className="h-5 w-5" />
+          </button>
+        </div>
       </div>
     </div>
   )
