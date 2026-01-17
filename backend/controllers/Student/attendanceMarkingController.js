@@ -12,7 +12,7 @@ exports.getActiveAttendanceSession = async (req, res) => {
     const studentId = req.user.student_id;
     const student = await Student.findById(studentId).populate('class_id');
     if (!student || !student.class_id) {
-      return res.status(404).json({ success: false, message: 'Student or class not found' });
+      return res.status(400).json({ success: false, message: 'Student or class not found' });
     }
 
     const now = new Date();
@@ -25,7 +25,7 @@ exports.getActiveAttendanceSession = async (req, res) => {
     }).populate('teacher_subject_id');
 
     if (!session) {
-      return res.status(404).json({ success: false, message: 'No active attendance session' });
+      return res.status(400).json({ success: false, message: 'No active attendance session' });
     }
 
     res.json({ success: true, session });

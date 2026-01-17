@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFaceAttendance } from "@/hooks/useFaceAttendance";
 import { toast } from "sonner";
 import { FaCamera, FaCheck } from "react-icons/fa";
@@ -19,61 +19,66 @@ export default function FaceEnrollment({ studentId, onEnrollmentComplete }) {
     onSuccess: () => {},
   });
 
-  const handleStartCapture = async () => {
+  useEffect(() => {
+    if (isCapturing && videoRef.current) {
+      startVideo();
+    }
+  }, [isCapturing, videoRef, startVideo]);
+
+  const handleStartCapture = () => {
     setIsCapturing(true);
-    await startVideo();
   };
   
-const handleCapture = async () => {
-  setLoading(true);
-  try {
-    const descriptor = await captureDescriptor();
-    
-    if (!descriptor) {
-      toast.error("No face detected. Please try again.");
-      setLoading(false);
-      return;
-    }
+  const handleCapture = async () => {
+    setLoading(true);
+    try {
+      const descriptor = await captureDescriptor();
+      
+      if (!descriptor) {
+        toast.error("No face detected. Please try again.");
+        setLoading(false);
+        return;
+      }
 
-    // Debug: Log what will be sent
-    console.log("ENROLLMENT PAYLOAD:", {
-      student_id: studentId,
-      face_embedding: descriptor,
-    });
-
-    // Send to backend
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/student/biometric/enroll`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
+      // Debug: Log what will be sent
+      console.log("ENROLLMENT PAYLOAD:", {
         student_id: studentId,
         face_embedding: descriptor,
-      }),
-    });
+      });
 
-    if (!res.ok) {
-      const data = await res.json();
-      console.log("ENROLLMENT ERROR RESPONSE:", data);
-      throw new Error(data.error || "Enrollment failed");
+      // Send to backend
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/student/biometric/enroll`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          student_id: studentId,
+          face_embedding: descriptor,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.log("ENROLLMENT ERROR RESPONSE:", data);
+        throw new Error(data.error || "Enrollment failed");
+      }
+
+      toast.success("Face enrolled successfully!");
+      setEnrolled(true);
+      setIsCapturing(false);
+      
+      // Stop webcam
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      }
+
+      onEnrollmentComplete && onEnrollmentComplete();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    toast.success("Face enrolled successfully!");
-    setEnrolled(true);
-    setIsCapturing(false);
-    
-    // Stop webcam
-    if (videoRef.current && videoRef.current.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-    }
-
-    onEnrollmentComplete && onEnrollmentComplete();
-  } catch (err) {
-    toast.error(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="rounded-xl bg-card border p-6 shadow-sm">
@@ -102,12 +107,19 @@ const handleCapture = async () => {
             autoPlay
             muted
             className="rounded-lg border shadow bg-black"
-            style={{ objectFit: "cover" }}
+            style={{ objectFit: "cover", background: "#000" }}
           />
           <div className="w-full text-center space-y-4">
             {status === "loading" && <p>Loading face recognition models...</p>}
             {status === "ready" && <p>Position your face in the camera...</p>}
-            {error && <p className="text-red-600">{error}</p>}
+            {error && (
+              <div className="text-red-600 text-center mt-2">
+                {error}
+                <div className="text-xs text-muted-foreground">
+                  Make sure you allowed camera access and no other app is using the webcam.
+                </div>
+              </div>
+            )}
             
             <div className="flex gap-4 justify-center">
               <button
