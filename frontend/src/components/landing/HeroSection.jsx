@@ -66,8 +66,8 @@ export default function HeroSection() {
                                         key={1}
                                         className="bg-foreground/10 rounded-[calc(var(--radius-xl)+0.125rem)] border p-0.5">
                                         <Button asChild size="lg" className="rounded-xl px-5 text-base">
-                                            <Link href="#link">
-                                                <span className="text-nowrap">Get Started</span>
+                                            <Link to="/student/login">
+                                                <span className="text-nowrap">Student Login</span>
                                             </Link>
                                         </Button>
                                     </div>
@@ -77,8 +77,8 @@ export default function HeroSection() {
                                         size="lg"
                                         variant="ghost"
                                         className="h-10.5 rounded-xl px-5 text-base">
-                                        <Link href="#link">
-                                            <span className="text-nowrap">Learn More</span>
+                                        <Link to="/teacher/login">
+                                            <span className="text-nowrap">Teacher Login</span>
                                         </Link>
                                     </Button>
                                 </AnimatedGroup>
@@ -100,15 +100,17 @@ export default function HeroSection() {
                                 className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
                                 <div
                                     className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-5xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
+                                    {/* Dark mode image */}
                                     <img
-                                        className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                                        src="/mail2.png"
+                                        className="bg-background aspect-15/8 object-contain relative hidden rounded-2xl dark:block"
+                                        src="/dash_dark.png"
                                         alt="app screen"
                                         width="2700"
                                         height="1440" />
+                                    {/* Light mode image */}
                                     <img
-                                        className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
-                                        src="/mail2-light.png"
+                                        className="z-2 border-border/25 aspect-15/8 object-contain relative rounded-2xl border dark:hidden"
+                                        src="/dash_light.png"
                                         alt="app screen"
                                         width="2700"
                                         height="1440" />
