@@ -121,15 +121,15 @@ const StudentTimetable = () => {
     return (
         <div className="flex min-h-screen w-full bg-background">
             <StudentSidebar />
-            <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-64 ml-0 bg-background/50 pb-24 md:pb-8">
+            <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-58 ml-0 bg-background/50 pb-24 md:pb-8">
                 {/* Header */}
                 <motion.header
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md shadow-sm supports-[backdrop-filter]:bg-background/60"
                 >
-                    <div className="px-4 md:px-8 py-4 md:py-6">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="px-4 md:px-8 py-2 md:py-6">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                             <div>
                                 <div className="flex items-center gap-3 mb-1">
                                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">

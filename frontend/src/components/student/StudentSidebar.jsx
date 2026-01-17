@@ -18,14 +18,15 @@ const menuItems = [
 
 export function StudentSidebar() {
   const { theme, setTheme } = useTheme()
-  const { student } = useContext(StudentContext)
+  const { student, logoutStudent } = useContext(StudentContext)
   const location = useLocation()
   const navigate = useNavigate()
 
   const isActive = (url) => location.pathname === url
 
   const handleLogout = () => {
-    navigate('/')
+    logoutStudent()
+    navigate('/student/login')
   }
 
   return (
