@@ -13,12 +13,48 @@ const QRAttendance = () => {
     const [attendanceList, setAttendanceList] = useState([]);
     const [countdown, setCountdown] = useState(15);
     const [loading, setLoading] = useState(false);
+    const [showStartSession, setShowStartSession] = useState(false);
+    const [lecturesToday, setLecturesToday] = useState([]);
+    const [selectedLectureId, setSelectedLectureId] = useState('');
+    const [methodToggles, setMethodToggles] = useState({
+        enable_face: true,
+        enable_biometric: false,
+        enable_geofencing: false,
+        enable_static_qr: false,
+        enable_dynamic_qr: true
+    });
+    const [loadingLectures, setLoadingLectures] = useState(true);
 
     const socketRef = useRef(null);
     const refreshTimerRef = useRef(null);
     const countdownTimerRef = useRef(null);
     const sessionIdRef = useRef(null);
     const { toast } = useToast();
+
+    // Fetch today's lectures for dropdown
+    useEffect(() => {
+        async function fetchLectures() {
+            setLoadingLectures(true);
+            try {
+                const token = localStorage.getItem('teacherToken');
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/teacher/attendance/today-lectures`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    setLecturesToday(data.lectures);
+                    if (data.lectures.length > 0) setSelectedLectureId(data.lectures[0]._id);
+                } else {
+                    setLecturesToday([]);
+                }
+            } catch (err) {
+                setLecturesToday([]);
+            } finally {
+                setLoadingLectures(false);
+            }
+        }
+        fetchLectures();
+    }, []);
 
     // Initialize Socket.IO connection
     useEffect(() => {
@@ -227,6 +263,47 @@ const QRAttendance = () => {
         };
     }, []);
 
+    const handleToggle = (key) => {
+        setMethodToggles(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const handleStartSession = async () => {
+        if (!selectedLectureId) {
+            toast({
+                title: "Error",
+                description: "Please select a lecture",
+                variant: "destructive"
+            });
+            return;
+        }
+        const token = localStorage.getItem('teacherToken');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/teacher/attendance/start-session`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ...methodToggles,
+                timetableEntryId: selectedLectureId
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            toast({
+                title: "Success",
+                description: "Attendance session started!"
+            });
+            setShowStartSession(false);
+        } else {
+            toast({
+                title: "Error",
+                description: data.message || 'Failed to start session',
+                variant: "destructive"
+            });
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Header Card */}
@@ -244,14 +321,23 @@ const QRAttendance = () => {
                 </CardHeader>
                 <CardContent>
                     {!isActive ? (
-                        <Button 
-                            onClick={startAttendance} 
-                            disabled={loading}
-                            className="w-full sm:w-auto"
-                        >
-                            <QrCode className="mr-2 h-4 w-4" />
-                            {loading ? 'Starting...' : 'Start QR Attendance'}
-                        </Button>
+                        <div className="flex flex-wrap gap-3">
+                            <Button 
+                                onClick={startAttendance} 
+                                disabled={loading}
+                                className="w-full sm:w-auto"
+                            >
+                                <QrCode className="mr-2 h-4 w-4" />
+                                {loading ? 'Starting...' : 'Start QR Attendance'}
+                            </Button>
+                            <Button 
+                                onClick={() => setShowStartSession(true)}
+                                variant="outline"
+                                className="w-full sm:w-auto"
+                            >
+                                Start Attendance Session
+                            </Button>
+                        </div>
                     ) : (
                         <Button 
                             onClick={stopAttendance} 
@@ -354,7 +440,59 @@ const QRAttendance = () => {
                     </Card>
                 </div>
             )}
-        </div>
+            {/* Start Attendance Session Modal */}
+            {showStartSession && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowStartSession(false)}>
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="text-lg font-bold mb-4">Start Attendance Session</h2>
+                        <div className="mb-4">
+                            <label className="block mb-2 font-medium">Select Lecture</label>
+                            {loadingLectures ? (
+                                <div className="text-muted-foreground">Loading lectures...</div>
+                            ) : (
+                                <select
+                                    value={selectedLectureId}
+                                    onChange={e => setSelectedLectureId(e.target.value)}
+                                    className="w-full mb-4 p-2 border rounded bg-background"
+                                >
+                                    <option value="">Select Lecture</option>
+                                    {lecturesToday.map(lec => (
+                                        <option key={lec._id} value={lec._id}>
+                                            {lec.teacher_subject_id.subject_id.name} - {lec.class_id.name} ({lec.slot_id.start_time}-{lec.slot_id.end_time})
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                        <div className="space-y-3 mb-6">
+                            {Object.keys(methodToggles).map(key => (
+                                <label key={key} className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={methodToggles[key]}
+                                        onChange={() => handleToggle(key)}
+                                        className="rounded"
+                                    />
+                                    <span className="capitalize text-sm">{key.replace('enable_', '').replace('_', ' ')}</span>
+                                </label>
+                            ))}
+                        </div>
+                        <div className="flex gap-3">
+                            <Button
+                                onClick={handleStartSession}
+                            >
+                                Start
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowStartSession(false)}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}        </div>
     );
 };
 

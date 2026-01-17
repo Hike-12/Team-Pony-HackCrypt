@@ -20,15 +20,6 @@ const TeacherDashboard = () => {
   const { teacher } = useContext(TeacherContext)
   const [nextLecture, setNextLecture] = useState(null)
   const [lecturesToday, setLecturesToday] = useState([])
-  const [selectedLectureId, setSelectedLectureId] = useState('')
-  const [showStartSession, setShowStartSession] = useState(false)
-  const [methodToggles, setMethodToggles] = useState({
-    enable_face: true,
-    enable_biometric: false,
-    enable_geofencing: false,
-    enable_static_qr: false,
-    enable_dynamic_qr: true
-  })
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [loadingLectures, setLoadingLectures] = useState(true)
   const [stats, setStats] = useState({
@@ -129,6 +120,19 @@ const TeacherDashboard = () => {
     } else {
       toast.error(data.message || 'Failed to start session')
     }
+  }
+
+  // Helper to check if slot is currently active
+  function isSlotActive(slot) {
+    if (!slot) return false;
+    const now = new Date();
+    const [startH, startM] = slot.start_time.split(':').map(Number);
+    const [endH, endM] = slot.end_time.split(':').map(Number);
+    const start = new Date(now);
+    start.setHours(startH, startM, 0, 0);
+    const end = new Date(now);
+    end.setHours(endH, endM, 0, 0);
+    return now >= start && now <= end;
   }
 
   return (
@@ -254,11 +258,13 @@ const TeacherDashboard = () => {
                         <SelectValue placeholder="Select Lecture" />
                       </SelectTrigger>
                       <SelectContent>
-                        {lecturesToday.map(lec => (
-                          <SelectItem key={lec._id} value={lec._id}>
-                            {lec.teacher_subject_id.subject_id.name} - {lec.class_id.name} ({lec.slot_id.start_time}-{lec.slot_id.end_time})
-                          </SelectItem>
-                        ))}
+                        {lecturesToday
+                          .filter(lec => isSlotActive(lec.slot_id))
+                          .map(lec => (
+                            <SelectItem key={lec._id} value={lec._id}>
+                              {lec.teacher_subject_id.subject_id.name} - {lec.class_id.name} ({lec.slot_id.start_time}-{lec.slot_id.end_time})
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   )}
