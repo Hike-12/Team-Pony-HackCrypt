@@ -55,6 +55,7 @@ const SessionManagement = () => {
       );
       const data = await res.json();
       if (data.success) {
+        console.log("BACHA", data);
         setPresentStudents(data.data.records);
       }
     } catch (error) {
@@ -64,6 +65,7 @@ const SessionManagement = () => {
 
   const handleViewSession = async (session) => {
     setSelectedSession(session);
+    console.log("SESSION", session);
     await fetchPresentStudents(session._id);
   };
 
@@ -226,37 +228,37 @@ const SessionManagement = () => {
                           {presentStudents.length} Students
                         </Badge>
                       </div>
-                      <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                        {presentStudents.map((record, index) => (
-                          <Card key={record.student?.id || index} className="bg-card/50">
-                            <CardContent className="py-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <CheckCircle className="h-5 w-5 text-primary" />
-                                  </div>
-                                  <div>
-                                    <p className="font-medium">{record.student?.name || 'Unknown'}</p>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                      <span>Roll: {record.student?.roll_no || 'N/A'}</span>
-                                      <span>•</span>
-                                      <span>{record.student?.class || 'N/A'}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-sm font-medium text-green-600">
-                                    {formatTime(record.markedAt)}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {record.verificationMethod || 'QR Scan'}
-                                  </p>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
+<div className="space-y-2 max-h-[600px] overflow-y-auto">
+  {presentStudents.map((record, index) => (
+    <Card key={record.student?.id || index} className="bg-card/50">
+      <CardContent className="py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium">{record.student?.name || 'Unknown'}</p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Roll: {record.student?.roll_no || 'N/A'}</span>
+                <span>•</span>
+                <span>{record.student?.class || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-medium text-green-600">
+              {formatTime(record.markedAt)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {record.status || 'Verified'}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  ))}
+</div>
                     </div>
                   )}
                 </CardContent>
