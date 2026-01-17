@@ -6,6 +6,56 @@ const Teacher = require('../../models/Teacher');
 const AttendanceSession = require('../../models/AttendanceSession');
 
 /**
+ * Get active attendance sessions for teacher
+ */
+exports.getActiveSessions = async (req, res) => {
+    try {
+        const teacherId = req.user.teacher_id;
+
+        if (!teacherId) {
+            return res.status(401).json({ 
+                success: false,
+                message: 'Teacher not authenticated' 
+            });
+        }
+
+        // Find teacher's subjects
+        const teacherSubjects = await TeacherSubject.find({ 
+            teacher_id: teacherId 
+        });
+
+        const subjectIds = teacherSubjects.map(ts => ts._id);
+
+        // Find active sessions
+        const sessions = await AttendanceSession.find({
+            teacher_subject_id: { $in: subjectIds },
+            is_active: true
+        }).populate([
+            { 
+                path: 'teacher_subject_id', 
+                populate: [
+                    { path: 'subject_id' },
+                    { path: 'class_id' }
+                ] 
+            }
+        ]).sort({ starts_at: -1 });
+
+        return res.status(200).json({ 
+            success: true,
+            sessions
+        });
+
+    } catch (error) {
+        console.error("Get Active Sessions Error:", error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Server Error',
+            error: error.message 
+        });
+    }
+};
+
+/**
  * Convert User ID to Student ID
  */
 exports.getUserStudentId = async (req, res) => {

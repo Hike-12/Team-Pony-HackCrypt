@@ -165,7 +165,11 @@ export const verifyBiometric = async (studentId, sessionId = null) => {
     }
 
     const result = await verifyResponse.json();
-    return result;
+    // Return result with credential for attendance marking
+    return {
+      ...result,
+      credential: credential  // Include the credential used for verification
+    };
   } catch (error) {
     console.error('Verification error:', error);
     throw error;

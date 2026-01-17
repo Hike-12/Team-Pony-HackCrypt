@@ -4,8 +4,10 @@ import { StudentSidebar } from '@/components/student/StudentSidebar';
 import AttendanceScanner from '@/components/student/AttendanceScanner';
 import { BiometricVerification } from '@/components/student/BiometricVerification';
 import { LocationVerification } from '@/components/student/LocationVerification';
+import StudentQRScanner from '@/components/Student/studentQRScanner';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, MapPin, Camera, Fingerprint, CreditCard, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, MapPin, Camera, Fingerprint, QrCode, ShieldCheck, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -17,11 +19,9 @@ export default function AttendanceVerification() {
   const [stepResults, setStepResults] = useState({});
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState(null);
-  
-  // NEW: State to store the student's face descriptor
   const [faceEmbedding, setFaceEmbedding] = useState(null);
 
-  // 1. Fetch active attendance session
+  // Fetch active session
   useEffect(() => {
     async function fetchSession() {
       setLoading(true);
@@ -29,16 +29,13 @@ export default function AttendanceVerification() {
         const token = localStorage.getItem('studentToken');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/student/attendance/active-session`, {
           credentials: 'include',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
         if (data.success && data.session) {
           setSession(data.session);
         } else {
           setSession(null);
-          // Only show error if we are actively looking for a session, otherwise it might just be idle
           if (!data.success) toast.error(data.message || 'No active attendance session');
         }
       } catch (err) {
@@ -51,32 +48,23 @@ export default function AttendanceVerification() {
     fetchSession();
   }, [student]);
 
-  // 2. NEW: Fetch Student's Face Biometric Data
+  // Fetch face biometric
   useEffect(() => {
     async function fetchBiometric() {
       if (!student?._id && !student?.student_id) return;
-      
       try {
         const id = student._id || student.student_id;
         const token = localStorage.getItem('studentToken');
-        
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/student/biometric/${id}`, {
           credentials: 'include',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-        
         if (res.ok) {
           const data = await res.json();
           let embedding = data.face_embedding;
-          
-          // CRITICAL FIX: Convert object-style array {0:0.1, 1:0.2} to real Array [0.1, 0.2]
           if (embedding && typeof embedding === 'object' && !Array.isArray(embedding)) {
             embedding = Object.values(embedding);
           }
-          
-          console.log("Loaded Face Embedding:", embedding ? `Found (${embedding.length} dims)` : "Not found");
           setFaceEmbedding(embedding);
         }
       } catch (e) {
@@ -86,7 +74,7 @@ export default function AttendanceVerification() {
     fetchBiometric();
   }, [student]);
 
-  // Dynamically build steps based on session toggles
+  // Build steps
   const steps = [];
   if (session?.enable_geofencing) steps.push({
     key: 'geofencing',
@@ -106,9 +94,9 @@ export default function AttendanceVerification() {
   });
   if (session?.enable_static_qr || session?.enable_dynamic_qr) steps.push({
     key: 'idCard',
-    name: 'ID Scan',
-    icon: CreditCard,
-    description: 'QR/ID Verification',
+    name: 'QR Scan',
+    icon: QrCode,
+    description: 'QR Code Verification',
     color: 'text-amber-500',
     bgColor: 'bg-amber-500/10'
   });
@@ -122,22 +110,16 @@ export default function AttendanceVerification() {
   });
 
   const handleStepSuccess = (stepKey, result) => {
-    // 1. Create the updated results object immediately
     const updatedResults = { ...stepResults, [stepKey]: result };
-    
-    // 2. Update state
     setStepResults(updatedResults);
-
-    // 3. Move to next step or submit
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Pass updatedResults explicitly to submit function
       submitAttendance(updatedResults);
     }
   };
 
-  const submitAttendance = async () => {
+  const submitAttendance = async (results) => {
     if (!session) return;
     setLoading(true);
     setFeedback(null);
@@ -145,10 +127,10 @@ export default function AttendanceVerification() {
       const token = localStorage.getItem('studentToken');
       const payload = {
         sessionId: session._id,
-        faceData: stepResults.faceRecognition,
-        biometricData: stepResults.biometric,
-        location: stepResults.geofencing?.location || stepResults.geofencing,
-        qrToken: stepResults.idCard?.token || stepResults.idCard?.qrToken || stepResults.idCard?.value,
+        faceData: results.faceRecognition,
+        biometricData: results.biometric,
+        location: results.geofencing?.location || results.geofencing,
+        qrToken: results.idCard?.token || results.idCard?.qrToken,
       };
       
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/student/attendance/mark`, {
@@ -176,7 +158,7 @@ export default function AttendanceVerification() {
     }
   };
 
-  const renderStepContent = (step, idx) => {
+  const renderStepContent = (step) => {
     switch (step.key) {
       case 'geofencing':
         return (
@@ -189,26 +171,17 @@ export default function AttendanceVerification() {
       case 'faceRecognition':
         return (
           <AttendanceScanner
-            storedDescriptor={faceEmbedding} // <--- CRITICAL FIX: Pass the fetched embedding
+            storedDescriptor={faceEmbedding}
             onSuccess={(result) => handleStepSuccess('faceRecognition', result)}
           />
         );
       case 'idCard':
         return (
-          <div className="space-y-6 text-center">
-            <div
-              className="relative mx-auto w-full max-w-sm h-56 bg-zinc-50 dark:bg-zinc-900 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center gap-4 hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => handleStepSuccess('idCard', { verified: true, token: 'SIMULATED_QR_TOKEN' })}
-            >
-              <div className="w-16 h-10 bg-zinc-200 dark:bg-zinc-800 rounded flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-zinc-400" />
-              </div>
-              <span className="text-sm font-medium text-muted-foreground">Click to Simulate ID Scan</span>
-            </div>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-              Place your Student ID card on a flat surface and align it with the guide.
-            </p>
-          </div>
+          <StudentQRScanner
+            sessionId={session?._id}
+            onSuccess={(result) => handleStepSuccess('idCard', result)}
+            onError={(error) => toast.error(error.message || 'QR scan failed')}
+          />
         );
       case 'biometric':
         return (
@@ -245,7 +218,7 @@ export default function AttendanceVerification() {
 
         <div className="flex-1 p-6 md:p-12 flex items-center justify-center bg-muted/20">
           <Card className="w-full max-w-5xl overflow-hidden border shadow-xl flex flex-col md:flex-row min-h-[550px] bg-card">
-            {/* Left Panel */}
+            {/* Left Panel: Steps */}
             <div className="md:w-1/3 bg-muted/30 border-r p-6 md:p-8 flex flex-col justify-between relative">
               <div className="space-y-6 md:space-y-8">
                 <div>
@@ -279,11 +252,11 @@ export default function AttendanceVerification() {
               </div>
               <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground bg-background/50 p-3 rounded-lg border">
                 <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>Please ensure you are in a well-lit area for facial verification.</span>
+                <span>Please ensure you are in a well-lit area for verification.</span>
               </div>
             </div>
 
-            {/* Right Panel */}
+            {/* Right Panel: Current Step */}
             <div className="md:w-2/3 p-6 md:p-10 flex flex-col relative bg-background">
               <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
                 <AnimatePresence mode="wait">
@@ -309,7 +282,7 @@ export default function AttendanceVerification() {
                     </div>
                     <div className="w-full">
                       {loading && <div className="text-center py-8">Loading...</div>}
-                      {!loading && session && renderStepContent(steps[currentStep - 1], currentStep - 1)}
+                      {!loading && session && renderStepContent(steps[currentStep - 1])}
                       {!loading && !session && (
                         <div className="text-center py-8 text-muted-foreground">
                           No active attendance session. Please wait for your teacher to start.
@@ -323,13 +296,15 @@ export default function AttendanceVerification() {
                           <h3 className="font-bold text-lg mb-2">
                             {feedback.success ? "Attendance Marked!" : "Verification Failed"}
                           </h3>
-                          <div className="text-sm">
-                            {feedback.details?.fail_reason
-                              ? feedback.details.fail_reason
-                              : feedback.success
-                                ? "All verification steps passed."
-                                : "Some verification steps failed. Please retry."}
+                          <div className="text-sm mb-4">
+                            {feedback.details?.fail_reason || (feedback.success ? "All verification steps passed." : "Some verification steps failed.")}
                           </div>
+                          <Button
+                            onClick={() => window.location.href = '/student/dashboard'}
+                            className="w-full"
+                          >
+                            Done
+                          </Button>
                         </div>
                       )}
                     </div>

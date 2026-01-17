@@ -24,6 +24,7 @@ import LeaveManagement from "@/pages/Teacher/LeaveManagement";
 import TeacherSchedule from "@/pages/Teacher/TeacherSchedule";
 import TeacherQRAttendance from "@/pages/Teacher/QRAttendance";
 import AttentivenessMonitor from "@/pages/Teacher/AttentivenessMonitor";
+import SessionManagement from "@/pages/Teacher/SessionManagement";
 
 
 import { Toaster } from '@/components/ui/sonner';
@@ -62,6 +63,7 @@ const App = () => {
                   <Route path="/teacher/schedule" element={<TeacherSchedule />} />
                   <Route path="/teacher/qr-attendance" element={<TeacherQRAttendance />} />
                   <Route path="/teacher/attentiveness" element={<AttentivenessMonitor />} />
+                  <Route path="/teacher/sessions" element={<SessionManagement />} />
                   <Route path="/teacher/leave-management" element={<LeaveManagement />} />
                 </Route>
 

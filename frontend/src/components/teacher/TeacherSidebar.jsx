@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Home, Users, Calendar, ClipboardCheck, BookOpen, LogOut, Sun, Moon, FileText, QrCode, Eye } from 'lucide-react'
+import { Home, Users, Calendar, ClipboardCheck, BookOpen, LogOut, Sun, Moon, FileText, QrCode, Eye, MonitorPlay } from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
 import { TeacherContext } from '@/context/TeacherContext'
 import { cn } from '@/lib/utils'
@@ -10,6 +10,7 @@ const menuItems = [
   { title: 'Schedule', icon: Calendar, url: '/teacher/schedule' },
   { title: 'QR Attendance', icon: QrCode, url: '/teacher/qr-attendance' },
   { title: 'Attentiveness', icon: Eye, url: '/teacher/attentiveness' },
+  { title: 'Active Sessions', icon: MonitorPlay, url: '/teacher/sessions' },
   { title: 'Leave Management', icon: FileText, url: '/teacher/leave-management' },
 ]
 

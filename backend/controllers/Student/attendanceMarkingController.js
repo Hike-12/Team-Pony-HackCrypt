@@ -6,13 +6,112 @@ const SessionQRToken = require('../../models/SessionQRToken');
 const geofencingController = require('./geofencingController');
 const webauthnController = require('./webauthnController');
 const Student = require('../../models/Student');
+const User = require('../../models/User');
+const TeacherSubject = require('../../models/TeacherSubject');
+
+/**
+ * Quick mark attendance using student ID QR code
+ * This allows students to scan their own ID card to mark attendance
+ */
+exports.quickMarkAttendance = async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    const authenticatedUserId = req.user.id;
+
+    // Verify the scanned QR belongs to the authenticated student
+    if (user_id !== authenticatedUserId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You can only scan your own student ID' 
+      });
+    }
+
+    // Find student by user_id
+    const student = await Student.findOne({ user_id }).populate('class_id');
+    if (!student) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Student not found' 
+      });
+    }
+
+    // Find active session for this student's class
+    const now = new Date();
+    const session = await AttendanceSession.findOne({
+      is_active: true,
+      starts_at: { $lte: now },
+      ends_at: { $gte: now }
+    }).populate('teacher_subject_id');
+
+    if (!session) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No active attendance session found' 
+      });
+    }
+
+    // Check if already marked
+    const existingRecord = await AttendanceRecord.findOne({
+      session_id: session._id,
+      student_id: student._id
+    });
+
+    if (existingRecord) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Attendance already marked for this session' 
+      });
+    }
+
+    // Create attendance record
+    await AttendanceRecord.create({
+      session_id: session._id,
+      student_id: student._id,
+      status: 'PRESENT',
+      marked_at: now,
+      verification_method: 'STUDENT_ID_QR'
+    });
+
+    // Emit socket event to teacher
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`session-${session._id}`).emit('studentAttendance', {
+        student: {
+          id: student._id,
+          name: student.full_name,
+          roll_no: student.roll_no,
+          class: student.class_id ? student.class_id.name : 'Unknown'
+        },
+        timestamp: now,
+        sessionId: session._id.toString()
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Attendance marked successfully using student ID',
+      data: {
+        student: student.full_name,
+        session: session._id
+      }
+    });
+
+  } catch (error) {
+    console.error('Quick mark attendance error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+};
 
 exports.getActiveAttendanceSession = async (req, res) => {
   try {
     const studentId = req.user.student_id;
     const student = await Student.findById(studentId).populate('class_id');
     if (!student || !student.class_id) {
-      return res.status(404).json({ success: false, message: 'Student or class not found' });
+      return res.status(400).json({ success: false, message: 'Student or class not found' });
     }
 
     const now = new Date();
@@ -25,7 +124,7 @@ exports.getActiveAttendanceSession = async (req, res) => {
     }).populate('teacher_subject_id');
 
     if (!session) {
-      return res.status(404).json({ success: false, message: 'No active attendance session' });
+      return res.status(400).json({ success: false, message: 'No active attendance session' });
     }
 
     res.json({ success: true, session });
@@ -125,14 +224,23 @@ exports.markAttendance = async (req, res) => {
         attempt.fail_reason += 'No biometric data provided. ';
         allPassed = false;
       } else {
-        req.body.student_id = studentId;
-        req.body.credential = biometricData.credential;
-        req.body.session_id = sessionId;
-        const result = await webauthnController.verifyAuthenticationInternal(req.body);
-        attempt.biometric_verified = result.verified;
-        attempt.biometric_type = 'WEBAUTHN';
-        if (!result.verified) {
-          attempt.fail_reason += 'Biometric check failed. ';
+        try {
+          // Call webauthn verification
+          const result = await webauthnController.verifyAuthenticationInternal({
+            student_id: studentId,
+            credential: biometricData.credential,
+            session_id: sessionId
+          });
+          attempt.biometric_verified = result.verified;
+          attempt.biometric_type = 'WEBAUTHN';
+          if (!result.verified) {
+            attempt.fail_reason += 'Biometric check failed. ';
+            allPassed = false;
+          }
+        } catch (error) {
+          console.error('Biometric verification error:', error);
+          attempt.biometric_verified = false;
+          attempt.fail_reason += 'Biometric verification error. ';
           allPassed = false;
         }
       }
