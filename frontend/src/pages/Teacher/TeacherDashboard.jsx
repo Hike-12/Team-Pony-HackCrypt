@@ -29,10 +29,11 @@ const TeacherDashboard = () => {
   const [showStartSession, setShowStartSession] = useState(false)
   const [selectedLectureId, setSelectedLectureId] = useState(null)
   const [methodToggles, setMethodToggles] = useState({
-    enable_qr: true,
+    enable_face: false,
     enable_biometric: false,
-    enable_gps: false,
-    enable_device_fingerprint: false,
+    enable_geofencing: false,
+    enable_static_qr: false,
+    enable_dynamic_qr: false,
   })
 
   // Fetch today's lectures for dropdown

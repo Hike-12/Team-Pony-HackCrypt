@@ -21,10 +21,13 @@ export default function AttendanceVerification() {
   const [feedback, setFeedback] = useState(null);
   const [faceEmbedding, setFaceEmbedding] = useState(null);
 
-  // Fetch active session
+  // Fetch active session with polling
   useEffect(() => {
-    async function fetchSession() {
-      setLoading(true);
+    async function fetchSession(isPolling = false) {
+      // Don't show loading on polling requests
+      if (!isPolling) {
+        setLoading(true);
+      }
       try {
         const token = localStorage.getItem('studentToken');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/student/attendance/active-session`, {
@@ -36,16 +39,32 @@ export default function AttendanceVerification() {
           setSession(data.session);
         } else {
           setSession(null);
-          if (!data.success) toast.error(data.message || 'No active attendance session');
+          if (!data.success && !isPolling) toast.error(data.message || 'No active attendance session');
         }
       } catch (err) {
-        toast.error('Failed to fetch session');
+        if (!isPolling) {
+          toast.error('Failed to fetch session');
+        }
         setSession(null);
       } finally {
-        setLoading(false);
+        if (!isPolling) {
+          setLoading(false);
+        }
       }
     }
+    
+    // Initial fetch
     fetchSession();
+    
+    // Set up polling interval - fetch every 1 second when there's an active session
+    const pollInterval = setInterval(() => {
+      fetchSession(true);
+    }, 1000);
+    
+    // Cleanup interval on unmount
+    return () => {
+      clearInterval(pollInterval);
+    };
   }, [student]);
 
   // Fetch face biometric
@@ -159,6 +178,16 @@ export default function AttendanceVerification() {
   };
 
   const renderStepContent = (step) => {
+    if (!step || !step.key) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>No verification steps available for this session.</p>
+          <p className="text-sm mt-2">Please wait for your teacher to enable verification methods.</p>
+        </div>
+      );
+    }
+    
     switch (step.key) {
       case 'geofencing':
         return (
@@ -282,7 +311,14 @@ export default function AttendanceVerification() {
                     </div>
                     <div className="w-full">
                       {loading && <div className="text-center py-8">Loading...</div>}
-                      {!loading && session && renderStepContent(steps[currentStep - 1])}
+                      {!loading && session && steps.length > 0 && renderStepContent(steps[currentStep - 1])}
+                      {!loading && session && steps.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                          <p>No verification steps configured for this session.</p>
+                          <p className="text-sm mt-2">Please wait for your teacher to enable verification methods.</p>
+                        </div>
+                      )}
                       {!loading && !session && (
                         <div className="text-center py-8 text-muted-foreground">
                           No active attendance session. Please wait for your teacher to start.
