@@ -16,6 +16,28 @@ const getTheme = () =>
 const Landing = () => {
   const [theme, setTheme] = useState(getTheme());
 
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstall, setShowInstall] = useState(false);
+
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstall(true);
+    });
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstall(false);
+      }
+    }
+  };
+
+
   useEffect(() => {
     const observer = new MutationObserver(() => setTheme(getTheme()));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
@@ -46,6 +68,14 @@ const Landing = () => {
         <CTASection />
         <Footer />
       </main>
+        {showInstall && (
+        <button
+          onClick={handleInstallClick}
+          className="fixed bottom-6 right-6 bg-primary text-white px-6 py-3 rounded-xl shadow-lg z-50"
+        >
+          Install App
+        </button>
+      )}
     </div>
   )
 }

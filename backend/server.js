@@ -18,9 +18,21 @@ const io = new Server(server, {
 
 connectDB();
 
+const allowed = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://nomoreproxies-hackcrypt.vercel.app'
+];
+
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
-    credentials: true
+  origin: (origin, callback) => {
+    // allow non-browser requests (mobile apps / curl) - origin can be undefined
+    if (!origin) return callback(null, true);
+    if (allowed.includes(origin)) return callback(null, true);
+    console.warn('CORS: blocking origin', origin);
+    return callback(new Error('CORS blocked'));
+  },
+  credentials: true
 }));
 
 app.use(express.json());
@@ -38,6 +50,7 @@ app.use('/api/student/geofencing', require('./routes/Student/geofencingRoutes'))
 app.use('/api/teacher/auth', require('./routes/Teacher/authRoutes'));
 app.use('/api/teacher/attendance', require('./routes/Teacher/attendanceRoutes'));
 app.use('/api/teacher/leave', require('./routes/Teacher/leaveRoutes'));
+app.use('/api/teacher/attentiveness', require('./routes/Teacher/attentivenessRoutes'));
 app.use('/api/admin/students', require('./routes/adminStudentRoutes'));
 app.use('/api/admin/teachers', require('./routes/adminTeacherRoutes'));
 app.use('/api/admin/timetable', require('./routes/Admin/timetableRoutes'));
@@ -48,6 +61,7 @@ app.use('/api/admin/geofencing', require('./routes/Admin/geofencingRoutes'));
 app.use('/api/student/attendance', require('./routes/Student/attendanceMarkingRoutes'));
 app.use('/api/student/attendance-analytics', require('./routes/Student/attendanceAnalyticsRoutes'));
 app.use('/api/admin/csv', require('./routes/Admin/csvUploadRoutes'));
+app.use('/api/admin/analytics', require('./routes/Admin/analyticsRoutes'));
 
 const PORT = process.env.PORT || 8000;
 

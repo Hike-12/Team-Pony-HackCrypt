@@ -32,6 +32,11 @@ router.post('/start-session', startAttendanceSession);
 router.get('/today-lectures', getTodaysLectures);
 router.get('/active-sessions', getActiveSessions);
 
+// Stats endpoint
+router.get('/stats', async (req, res) => {
+  res.json({ success: true, stats: { totalStudents: 0, attendanceRate: 0 } });
+});
+
 // QR Attendance - Teacher routes
 router.post('/qr/start', startQRAttendance);
 router.get('/qr/refresh/:sessionId', refreshQRToken);

@@ -26,6 +26,14 @@ const TeacherDashboard = () => {
     totalStudents: 0,
     attendanceRate: 0,
   })
+  const [showStartSession, setShowStartSession] = useState(false)
+  const [selectedLectureId, setSelectedLectureId] = useState(null)
+  const [methodToggles, setMethodToggles] = useState({
+    enable_qr: true,
+    enable_biometric: false,
+    enable_gps: false,
+    enable_device_fingerprint: false,
+  })
 
   // Fetch today's lectures for dropdown
   useEffect(() => {
@@ -79,6 +87,7 @@ const TeacherDashboard = () => {
     let minDiff = Infinity
     lecturesToday.forEach(entry => {
       const slot = entry.slot_id
+      if (!slot || !slot.start_time) return; // Skip if slot or start_time is null
       const [h, m] = slot.start_time.split(':').map(Number)
       const startMinutes = h * 60 + m
       if (startMinutes > currentMinutes) {

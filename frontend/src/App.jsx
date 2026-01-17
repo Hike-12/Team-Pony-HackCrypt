@@ -13,6 +13,7 @@ import AdminClasses from "@/pages/Admin/AdminClasses";
 import AdminSubjects from "@/pages/Admin/AdminSubjects";
 import AdminTimetable from "@/pages/Admin/AdminTimetable";
 import AdminTeacherSubjects from "@/pages/Admin/AdminTeacherSubjects";
+import AdminAnalytics from "@/pages/Admin/AdminAnalytics";
 import LeaveApplication from "@/pages/Student/LeaveApplication";
 import LeaveHistory from "@/pages/Student/LeaveHistory";
 import StudentProfile from "@/pages/Student/Profile";
@@ -23,8 +24,8 @@ import StudentQRAttendance from "@/pages/Student/QRAttendance";
 import LeaveManagement from "@/pages/Teacher/LeaveManagement";
 import TeacherSchedule from "@/pages/Teacher/TeacherSchedule";
 import TeacherQRAttendance from "@/pages/Teacher/QRAttendance";
+import AttentivenessMonitor from "@/pages/Teacher/AttentivenessMonitor";
 import SessionManagement from "@/pages/Teacher/SessionManagement";
-
 
 import { Toaster } from '@/components/ui/sonner';
 import { StudentProvider } from './context/StudentContext';
@@ -61,6 +62,7 @@ const App = () => {
                   <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
                   <Route path="/teacher/schedule" element={<TeacherSchedule />} />
                   <Route path="/teacher/qr-attendance" element={<TeacherQRAttendance />} />
+                  <Route path="/teacher/attentiveness" element={<AttentivenessMonitor />} />
                   <Route path="/teacher/sessions" element={<SessionManagement />} />
                   <Route path="/teacher/leave-management" element={<LeaveManagement />} />
                 </Route>
@@ -72,6 +74,7 @@ const App = () => {
                 <Route path="/admin/subjects" element={<AdminSubjects />} />
                 <Route path="/admin/timetable" element={<AdminTimetable />} />
                 <Route path="/admin/teacher-subjects" element={<AdminTeacherSubjects />} />
+                <Route path="/admin/analytics" element={<AdminAnalytics />} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>

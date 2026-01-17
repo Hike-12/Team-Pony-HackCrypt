@@ -358,9 +358,19 @@ exports.scanQRAttendance = async (req, res) => {
         });
 
         if (existingRecord) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Attendance already marked for this session' 
+            // Don't emit socket event again - already marked
+            return res.status(200).json({ 
+                success: true,
+                message: 'Attendance already marked for this session',
+                data: {
+                    student: {
+                        name: student.full_name,
+                        roll_no: student.roll_no,
+                        class: student.class_id ? student.class_id.name : 'Unknown'
+                    },
+                    markedAt: existingRecord.marked_at,
+                    alreadyMarked: true
+                }
             });
         }
 
@@ -368,15 +378,26 @@ exports.scanQRAttendance = async (req, res) => {
         const teacherSubject = await TeacherSubject.findById(session.teacher_subject_id)
             .populate(['subject_id', 'teacher_id']);
 
-        // Create attendance record
-        const attendanceRecord = await AttendanceRecord.create({
-            session_id: sessionId,
-            student_id: student._id,
-            marked_at: now,
-            status: 'PRESENT',
-            marked_by_teacher_id: teacherSubject.teacher_id._id,
-            verification_method: 'QR_SCAN'
-        });
+        // Use findOneAndUpdate with upsert to prevent duplicate key errors
+        const attendanceRecord = await AttendanceRecord.findOneAndUpdate(
+            {
+                session_id: sessionId,
+                student_id: student._id
+            },
+            {
+                session_id: sessionId,
+                student_id: student._id,
+                marked_at: now,
+                status: 'PRESENT',
+                marked_by_teacher_id: teacherSubject.teacher_id._id,
+                verification_method: 'QR_SCAN'
+            },
+            {
+                upsert: true,
+                new: true,
+                setDefaultsOnInsert: true
+            }
+        );
 
         // Get IO instance and emit to teacher's room
         const io = req.app.get('io');
