@@ -41,7 +41,7 @@ export const AdminSubjectTable = forwardRef(function AdminSubjectTable(props, re
       });
       if (!res.ok) throw new Error('Failed to fetch subjects');
       const data = await res.json();
-      setSubjects(data);
+      setSubjects(data.data || []);
     } catch (err) {
       setError(err.message);
     } finally {

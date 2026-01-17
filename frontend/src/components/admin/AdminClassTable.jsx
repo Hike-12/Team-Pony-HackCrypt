@@ -45,7 +45,7 @@ export const AdminClassTable = forwardRef(function AdminClassTable(props, ref) {
       });
       if (!res.ok) throw new Error('Failed to fetch classes');
       const data = await res.json();
-      setClasses(data);
+      setClasses(data.data || []);
     } catch (err) {
       setError(err.message);
     } finally {

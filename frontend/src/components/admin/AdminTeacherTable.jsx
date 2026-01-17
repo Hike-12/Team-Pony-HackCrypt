@@ -41,7 +41,7 @@ export const AdminTeacherTable = forwardRef(function AdminTeacherTable(props, re
       });
       if (!res.ok) throw new Error('Failed to fetch teachers');
       const data = await res.json();
-      setTeachers(data);
+      setTeachers(data.data || []);
     } catch (err) {
       setError(err.message);
     } finally {

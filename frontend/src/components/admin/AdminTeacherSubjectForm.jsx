@@ -25,15 +25,15 @@ export function AdminTeacherSubjectForm({ onAssignmentAdded }) {
 
         if (teachersRes.ok) {
           const teachersData = await teachersRes.json();
-          setTeachers(teachersData);
+          setTeachers(teachersData.data || []);
         }
         if (subjectsRes.ok) {
           const subjectsData = await subjectsRes.json();
-          setSubjects(subjectsData);
+          setSubjects(subjectsData.data || []);
         }
         if (classesRes.ok) {
           const classesData = await classesRes.json();
-          setClasses(classesData);
+          setClasses(classesData.data || []);
         }
       } catch (err) {
         console.error('Failed to fetch dropdown data:', err);
