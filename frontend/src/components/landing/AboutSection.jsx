@@ -32,18 +32,22 @@ export default function AboutSection() {
                     <div className="relative mt-6 sm:mt-0">
                         <div
                             className="bg-linear-to-b aspect-67/34 relative rounded-2xl from-zinc-300 to-transparent p-px dark:from-zinc-700">
+                            {/* Dark mode timetable */}
                             <img
-                                src="/exercice-dark.png"
+                                src="/dash_photo1_dark.png"
                                 className="hidden rounded-[15px] dark:block"
-                                alt="payments illustration dark"
-                                width={1206}
-                                height={612} />
+                                alt="Timetable dark"
+                                width={1225}
+                                height={768}
+                            />
+                            {/* Light mode timetable */}
                             <img
-                                src="/exercice.png"
+                                src="/dash_photo1_light.png"
                                 className="rounded-[15px] shadow dark:hidden"
-                                alt="payments illustration light"
-                                width={1206}
-                                height={612} />
+                                alt="Timetable light"
+                                width={1225}
+                                height={768}
+                            />
                         </div>
                     </div>
                 </div>

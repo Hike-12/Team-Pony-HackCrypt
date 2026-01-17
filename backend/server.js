@@ -19,7 +19,7 @@ const io = new Server(server, {
 connectDB();
 
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: ['http://localhost:5173', 'http://localhost:5174', 'https://nomoreproxies-hackcrypt.vercel.app','https://nomoreproxies-hackcrypt.vercel.app/','nomoreproxies-hackcrypt.vercel.app'],
     credentials: true
 }));
 
