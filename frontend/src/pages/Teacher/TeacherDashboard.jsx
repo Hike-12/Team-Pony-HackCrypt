@@ -20,15 +20,6 @@ const TeacherDashboard = () => {
   const { teacher } = useContext(TeacherContext)
   const [nextLecture, setNextLecture] = useState(null)
   const [lecturesToday, setLecturesToday] = useState([])
-  const [selectedLectureId, setSelectedLectureId] = useState('')
-  const [showStartSession, setShowStartSession] = useState(false)
-  const [methodToggles, setMethodToggles] = useState({
-    enable_face: true,
-    enable_biometric: false,
-    enable_geofencing: false,
-    enable_static_qr: false,
-    enable_dynamic_qr: true
-  })
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [loadingLectures, setLoadingLectures] = useState(true)
   const [stats, setStats] = useState({
