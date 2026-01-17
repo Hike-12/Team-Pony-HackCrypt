@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { StudentSidebar } from '@/components/student/StudentSidebar';
 import { cn } from '@/lib/utils';
 import { useStudent } from '@/context/StudentContext';
@@ -8,21 +8,31 @@ import {
   TrendingUp,
   Calendar,
   Award,
-  Activity,
   BookOpen,
   AlertCircle,
   CheckCircle2,
   Target,
   CalendarClock,
-  Calculator
+  Calculator,
+  ChevronDown,
+  BarChart3,
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend
+} from 'recharts';
 
 const StudentDashboard = () => {
   const { student } = useStudent();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showWhatIf, setShowWhatIf] = useState({});
+  const [selectedSubject, setSelectedSubject] = useState(null);
 
   useEffect(() => {
     const targetId = student?.student_id || student?.id || student?._id;
@@ -57,62 +67,29 @@ const StudentDashboard = () => {
     }
   };
 
-  // Helper function to calculate what-if percentage
   const calculateWhatIfMiss = (subject) => {
     const newPresent = subject.present;
     const newTotal = subject.total + 1;
     return ((newPresent / newTotal) * 100).toFixed(1);
   };
 
-  // Helper function to get subject colors
   const getSubjectColor = (index) => {
     const colors = [
-      '#3b82f6',
-      '#10b981',
-      '#f59e0b',
-      '#8b5cf6',
-      '#ec4899'
+      '#3b82f6', // Blue
+      '#10b981', // Emerald
+      '#f59e0b', // Amber
+      '#8b5cf6', // Purple
+      '#ec4899', // Pink
+      '#06b6d4', // Cyan
     ];
     return colors[index % colors.length];
   };
 
-  // Helper function to get accent color based on trend
-  const getStatColor = (trend) => {
-    if (trend === 'positive') return 'bg-emerald-50 border-emerald-200';
-    if (trend === 'negative') return 'bg-orange-50 border-orange-200';
-    return 'bg-slate-50 border-slate-200';
-  };
-
-  const getStatIconColor = (trend) => {
-    if (trend === 'positive') return 'bg-emerald-100 text-emerald-600';
-    if (trend === 'negative') return 'bg-orange-100 text-orange-600';
-    return 'bg-slate-100 text-slate-600';
-  };
-
-  // Helper function to get subtle encouragement message
-  const getEncouragementMessage = (subject) => {
-    const rate = parseFloat(subject.rate);
-    
-    if (rate >= 85) {
-      return "Excellent consistency! Your dedication is truly commendable.";
-    } else if (rate >= 75) {
-      return "You're doing well. Maintaining this pace will keep you comfortably above the threshold.";
-    } else if (rate >= 65) {
-      return "A few more attended lectures will put you in a much safer position.";
-    } else if (rate >= 55) {
-      return "Every lecture counts now. Each attendance significantly improves your standing.";
-    } else {
-      return "This is the perfect time to turn things around. Every lecture you attend makes a real difference.";
-    }
-  };
-
-  // Process timeline data for multi-line chart
   const processTimelineForChart = () => {
     if (!analytics || !analytics.subjectTimelines) return [];
-    
+
     const dateMap = new Map();
-    
-    // Collect all dates and initialize
+
     Object.entries(analytics.subjectTimelines).forEach(([subjectId, timeline]) => {
       timeline.forEach(entry => {
         const date = new Date(entry.date).toISOString().split('T')[0];
@@ -122,13 +99,11 @@ const StudentDashboard = () => {
       });
     });
 
-    // Ensure today's date exists so the rightmost point is always today
     const today = new Date().toISOString().split('T')[0];
     if (!dateMap.has(today)) {
       dateMap.set(today, { date: today });
     }
 
-    // Initialize every date entry with all subject keys set to null for consistent series
     const subjectCodes = (analytics.subjectWiseAnalytics || []).map(s => s.subjectCode);
     for (const dataEntry of dateMap.values()) {
       subjectCodes.forEach(code => {
@@ -136,7 +111,6 @@ const StudentDashboard = () => {
       });
     }
 
-    // Add subject data to each date (overwrite nulls where data exists)
     analytics.subjectWiseAnalytics.forEach((subject) => {
       const timeline = analytics.subjectTimelines[subject.subjectId];
       if (timeline) {
@@ -150,135 +124,195 @@ const StudentDashboard = () => {
       }
     });
 
-    // Convert to array and sort by date ascending, then take the last 30 days (including today)
+    // Sort by date ASCENDING (oldest to newest) so today appears at the RIGHT end
     const sortedData = Array.from(dateMap.values())
       .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .slice(-30); // Last 30 days
+      .slice(-30);
 
     return sortedData;
   };
 
-  // Stats cards using actual data
-  const stats = analytics ? [
-    {
-      title: 'Attendance Rate',
-      value: `${analytics.overview.overallAttendanceRate}%`,
-      icon: TrendingUp,
-      trend: analytics.overview.overallAttendanceRate >= 75 ? 'positive' : 'negative'
-    },
-    {
-      title: 'Classes Today',
-      value: analytics.overview.classesToday,
-      icon: Calendar
-    },
-    {
-      title: 'Performance Score',
-      value: analytics.overview.performanceScore,
-      icon: Award
-    },
-    {
-      title: 'Total Lectures',
-      value: analytics.overview.totalLectures,
-      icon: BookOpen
-    }
-  ] : [];
+  const getAttendanceStatus = (rate) => {
+    const numRate = parseFloat(rate);
+    if (numRate >= 75) return {
+      label: 'Excellent',
+      color: 'text-emerald-600 dark:text-emerald-400',
+      bgColor: 'bg-emerald-500'
+    };
+    if (numRate >= 60) return {
+      label: 'At Risk',
+      color: 'text-amber-600 dark:text-amber-400',
+      bgColor: 'bg-amber-500'
+    };
+    return {
+      label: 'Critical',
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-500'
+    };
+  };
+
+  const displayedSubject = selectedSubject
+    ? analytics?.subjectWiseAnalytics?.find(s => s.subjectId === selectedSubject)
+    : null;
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full bg-background">
       <StudentSidebar />
-      <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-64 ml-0 bg-background pb-20 md:pb-0">
+      <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-64 ml-0 pb-20 md:pb-0">
         {/* Header */}
-        <header className="sticky top-0 z-10 flex h-16 mt-1 items-center justify-between border-b bg-background px-4 md:px-8">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-foreground flex items-center justify-center">
-              <Activity className="w-5 h-5 text-background" />
+            <div className="w-8 h-8 rounded-lg bg-foreground/5 flex items-center justify-center">
+              <BarChart3 className="w-4 h-4 text-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold">Dashboard</h1>
-              <p className="text-xs text-muted-foreground">Welcome back, {student?.name?.split(' ')[0] || 'Student'}</p>
+              <h1 className="text-lg font-semibold">Dashboard</h1>
             </div>
           </div>
+          <p className="text-sm text-muted-foreground hidden sm:block">
+            {student?.name || 'Student'}
+          </p>
         </header>
 
-        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+        <div className="p-6 max-w-[1400px] mx-auto space-y-6">
           {loading ? (
             <div className="flex items-center justify-center min-h-[400px]">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-muted-foreground font-medium">Loading analytics...</p>
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+                <p className="text-sm text-muted-foreground">Loading analytics...</p>
               </div>
             </div>
           ) : !analytics ? (
-            <div className="rounded-lg border border-muted bg-muted/5 p-8 text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">No Attendance Data</h3>
+            <div className="rounded-lg border bg-card p-12 text-center">
+              <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+              <h3 className="text-lg font-semibold mb-1">No Attendance Data</h3>
               <p className="text-sm text-muted-foreground">
                 Start attending classes to see your analytics here.
               </p>
             </div>
           ) : (
             <>
-              {/* Stats Cards */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {stats.map((stat) => (
-                  <motion.div
-                    key={stat.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative group"
-                  >
-                    <div className={`h-full p-6 rounded-lg border bg-card transition-all hover:shadow-md ${getStatColor(stat.trend)}`}>
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`w-10 h-10 rounded-md flex items-center justify-center ${getStatIconColor(stat.trend)}`}>
-                          <stat.icon className="w-5 h-5" />
-                        </div>
-                        {stat.trend === 'positive' && (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                        )}
-                        {stat.trend === 'negative' && (
-                          <AlertCircle className="w-5 h-5 text-orange-600" />
-                        )}
+              {/* 3-Card Stats Grid */}
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+                {/* Today's Classes */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-lg border bg-card p-6"
+                >
+                  <div className="flex flex-col h-full justify-between">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       </div>
-                      <h3 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
-                        {stat.title}
-                      </h3>
-                      <p className="text-3xl font-bold text-foreground">
-                        {stat.value}
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Today's Classes
                       </p>
                     </div>
-                  </motion.div>
-                ))}
+                    <div>
+                      <p className="text-4xl font-bold text-foreground mb-1">
+                        {analytics.overview.classesToday}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Scheduled for today</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Total Lectures */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="rounded-lg border bg-card p-6"
+                >
+                  <div className="flex flex-col h-full justify-between">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Total Lectures
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-4xl font-bold text-foreground mb-1">
+                        {analytics.overview.totalLectures}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Attended so far</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Performance Score */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="rounded-lg border bg-card p-6"
+                >
+                  <div className="flex flex-col h-full justify-between">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                        <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Performance
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-4xl font-bold text-foreground mb-1">
+                        {analytics.overview.performanceScore}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Overall score</p>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
 
-              {/* Attendance Trend Line Chart */}
+              {/* Attendance Trend Chart */}
               {analytics.timelineData && analytics.timelineData.length > 0 && (
-                <div className="rounded-lg border bg-card p-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="rounded-lg border bg-card p-6"
+                >
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4 text-blue-600" />
+                    <div className="w-8 h-8 rounded-md bg-indigo-500/10 flex items-center justify-center">
+                      <TrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <div>
                       <h2 className="text-base font-semibold">Attendance Trend</h2>
-                      <p className="text-xs text-muted-foreground">Last 30 days by subject</p>
+                      <p className="text-xs text-muted-foreground">Last 30 days performance</p>
                     </div>
                   </div>
-                  
-                  <ResponsiveContainer width="100%" height={280}>
-                    <LineChart data={processTimelineForChart()}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis 
-                        dataKey="date" 
+
+                  <ResponsiveContainer width="100%" height={320}>
+                    <AreaChart data={processTimelineForChart()}>
+                      <defs>
+                        {analytics.subjectWiseAnalytics.map((subject, index) => (
+                          <linearGradient key={subject.subjectId} id={`gradient${index}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={getSubjectColor(index)} stopOpacity={0.3} />
+                            <stop offset="95%" stopColor={getSubjectColor(index)} stopOpacity={0.05} />
+                          </linearGradient>
+                        ))}
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                      <XAxis
+                        dataKey="date"
                         tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                         tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        stroke="hsl(var(--border))"
                       />
-                      <YAxis 
+                      <YAxis
                         tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                         domain={[0, 100]}
                         tickFormatter={(value) => `${value}%`}
+                        stroke="hsl(var(--border))"
                       />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--popover))',
                           border: '1px solid hsl(var(--border))',
                           borderRadius: '8px',
                           fontSize: '12px'
@@ -286,204 +320,261 @@ const StudentDashboard = () => {
                         labelFormatter={(value) => new Date(value).toLocaleDateString()}
                         formatter={(value) => [`${value}%`]}
                       />
-                      <Legend 
-                        wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}
+                      <Legend
+                        wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }}
                       />
                       {analytics.subjectWiseAnalytics.map((subject, index) => (
-                        <Line
+                        <Area
                           key={subject.subjectId}
                           type="monotone"
                           dataKey={subject.subjectCode}
                           name={subject.subjectName}
                           stroke={getSubjectColor(index)}
                           strokeWidth={2.5}
-                          dot={{ r: 4, fill: getSubjectColor(index) }}
-                          activeDot={{ r: 6, fill: getSubjectColor(index) }}
+                          fill={`url(#gradient${index})`}
                           connectNulls
                         />
                       ))}
-                    </LineChart>
+                    </AreaChart>
                   </ResponsiveContainer>
-                </div>
+                </motion.div>
               )}
 
-              {/* Subject-wise Analytics */}
-              <div className="rounded-lg border bg-card p-6">
+              {/* Subject Cards - Grid Layout */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-8 h-8 rounded-md bg-amber-100 flex items-center justify-center">
-                    <BookOpen className="w-4 h-4 text-amber-600" />
+                  <div className="w-8 h-8 rounded-md bg-amber-500/10 flex items-center justify-center">
+                    <BookOpen className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold">Subject-wise Analysis</h2>
-                    <p className="text-xs text-muted-foreground">75% minimum · Semester ends April 30, 2026</p>
+                    <h2 className="text-base font-semibold">Subject Performance</h2>
+                    <p className="text-xs text-muted-foreground">Click any subject for detailed analysis</p>
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {analytics.subjectWiseAnalytics && analytics.subjectWiseAnalytics.length > 0 ? (
-                    analytics.subjectWiseAnalytics.map((subject) => (
-                      <div
-                        key={subject.subjectId}
-                        className="p-5 rounded-lg border bg-card"
-                      >
-                        <div className="flex items-start justify-between gap-4 mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-base">{subject.subjectName}</h3>
-                              <span className="text-xs px-2 py-0.5 rounded bg-foreground/5 text-foreground font-medium">
+                    analytics.subjectWiseAnalytics.map((subject, idx) => {
+                      const subjectStatus = getAttendanceStatus(subject.rate);
+                      const isSelected = selectedSubject === subject.subjectId;
+
+                      return (
+                        <motion.div
+                          key={subject.subjectId}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.05 * idx }}
+                          onClick={() => setSelectedSubject(isSelected ? null : subject.subjectId)}
+                          className={cn(
+                            "rounded-lg border bg-card p-5 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]",
+                            isSelected && "ring-2 ring-primary shadow-lg"
+                          )}
+                        >
+                          {/* Subject Header */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <div
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: getSubjectColor(idx) }}
+                                />
+                                <h3 className="font-bold text-sm">{subject.subjectName}</h3>
+                              </div>
+                              <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-medium">
                                 {subject.subjectCode}
                               </span>
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>{subject.present} / {subject.total} lectures</span>
-                              {subject.projection && (
-                                <span className="flex items-center gap-1">
-                                  <CalendarClock className="w-3.5 h-3.5" />
-                                  {subject.projection.daysRemaining} days remaining
+                          </div>
+
+                          {/* Attendance Circle */}
+                          <div className="flex items-center justify-center mb-4">
+                            <div className="relative w-28 h-28">
+                              <svg className="w-full h-full transform -rotate-90">
+                                <circle
+                                  cx="56"
+                                  cy="56"
+                                  r="50"
+                                  stroke="hsl(var(--muted))"
+                                  strokeWidth="8"
+                                  fill="none"
+                                />
+                                <circle
+                                  cx="56"
+                                  cy="56"
+                                  r="50"
+                                  stroke={getSubjectColor(idx)}
+                                  strokeWidth="8"
+                                  fill="none"
+                                  strokeDasharray={`${(parseFloat(subject.rate) / 100) * 314} 314`}
+                                  strokeLinecap="round"
+                                  className="transition-all duration-700"
+                                />
+                              </svg>
+                              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-2xl font-bold text-foreground">
+                                  {subject.rate}%
                                 </span>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <div className="text-2xl font-bold text-foreground">
-                              {subject.rate}%
-                            </div>
-                            {parseFloat(subject.rate) >= 75 ? (
-                              <CheckCircle2 className="w-6 h-6 text-foreground" />
-                            ) : (
-                              <AlertCircle className="w-6 h-6 text-foreground" />
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Progress Bar */}
-                        <div className="w-full bg-slate-100 rounded-full h-2 mb-4 overflow-hidden">
-                          <div
-                            className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all"
-                            style={{ width: `${Math.min(100, subject.rate)}%` }}
-                          />
-                        </div>
-
-                        {/* Projection Info */}
-                        {subject.projection && (
-                          <div className="grid md:grid-cols-3 gap-3 mb-4">
-                            <div className="text-center p-3 bg-blue-50 border border-blue-200 rounded-md">
-                              <div className="flex items-center justify-center gap-1 mb-1">
-                                <Target className="w-3.5 h-3.5 text-blue-600" />
-                                <p className="text-xs font-medium text-blue-700">Projected Total</p>
-                              </div>
-                              <p className="text-xl font-bold text-blue-900">{subject.projection.totalProjectedLectures}</p>
-                              <p className="text-xs text-blue-600 mt-1">
-                                +{subject.projection.estimatedRemainingLectures} remaining
-                              </p>
-                            </div>
-
-                            {subject.projection.currentlyAbove75 ? (
-                              <div className="text-center p-3 bg-emerald-50 border border-emerald-200 rounded-md">
-                                <div className="flex items-center justify-center gap-1 mb-1">
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                  <p className="text-xs font-medium text-emerald-700">Can Miss</p>
-                                </div>
-                                <p className="text-xl font-bold text-emerald-900">{subject.projection.canAffordToMiss}</p>
-                                <p className="text-xs text-emerald-600 mt-1">lectures safely</p>
-                              </div>
-                            ) : (
-                              <div className="text-center p-3 bg-orange-50 border border-orange-200 rounded-md">
-                                <div className="flex items-center justify-center gap-1 mb-1">
-                                  <AlertCircle className="w-3.5 h-3.5 text-orange-600" />
-                                  <p className="text-xs font-medium text-orange-700">Must Attend</p>
-                                </div>
-                                <p className="text-xl font-bold text-orange-900">{subject.projection.mustAttend}</p>
-                                <p className="text-xs text-orange-600 mt-1">lectures minimum</p>
-                              </div>
-                            )}
-
-                            <div className="text-center p-3 bg-purple-50 border border-purple-200 rounded-md">
-                              <div className="flex items-center justify-center gap-1 mb-1">
-                                <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
-                                <p className="text-xs font-medium text-purple-700">75% Target</p>
-                              </div>
-                              <p className="text-xl font-bold text-purple-900">{subject.projection.requiredForMinimum}</p>
-                              <p className="text-xs text-purple-600 mt-1">lectures needed</p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Status Message */}
-                        <div className="p-3 rounded-md text-sm border mb-3" style={{
-                          backgroundColor: subject.projection?.currentlyAbove75 ? '#f0fdf4' : '#fef3c7',
-                          borderColor: subject.projection?.currentlyAbove75 ? '#bbf7d0' : '#fde68a'
-                        }}>
-                          <div className="flex items-start gap-2">
-                            {subject.projection?.currentlyAbove75 ? (
-                              <>
-                                <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-600" />
-                                <span className="text-emerald-800">You're on track. Keep it up to maintain above 75%.</span>
-                              </>
-                            ) : (
-                              <>
-                                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-700" />
-                                <span className="text-amber-800">Action needed. Attend at least {subject.projection?.mustAttend} more lectures to reach 75%.</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* What-If Calculator and Encouragement */}
-                        <div className="space-y-3">
-                          <button
-                            onClick={() => setShowWhatIf(prev => ({ ...prev, [subject.subjectId]: !prev[subject.subjectId] }))}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm border rounded-md bg-card hover:bg-foreground/5 transition-colors"
-                          >
-                            <Calculator className="w-4 h-4" />
-                            <span>What if I miss one lecture?</span>
-                          </button>
-
-                          {showWhatIf[subject.subjectId] && (
-                            <div className="p-3 rounded-md bg-blue-50 border border-blue-200 text-sm">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-blue-700 font-medium">New percentage:</span>
-                                <span className="font-bold text-lg text-blue-900">{calculateWhatIfMiss(subject)}%</span>
-                              </div>
-                              <div className="text-xs text-blue-600">
-                                {parseFloat(calculateWhatIfMiss(subject)) < 75 ? (
-                                  <span>Missing one more lecture would put you below the 75% threshold.</span>
-                                ) : parseFloat(calculateWhatIfMiss(subject)) < 80 ? (
-                                  <span>You'd still be above the minimum, but your buffer would be reduced.</span>
-                                ) : (
-                                  <span>You'd remain in a safe zone, but consistency is key.</span>
-                                )}
+                                <span className={cn("text-xs font-medium", subjectStatus.color)}>
+                                  {subjectStatus.label}
+                                </span>
                               </div>
                             </div>
-                          )}
-
-                          {/* Subtle Encouragement */}
-                          <div className="p-3 rounded-md bg-gradient-to-r from-slate-50 to-slate-100 text-xs text-slate-600 italic border border-slate-200">
-                            {getEncouragementMessage(subject)}
                           </div>
-                        </div>
-                      </div>
-                    ))
+
+                          {/* Stats Row */}
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div className="text-center p-2 bg-muted/30 rounded-md">
+                              <p className="text-xs text-muted-foreground mb-0.5">Present</p>
+                              <p className="text-lg font-bold text-foreground">{subject.present}</p>
+                            </div>
+                            <div className="text-center p-2 bg-muted/30 rounded-md">
+                              <p className="text-xs text-muted-foreground mb-0.5">Total</p>
+                              <p className="text-lg font-bold text-foreground">{subject.total}</p>
+                            </div>
+                          </div>
+
+                          {/* View Details Indicator */}
+                          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                            <span>{isSelected ? 'Click to collapse' : 'Click for details'}</span>
+                            <ChevronDown className={cn(
+                              "w-3.5 h-3.5 transition-transform",
+                              isSelected && "rotate-180"
+                            )} />
+                          </div>
+                        </motion.div>
+                      );
+                    })
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="col-span-full text-center py-12 text-muted-foreground">
                       <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                      <p>No subject data available yet</p>
+                      <p className="text-sm">No subject data available</p>
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Welcome Section */}
-              <div className="rounded-lg border bg-card p-6">
-                <h2 className="text-lg font-semibold mb-2">
-                  Welcome, {student?.name || student?.full_name || 'Student'}!
-                </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Track your attendance, monitor your progress, and stay on top of your academic goals. 
-                  The dashboard provides real-time insights into your attendance patterns and helps you plan ahead.
-                </p>
-              </div>
+              {/* Selected Subject Details */}
+              <AnimatePresence>
+                {displayedSubject && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-lg border bg-card p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h3 className="text-lg font-bold mb-1">{displayedSubject.subjectName} - Detailed Analysis</h3>
+                          <p className="text-sm text-muted-foreground">Comprehensive breakdown and projections</p>
+                        </div>
+                        <button
+                          onClick={() => setSelectedSubject(null)}
+                          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Close
+                        </button>
+                      </div>
+
+                      {/* Projection Cards */}
+                      {displayedSubject.projection && (
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                          <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/30 rounded-lg">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                              <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">Projected Total</p>
+                            </div>
+                            <p className="text-2xl font-bold text-blue-900 dark:text-blue-300">
+                              {displayedSubject.projection.totalProjectedLectures}
+                            </p>
+                            <p className="text-xs text-blue-600 dark:text-blue-500 mt-1">
+                              +{displayedSubject.projection.estimatedRemainingLectures} remaining
+                            </p>
+                          </div>
+
+                          {displayedSubject.projection.currentlyAbove75 ? (
+                            <div className="text-center p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/30 rounded-lg">
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Can Miss</p>
+                              </div>
+                              <p className="text-2xl font-bold text-emerald-900 dark:text-emerald-300">
+                                {displayedSubject.projection.canAffordToMiss}
+                              </p>
+                              <p className="text-xs text-emerald-600 dark:text-emerald-500 mt-1">lectures safely</p>
+                            </div>
+                          ) : (
+                            <div className="text-center p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-lg">
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Must Attend</p>
+                              </div>
+                              <p className="text-2xl font-bold text-amber-900 dark:text-amber-300">
+                                {displayedSubject.projection.mustAttend}
+                              </p>
+                              <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">lectures minimum</p>
+                            </div>
+                          )}
+
+                          <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/30 rounded-lg">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <TrendingUp className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                              <p className="text-xs font-semibold text-purple-700 dark:text-purple-400">75% Target</p>
+                            </div>
+                            <p className="text-2xl font-bold text-purple-900 dark:text-purple-300">
+                              {displayedSubject.projection.requiredForMinimum}
+                            </p>
+                            <p className="text-xs text-purple-600 dark:text-purple-500 mt-1">lectures needed</p>
+                          </div>
+
+                          <div className="text-center p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-900/30 rounded-lg">
+                            <div className="flex items-center justify-center gap-2 mb-2">
+                              <CalendarClock className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                              <p className="text-xs font-semibold text-slate-700 dark:text-slate-400">Days Left</p>
+                            </div>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-slate-300">
+                              {displayedSubject.projection.daysRemaining}
+                            </p>
+                            <p className="text-xs text-slate-600 dark:text-slate-500 mt-1">until semester end</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* What-If Calculator */}
+                      <div className="p-4 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/30">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Calculator className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                            <div>
+                              <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">What if I miss one lecture?</p>
+                              <p className="text-xs text-indigo-600 dark:text-indigo-500 mt-0.5">
+                                {parseFloat(calculateWhatIfMiss(displayedSubject)) < 75 ? (
+                                  "⚠️ You would fall below the 75% threshold"
+                                ) : parseFloat(calculateWhatIfMiss(displayedSubject)) < 80 ? (
+                                  "Your buffer would be reduced"
+                                ) : (
+                                  "You'd remain in a safe zone"
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-indigo-600 dark:text-indigo-500">New percentage</p>
+                            <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-300">
+                              {calculateWhatIfMiss(displayedSubject)}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           )}
         </div>
@@ -493,4 +584,3 @@ const StudentDashboard = () => {
 };
 
 export default StudentDashboard;
-              
