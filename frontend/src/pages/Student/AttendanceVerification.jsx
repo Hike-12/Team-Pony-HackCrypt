@@ -4,7 +4,7 @@ import { StudentSidebar } from '@/components/student/StudentSidebar';
 import AttendanceScanner from '@/components/student/AttendanceScanner';
 import { BiometricVerification } from '@/components/student/BiometricVerification';
 import { LocationVerification } from '@/components/student/LocationVerification';
-import StudentQRScanner from '@/components/Student/studentQRScanner';
+import StudentQRScanner from '@/components/Student/StudentQRScanner';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, MapPin, Camera, Fingerprint, QrCode, ShieldCheck, AlertCircle } from 'lucide-react';
