@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { StudentSidebar } from '@/components/student/StudentSidebar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { StudentContext } from '@/context/StudentContext';
 import {
@@ -14,8 +16,14 @@ import {
     FaEnvelope,
     FaImage,
     FaQrcode,
-    FaTimes
+    FaTimes,
+    FaUniversity,
+    FaGraduationCap,
+    FaMapMarkerAlt,
+    FaDownload
 } from 'react-icons/fa';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Profile = () => {
     const { student } = useContext(StudentContext);
@@ -39,9 +47,12 @@ const Profile = () => {
                     phone: student?.phone || 'N/A',
                     gender: student?.gender || 'N/A',
                     class_name: student?.class_name || 'N/A',
+                    division: student?.division || 'A',
                     image_url: student?.image_url || null,
                     email: student?.email || 'N/A',
-                    created_at: student?.created_at || new Date().toISOString()
+                    created_at: student?.created_at || new Date().toISOString(),
+                    address: "Campus Hostel, Block B", // Placeholder
+                    blood_group: "O+" // Placeholder
                 });
                 setLoading(false);
                 return;
@@ -61,6 +72,7 @@ const Profile = () => {
                     phone: student?.phone || 'N/A',
                     gender: student?.gender || 'N/A',
                     class_name: student?.class_name || 'N/A',
+                    division: student?.division || 'A',
                     image_url: student?.image_url || null,
                     email: student?.email || 'N/A',
                     created_at: student?.created_at || new Date().toISOString()
@@ -68,13 +80,13 @@ const Profile = () => {
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
-            // Fallback to context data
             setProfileData({
                 full_name: student?.name || 'N/A',
                 roll_no: student?.roll_no || 'N/A',
                 phone: student?.phone || 'N/A',
                 gender: student?.gender || 'N/A',
                 class_name: student?.class_name || 'N/A',
+                division: student?.division || 'A',
                 image_url: student?.image_url || null,
                 email: student?.email || 'N/A',
                 created_at: student?.created_at || new Date().toISOString()
@@ -90,276 +102,277 @@ const Profile = () => {
         return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     };
 
-    const ProfileField = ({ icon: Icon, label, value, iconColor = "text-primary" }) => (
-        <div className="group flex items-start gap-4 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 transition-all duration-300 hover:shadow-md">
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 ${iconColor} transition-transform duration-300 group-hover:scale-110`}>
-                <Icon className="h-5 w-5" />
+    // Compact Profile Field
+    const ProfileField = ({ icon: Icon, label, value, className }) => (
+        <div className={cn("flex items-center gap-3 p-3 rounded-lg border bg-card/50 hover:bg-card transition-colors", className)}>
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <Icon className="w-4 h-4" />
             </div>
-            <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-muted-foreground mb-1">{label}</p>
-                <p className="text-base font-semibold text-foreground truncate">{value || 'N/A'}</p>
+            <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                <p className="text-sm font-semibold truncate text-foreground">{value || 'N/A'}</p>
             </div>
         </div>
     );
 
-    // QR Code Modal Component
+    // QR Code Modal
     const QRModal = () => (
-        <>
-            {/* Backdrop */}
-            <div
-                className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${showQRModal ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                    }`}
-                onClick={() => setShowQRModal(false)}
-            />
-
-            {/* Modal */}
-            <div
-                className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${showQRModal ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                    }`}
-            >
-                <div
-                    className={`relative bg-background border-2 border-primary rounded-2xl shadow-2xl transform transition-all duration-300 ${showQRModal ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'
-                        }`}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    {/* Close Button */}
-                    <button
+        <AnimatePresence>
+            {showQRModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         onClick={() => setShowQRModal(false)}
-                        className="absolute -top-4 -right-4 h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:bg-primary/90 transition-all duration-200 hover:scale-110 z-10"
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                    />
+                    <motion.div
+                        initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                        className="relative w-full max-w-sm bg-background border rounded-2xl shadow-2xl overflow-hidden z-10"
                     >
-                        <FaTimes className="h-5 w-5" />
-                    </button>
-
-                    {/* Content */}
-                    <div className="p-8">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                                Student ID Card
-                            </div>
-
-                            {profileData?.id_qr_url ? (
-                                <div className="relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    <img
-                                        src={profileData.id_qr_url}
-                                        alt="Student QR Code"
-                                        className="relative w-80 h-80 object-contain p-4 rounded-xl bg-white"
-                                    />
-                                </div>
-                            ) : (
-                                <div className="w-80 h-80 flex items-center justify-center bg-muted rounded-xl">
-                                    <div className="text-center">
-                                        <FaQrcode className="h-16 w-16 text-muted-foreground mx-auto mb-2" />
-                                        <p className="text-muted-foreground">QR Code not available</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="text-center mt-4">
-                                <p className="text-lg font-semibold">{profileData?.full_name}</p>
-                                <p className="text-sm text-muted-foreground">Roll No: {profileData?.roll_no}</p>
-                            </div>
+                        <div className="relative h-24 bg-primary flex items-center justify-center overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+                            <h3 className="text-primary-foreground font-bold text-lg relative z-10">Digital Identity</h3>
+                            <button
+                                onClick={() => setShowQRModal(false)}
+                                className="absolute top-4 right-4 text-primary-foreground/80 hover:text-white transition-colors"
+                            >
+                                <FaTimes className="w-5 h-5" />
+                            </button>
                         </div>
-                    </div>
+
+                        <div className="p-8 flex flex-col items-center">
+                            <div className="w-24 h-24 rounded-full border-4 border-background -mt-16 shadow-lg overflow-hidden bg-muted mb-4 z-10">
+                                {profileData?.image_url ? (
+                                    <img src={profileData.image_url} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <FaUser className="w-12 h-12 m-auto text-muted-foreground mt-4" />
+                                )}
+                            </div>
+
+                            <div className="text-center mb-6">
+                                <h2 className="text-xl font-bold">{profileData?.full_name}</h2>
+                                <p className="text-sm text-muted-foreground font-mono">{profileData?.roll_no}</p>
+                            </div>
+
+                            <div className="bg-white p-4 rounded-2xl shadow-inner border mb-6">
+                                {profileData?.id_qr_url ? (
+                                    <img src={profileData.id_qr_url} alt="Student QR" className="w-48 h-48 object-contain mix-blend-multiply" />
+                                ) : (
+                                    <div className="w-48 h-48 flex items-center justify-center text-muted-foreground">
+                                        <FaQrcode className="w-12 h-12 opacity-20" />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-3 w-full">
+                                <Button
+                                    className="flex-1 gap-2"
+                                    onClick={async () => {
+                                        if (profileData?.id_qr_url) {
+                                            try {
+                                                const response = await fetch(profileData.id_qr_url);
+                                                const blob = await response.blob();
+                                                const url = window.URL.createObjectURL(blob);
+                                                const link = document.createElement('a');
+                                                link.href = url;
+                                                link.download = `${profileData.full_name.replace(/\s+/g, '_')}_ID_QR.png`;
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                                window.URL.revokeObjectURL(url);
+                                                toast.success('QR Code downloaded successfully');
+                                            } catch (error) {
+                                                console.error('Download failed:', error);
+                                                toast.error('Failed to download QR Code');
+                                            }
+                                        } else {
+                                            toast.error('No QR Code available to download');
+                                        }
+                                    }}
+                                >
+                                    <FaDownload className="w-4 h-4" />
+                                    Download QR
+                                </Button>
+                            </div>
+
+                            <p className="text-xs text-muted-foreground text-center mt-4 max-w-[200px]">
+                                Scan this QR code at university terminals for attendance and access.
+                            </p>
+                        </div>
+                    </motion.div>
                 </div>
-            </div>
-        </>
+            )}
+        </AnimatePresence>
     );
 
     if (loading) {
         return (
-            <div className="flex min-h-screen w-full">
+            <div className="flex min-h-screen w-full bg-background">
                 <StudentSidebar />
-                <main className="flex-1 min-h-screen w-full ml-64 bg-background">
-                    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
-                        <h1 className="text-lg font-semibold">My Profile</h1>
-                    </header>
-                    <div className="flex items-center justify-center h-[calc(100vh-3.5rem)]">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                    </div>
+                <main className="flex-1 min-h-screen w-full md:ml-64 flex items-center justify-center">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </main>
             </div>
         );
     }
 
     return (
-        <div className="flex min-h-screen w-full">
+        <div className="flex min-h-screen w-full bg-muted/20 font-sans">
             <StudentSidebar />
-            <main className="flex-1 min-h-screen w-full transition-all duration-300 md:ml-64 ml-0 bg-background pb-20 md:pb-0">
-                <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 md:px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                    <h1 className="text-lg font-semibold">My Profile</h1>
+
+            <main className="flex-1 w-full transition-all duration-300 md:ml-64 ml-0 flex flex-col min-h-screen">
+                <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b px-6 py-4">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                            <FaUser className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold tracking-tight text-foreground">Student Profile</h1>
+                            <p className="text-xs text-muted-foreground">Manage your personal and academic information</p>
+                        </div>
+                    </div>
                 </header>
 
-                <div className="p-6 max-w-5xl mx-auto">
-                    {/* Profile Header Card */}
-                    <Card className="mb-6 overflow-hidden border-2 animate-in fade-in-50 duration-500">
-                        <CardContent className="p-6">
-                            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                                {/* Profile Picture */}
-                                <div className="relative group">
-                                    <div className="h-32 w-32 rounded-full border-4 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center transition-all duration-300 group-hover:border-primary/40 group-hover:shadow-lg">
-                                        {profileData?.image_url ? (
-                                            <img
-                                                src={profileData.image_url}
-                                                alt={profileData.full_name}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            <FaUser className="h-16 w-16 text-primary/60" />
-                                        )}
-                                    </div>
-                                    <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-green-500 border-4 border-background flex items-center justify-center shadow-lg">
-                                        <span className="text-white text-xs font-bold">✓</span>
-                                    </div>
+                <div className="flex-1 p-6 md:p-8">
+                    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+
+                        {/* LEFT COLUMN: Identity Card - Sticky on Desktop */}
+                        <div className="md:col-span-4 lg:col-span-4 flex flex-col gap-6 md:sticky md:top-24">
+                            <Card className="overflow-hidden border shadow-md">
+                                <div className="h-32 bg-primary/10 relative">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent" />
                                 </div>
-
-                                {/* Profile Info */}
-                                <div className="flex-1 text-center md:text-left">
-                                    <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                                        {profileData?.full_name}
-                                    </h2>
-                                    <p className="text-muted-foreground mb-4 flex items-center justify-center md:justify-start gap-2">
-                                        <FaIdCard className="h-4 w-4" />
-                                        Roll No: <span className="font-semibold text-foreground">{profileData?.roll_no}</span>
-                                    </p>
-                                    <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
-                                            <FaChalkboardTeacher /> Student
-                                        </span>
-                                        {profileData?.gender && (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                                <FaVenusMars /> {profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1)}
-                                            </span>
-                                        )}
+                                <CardContent className="pt-0 pb-8 px-6 flex flex-col items-center -mt-16 text-center">
+                                    <div className="relative mb-4 group">
+                                        <div className="w-32 h-32 rounded-full border-4 border-background shadow-xl overflow-hidden bg-muted flex items-center justify-center">
+                                            {profileData?.image_url ? (
+                                                <img src={profileData.image_url} alt="Profile" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                            ) : (
+                                                <FaUser className="w-12 h-12 text-muted-foreground opacity-50" />
+                                            )}
+                                        </div>
+                                        <div className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-green-500 border-2 border-background ring-2 ring-green-500/20" title="Active Student" />
                                     </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
 
-                    {/* Personal Information */}
-                    <Card className="mb-6 animate-in fade-in-50 duration-700">
-                        <CardContent className="p-6">
-                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                                <div className="h-1 w-1 rounded-full bg-primary"></div>
-                                Personal Information
-                            </h3>
-                            <Separator className="mb-4" />
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <ProfileField
-                                    icon={FaIdCard}
-                                    label="Roll Number"
-                                    value={profileData?.roll_no}
-                                    iconColor="text-blue-600 dark:text-blue-400"
-                                />
-                                <ProfileField
-                                    icon={FaUser}
-                                    label="Full Name"
-                                    value={profileData?.full_name}
-                                    iconColor="text-purple-600 dark:text-purple-400"
-                                />
-                                <ProfileField
-                                    icon={FaVenusMars}
-                                    label="Gender"
-                                    value={profileData?.gender ? profileData.gender.charAt(0).toUpperCase() + profileData.gender.slice(1) : 'N/A'}
-                                    iconColor="text-pink-600 dark:text-pink-400"
-                                />
-                                <ProfileField
-                                    icon={FaPhone}
-                                    label="Phone Number"
-                                    value={profileData?.phone || 'Not provided'}
-                                    iconColor="text-green-600 dark:text-green-400"
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Academic Information */}
-                    <Card className="mb-6 animate-in fade-in-50 duration-1000">
-                        <CardContent className="p-6">
-                            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                                <div className="h-1 w-1 rounded-full bg-primary"></div>
-                                Academic Information
-                            </h3>
-                            <Separator className="mb-4" />
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <ProfileField
-                                    icon={FaChalkboardTeacher}
-                                    label="Class"
-                                    value={profileData?.class_name || 'Not assigned'}
-                                    iconColor="text-orange-600 dark:text-orange-400"
-                                />
-                                <ProfileField
-                                    icon={FaEnvelope}
-                                    label="Email"
-                                    value={profileData?.email || 'Not provided'}
-                                    iconColor="text-red-600 dark:text-red-400"
-                                />
-                                <ProfileField
-                                    icon={FaCalendarAlt}
-                                    label="Enrolled Since"
-                                    value={formatDate(profileData?.created_at)}
-                                    iconColor="text-teal-600 dark:text-teal-400"
-                                />
-                                {profileData?.image_url && (
-                                    <ProfileField
-                                        icon={FaImage}
-                                        label="Profile Image"
-                                        value="Available"
-                                        iconColor="text-indigo-600 dark:text-indigo-400"
-                                    />
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* QR Code Section */}
-                    {profileData?.id_qr_url && (
-                        <Card className="mb-6 animate-in fade-in-50 duration-1000">
-                            <CardContent className="p-6">
-                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                                    <div className="h-1 w-1 rounded-full bg-primary"></div>
-                                    Student ID
-                                </h3>
-                                <Separator className="mb-4" />
-                                <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all duration-300">
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">Digital ID Card</p>
-                                        <p className="text-base font-semibold text-foreground">Click the icon to view your QR code</p>
+                                    <h2 className="text-2xl font-bold text-foreground mb-1">{profileData?.full_name}</h2>
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Badge variant="secondary" className="font-mono text-xs px-2 py-0.5 mt-1 border-primary/20 bg-primary/5 text-primary">
+                                            {profileData?.roll_no}
+                                        </Badge>
                                     </div>
-                                    <button
+
+                                    <div className="w-full grid grid-cols-2 gap-2 mt-2 mb-6">
+                                        <div className="p-3 rounded-lg bg-muted/50 text-center">
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Class</p>
+                                            <p className="font-bold text-foreground">{profileData?.class_name}</p>
+                                        </div>
+                                        <div className="p-3 rounded-lg bg-muted/50 text-center">
+                                            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Division</p>
+                                            <p className="font-bold text-foreground">{profileData?.division || 'A'}</p>
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        className="w-full gap-2 shadow-sm"
                                         onClick={() => setShowQRModal(true)}
-                                        className="group relative h-16 w-16 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 ml-4"
                                     >
-                                        <FaQrcode className="h-8 w-8 text-primary-foreground transition-transform duration-300 group-hover:scale-110" />
-                                        <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse" />
-                                    </button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                                        <FaQrcode className="w-4 h-4" />
+                                        View Digital ID
+                                    </Button>
+                                </CardContent>
+                            </Card>
 
-                    {/* Info Note */}
-                    <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20 p-4 animate-in fade-in-50 duration-1000">
-                        <div className="flex gap-3">
-                            <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                            <div className="flex-1">
-                                <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
-                                    Profile Information
-                                </h4>
-                                <p className="text-sm text-blue-800 dark:text-blue-200">
-                                    All profile fields are read-only. If you need to update any information, please contact your administrator or academic office.
-                                </p>
+                            <Card className="border shadow-sm">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                                        <FaCalendarAlt className="w-3.5 h-3.5 text-muted-foreground" />
+                                        Important Dates
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex justify-between items-center text-sm border-b pb-3 border-dashed last:border-0 last:pb-0">
+                                        <span className="text-muted-foreground">Admission Date</span>
+                                        <span className="font-medium text-right">{formatDate(profileData?.created_at)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-muted-foreground">Academic Year</span>
+                                        <span className="font-medium text-right">2025 - 2026</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* RIGHT COLUMN: Detailed Info Grid */}
+                        <div className="md:col-span-8 lg:col-span-8 flex flex-col gap-6">
+
+                            {/* Personal Information */}
+                            <Card className="border shadow-sm">
+                                <CardHeader>
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600">
+                                            <FaUser className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-lg">Personal Details</CardTitle>
+                                            <CardDescription>Basic personal information and contact details.</CardDescription>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <ProfileField icon={FaUser} label="Full Name" value={profileData?.full_name} />
+                                        <ProfileField icon={FaVenusMars} label="Gender" value={profileData?.gender} />
+                                        <ProfileField icon={FaPhone} label="Contact Number" value={profileData?.phone} />
+                                        <ProfileField icon={FaEnvelope} label="Email Address" value={profileData?.email} />
+                                        <ProfileField icon={FaMapMarkerAlt} label="Address" value={profileData?.address} className="md:col-span-2" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Academic Information */}
+                            <Card className="border shadow-sm">
+                                <CardHeader>
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600">
+                                            <FaGraduationCap className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-lg">Academic Records</CardTitle>
+                                            <CardDescription>Current academic status and class details.</CardDescription>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <ProfileField icon={FaIdCard} label="Roll Number" value={profileData?.roll_no} />
+                                        <ProfileField icon={FaChalkboardTeacher} label="Class" value={`${profileData?.class_name}`} />
+                                        <ProfileField icon={FaUniversity} label="Batch" value="2025" />
+                                        <ProfileField icon={FaCalendarAlt} label="Semester" value="Semester 1" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-xl p-4 flex gap-4 items-start">
+                                <div className="mt-0.5 min-w-[20px] text-amber-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-info"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+                                </div>
+                                <div className="space-y-1">
+                                    <h4 className="font-semibold text-sm text-amber-900 dark:text-amber-100">Info Update Policy</h4>
+                                    <p className="text-xs text-amber-800 dark:text-amber-200/80 leading-relaxed">
+                                        Students cannot directly modify profile information. Please verify your details carefully.
+                                        To request corrections to your academic record or personal details, please contact the Student Administration Office or submit a ticket via the Helpdesk.
+                                    </p>
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
-                {/* QR Modal */}
                 <QRModal />
             </main>
         </div>
