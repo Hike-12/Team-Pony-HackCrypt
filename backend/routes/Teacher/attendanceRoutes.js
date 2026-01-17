@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { verifyStudentAttendance, getCurrentLecture, getUserStudentId, startAttendanceSession, getTodaysLectures, getActiveSessions, scanStudentQR } = require('../../controllers/Teacher/attendanceController');
+const { verifyStudentAttendance, getCurrentLecture, getUserStudentId, startAttendanceSession, getTodaysLectures, getActiveSessions, scanStudentQR,getStudentAttemptsForSession, } = require('../../controllers/Teacher/attendanceController');
 const { 
     startQRAttendance, 
     refreshQRToken, 
@@ -34,6 +34,8 @@ router.get('/current-lecture', getCurrentLecture);
 router.post('/start-session', startAttendanceSession);
 router.get('/today-lectures', getTodaysLectures);
 router.get('/active-sessions', getActiveSessions);
+
+router.get('/attempts/:sessionId/:studentId', getStudentAttemptsForSession);
 
 // Stats endpoint
 router.get('/stats', async (req, res) => {

@@ -9,6 +9,26 @@ const Student = require('../../models/Student');
 const User = require('../../models/User');
 const TeacherSubject = require('../../models/TeacherSubject');
 
+
+/**
+ * Get attempts for the current student and specific session
+ */
+exports.getAttempts = async (req, res) => {
+  try {
+    const studentId = req.user.student_id;
+    const { sessionId } = req.params;
+
+    const attempts = await AttendanceAttempt.find({
+      student_id: studentId,
+      session_id: sessionId
+    }).sort({ created_at: -1 });
+
+    res.json({ success: true, attempts });
+  } catch (error) {
+    console.error('Get Attempts Error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
 /**
  * Quick mark attendance using student ID QR code
  * This allows students to scan their own ID card to mark attendance

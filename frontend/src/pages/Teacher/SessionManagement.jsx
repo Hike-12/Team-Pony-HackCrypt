@@ -11,9 +11,12 @@ import {
   CheckCircle, 
   QrCode,
   Calendar,
-  MapPin
+  MapPin,
+  Network,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import AttendanceFlow from '@/components/AttendanceFlow';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const SessionManagement = () => {
   const [activeSessions, setActiveSessions] = useState([]);
@@ -21,11 +24,33 @@ const SessionManagement = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [presentStudents, setPresentStudents] = useState([]);
 
+      const [selectedStudentForFlow, setSelectedStudentForFlow] = useState(null);
+    const [studentAttempts, setStudentAttempts] = useState([]);
+    const [viewFlowOpen, setViewFlowOpen] = useState(false);
+
   useEffect(() => {
     fetchActiveSessions();
     const interval = setInterval(fetchActiveSessions, 10000); // Refresh every 10 seconds
     return () => clearInterval(interval);
   }, []);
+
+      const handleViewAttempts = async (studentId, studentName) => {
+        if (!selectedSession) return;
+        try {
+            const token = localStorage.getItem('teacherToken');
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/teacher/attendance/attempts/${selectedSession._id}/${studentId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                setStudentAttempts(data.attempts);
+                setSelectedStudentForFlow({ name: studentName });
+                setViewFlowOpen(true);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
   const fetchActiveSessions = async () => {
     try {
@@ -253,6 +278,14 @@ const SessionManagement = () => {
             <p className="text-xs text-muted-foreground">
               {record.status || 'Verified'}
             </p>
+            <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => handleViewAttempts(record.student?.id || record.student_id?._id, record.student?.name || record.student_id?.full_name)}
+                    title="View Verification Flow"
+                 >
+                    <Network className="h-4 w-4" />
+                 </Button>
           </div>
         </div>
       </CardContent>
@@ -266,6 +299,25 @@ const SessionManagement = () => {
             </div>
           </div>
         </div>
+            {/* ADD THIS DIALOG BEFORE CLOSING MAIN DIV */}
+    <Dialog open={viewFlowOpen} onOpenChange={setViewFlowOpen}>
+        <DialogContent className="max-w-3xl">
+            <DialogHeader>
+                <DialogTitle>Verification Flow: {selectedStudentForFlow?.name}</DialogTitle>
+                <DialogDescription>
+                    Visualizing usage of Geofencing, Face, and Biometrics for this student.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+                {studentAttempts.length > 0 ? (
+                    // Show the latest attempt by default, or map them if you want tabs
+                    <AttendanceFlow attempt={studentAttempts[0]} />
+                ) : (
+                    <p>No retry attempts found logged for this session.</p>
+                )}
+            </div>
+        </DialogContent>
+    </Dialog>
       </main>
     </div>
   );
