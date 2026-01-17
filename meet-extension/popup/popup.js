@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, (response) => {
             if (chrome.runtime.lastError) {
                 console.error('Error:', chrome.runtime.lastError);
-                alert('Failed to start tracking. Please refresh the Meet page.');
+                alert('Failed to start tracking. Please refresh the Meet page and try again.');
                 return;
             }
 
@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Store session code
                 chrome.storage.local.set({ sessionCode });
                 updateStatus();
+                console.log('✅ Tracking started successfully');
             }
         });
     });
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-        console.log('Stop button clicked, getting attendance data...');
+        console.log('⏹️ Stop button clicked, getting attendance data...');
 
         // Get the attendance data
         chrome.tabs.sendMessage(tab.id, {
@@ -70,10 +71,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            console.log('Attendance response:', attendanceResponse);
+            console.log('📊 Attendance response:', attendanceResponse);
 
             if (attendanceResponse?.success && attendanceResponse.data) {
-                console.log('Attendance data received, downloading CSV...');
+                console.log('📥 Attendance data received, downloading CSV...');
 
                 // Generate and download CSV using Chrome downloads API
                 try {
@@ -93,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (response?.success) {
                     chrome.storage.local.remove('sessionCode');
                     updateStatus();
+                    console.log('✅ Tracking stopped');
                 }
             });
         });
@@ -138,28 +140,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Update status every 2 seconds
     setInterval(updateStatus, 2000);
 
+    // Helper function to properly escape CSV values
+    function escapeCSVValue(value) {
+        if (value === null || value === undefined) {
+            return '';
+        }
+
+        const stringValue = String(value);
+
+        // If value contains comma, quote, or newline, wrap in quotes and escape internal quotes
+        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n') || stringValue.includes('\r')) {
+            return '"' + stringValue.replace(/"/g, '""') + '"';
+        }
+
+        return stringValue;
+    }
+
     // Helper function to download CSV using Chrome downloads API
     async function downloadCSVWithChromeAPI(attendanceData, sessionCode) {
-        console.log('Creating CSV with', attendanceData.length, 'participants');
+        console.log('📝 Creating CSV with', attendanceData.length, 'participants');
 
-        // Create CSV header
-        let csv = 'Participant Name,Joined At,Left At,Duration,Status\n';
+        // Create CSV header - properly aligned columns
+        const headers = ['Participant Name', 'Joined At', 'Left At', 'Duration', 'Rejoins', 'Status'];
+        let csv = headers.join(',') + '\n';
 
-        // Add data rows
+        // Sort by join time
+        attendanceData.sort((a, b) => new Date(a.firstJoinedAt) - new Date(b.firstJoinedAt));
+
+        // Add data rows with proper escaping
         attendanceData.forEach(participant => {
-            const name = participant.name || 'Unknown';
-            const joinedAt = formatDateTime(participant.joinedAt);
-            const leftAt = participant.leftAt ? formatDateTime(participant.leftAt) : 'Still in meeting';
-            const duration = participant.duration || 'N/A';
-            const status = participant.leftAt ? 'Left' : 'Active';
+            const name = escapeCSVValue(participant.name || 'Unknown');
+            const joinedAt = escapeCSVValue(formatDateTime(participant.firstJoinedAt));
+            const leftAt = escapeCSVValue(participant.lastLeaveAt); // Already formatted string or 'Still in meeting'
+            const duration = escapeCSVValue(participant.duration || 'N/A');
+            const rejoins = escapeCSVValue(participant.rejoins || 0);
+            const status = participant.status ? escapeCSVValue(participant.status) : escapeCSVValue('Active');
 
-            // Escape commas in names
-            const escapedName = name.includes(',') ? `"${name}"` : name;
-
-            csv += `${escapedName},${joinedAt},${leftAt},${duration},${status}\n`;
+            // Build row with proper column alignment
+            const row = [name, joinedAt, leftAt, duration, rejoins, status].join(',');
+            csv += row + '\n';
         });
 
-        console.log('CSV content created, length:', csv.length);
+        console.log('✅ CSV content created, length:', csv.length);
+        console.log('Preview (first 500 chars):', csv.substring(0, 500));
 
         // Create blob and data URL
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -169,7 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
         const filename = `meet-attendance-${sessionCode || 'session'}-${timestamp}.csv`;
 
-        console.log('Downloading file:', filename);
+        console.log('📥 Downloading file:', filename);
 
         // Use Chrome downloads API
         chrome.downloads.download({
@@ -178,11 +201,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveAs: true  // This will prompt user to choose location
         }, (downloadId) => {
             if (chrome.runtime.lastError) {
-                console.error('Download error:', chrome.runtime.lastError);
+                console.error('❌ Download error:', chrome.runtime.lastError);
                 alert('Download failed: ' + chrome.runtime.lastError.message);
             } else {
-                console.log('Download started with ID:', downloadId);
-                alert(`CSV download started!\nFile: ${filename}\nParticipants: ${attendanceData.length}\n\nChoose where to save the file.`);
+                console.log('✅ Download started with ID:', downloadId);
+                alert(`CSV download started!\n\nFile: ${filename}\nParticipants: ${attendanceData.length}\n\nChoose where to save the file.`);
+
+                // Clean up the blob URL after a delay
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
             }
         });
     }
@@ -190,14 +216,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     function formatDateTime(isoString) {
         if (!isoString) return 'N/A';
         const date = new Date(isoString);
-        return date.toLocaleString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
-        });
+
+        // Format: MM/DD/YYYY HH:MM:SS AM/PM
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = date.getFullYear();
+
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+
+        hours = hours % 12;
+        hours = hours ? hours : 12; // 0 should be 12
+        const hoursStr = String(hours).padStart(2, '0');
+
+        return `${month}/${day}/${year} ${hoursStr}:${minutes}:${seconds} ${ampm}`;
     }
 });
