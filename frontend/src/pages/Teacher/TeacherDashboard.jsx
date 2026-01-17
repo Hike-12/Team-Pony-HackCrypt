@@ -92,6 +92,49 @@ const TeacherDashboard = () => {
     setNextLecture(upcoming)
   }, [lecturesToday])
 
+  const handleToggle = (key) => {
+    setMethodToggles(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleStartSession = async () => {
+    if (!selectedLectureId) {
+      toast.error('Please select a lecture')
+      return
+    }
+    const token = localStorage.getItem('teacherToken')
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/teacher/attendance/start-session`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...methodToggles,
+        timetableEntryId: selectedLectureId
+      })
+    })
+    const data = await res.json()
+    if (data.success) {
+      toast.success('Attendance session started!')
+      setShowStartSession(false)
+    } else {
+      toast.error(data.message || 'Failed to start session')
+    }
+  }
+
+  // Helper to check if slot is currently active
+  function isSlotActive(slot) {
+    if (!slot) return false;
+    const now = new Date();
+    const [startH, startM] = slot.start_time.split(':').map(Number);
+    const [endH, endM] = slot.end_time.split(':').map(Number);
+    const start = new Date(now);
+    start.setHours(startH, startM, 0, 0);
+    const end = new Date(now);
+    end.setHours(endH, endM, 0, 0);
+    return now >= start && now <= end;
+  }
+
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
       <TeacherSidebar />
@@ -215,11 +258,13 @@ const TeacherDashboard = () => {
                         <SelectValue placeholder="Select Lecture" />
                       </SelectTrigger>
                       <SelectContent>
-                        {lecturesToday.map(lec => (
-                          <SelectItem key={lec._id} value={lec._id}>
-                            {lec.teacher_subject_id.subject_id.name} - {lec.class_id.name} ({lec.slot_id.start_time}-{lec.slot_id.end_time})
-                          </SelectItem>
-                        ))}
+                        {lecturesToday
+                          .filter(lec => isSlotActive(lec.slot_id))
+                          .map(lec => (
+                            <SelectItem key={lec._id} value={lec._id}>
+                              {lec.teacher_subject_id.subject_id.name} - {lec.class_id.name} ({lec.slot_id.start_time}-{lec.slot_id.end_time})
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   )}

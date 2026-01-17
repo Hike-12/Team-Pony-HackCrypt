@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
-import { FaEdit, FaTrash, FaCheck, FaCamera } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaCheck, FaCamera, FaFingerprint } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -27,9 +27,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import FaceEnrollment from "@/components/student/FaceEnrollment"; // Reuse the component
-
-
+import FaceEnrollment from "@/components/student/FaceEnrollment";
+import { BiometricEnrollmentModal } from "@/components/admin/BiometricEnrollmentModal";
 
 export const AdminStudentTable = forwardRef(function AdminStudentTable(props, ref) {
   const [students, setStudents] = useState([]);
@@ -45,6 +44,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
   const [editImagePreview, setEditImagePreview] = useState(null);
   const [classes, setClasses] = useState([]);
   const [enrollingStudent, setEnrollingStudent] = useState(null);
+  const [biometricStudent, setBiometricStudent] = useState(null);
 
   function handleOpenFaceEnrollment(student) {
     setEnrollingStudent(student);
@@ -52,6 +52,14 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
 
   function handleCloseEnrollment() {
     setEnrollingStudent(null);
+  }
+
+  function handleOpenBiometricEnrollment(student) {
+    setBiometricStudent(student);
+  }
+
+  function handleCloseBiometricEnrollment() {
+    setBiometricStudent(null);
   }
 
   async function fetchStudents() {
@@ -87,7 +95,6 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
     fetchClasses();
   }, []);
 
-  // Expose fetchStudents to parent via ref
   useImperativeHandle(ref, () => ({
     refresh: fetchStudents
   }));
@@ -133,7 +140,6 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
     try {
       let res;
       if (editImage) {
-        // If image is being updated, use FormData
         const formData = new FormData();
         formData.append('full_name', editFormData.full_name);
         formData.append('email', editFormData.email);
@@ -149,7 +155,6 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
           body: formData,
         });
       } else {
-        // No image update, use JSON
         res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/students/${editingStudent._id}`, {
           method: 'PUT',
           credentials: 'include',
@@ -228,6 +233,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Division</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Batch</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Camera</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Biometric</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground text-right">Actions</th>
                 </tr>
               </thead>
@@ -247,7 +253,6 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                         </div>
                       )}
                     </td>
-
                     <td className="px-4 py-3 text-sm font-medium text-foreground">{student.roll_no}</td>
                     <td className="px-4 py-3 text-sm text-foreground">{student.full_name}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.email || 'N/A'}</td>
@@ -275,6 +280,30 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                         </button>
                       )}
                     </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        className="p-2 rounded-full transition"
+                        title={student.biometric_enrolled ? "Biometric enrolled" : "Enroll Biometric"}
+                        onClick={() => !student.biometric_enrolled && handleOpenBiometricEnrollment(student)}
+                        disabled={student.biometric_enrolled}
+                        style={
+                          student.biometric_enrolled
+                            ? {
+                                background: 'var(--chart-1)',
+                                color: 'var(--primary-foreground)',
+                                border: '2px solid var(--chart-1)',
+                                opacity: 1,
+                              }
+                            : {
+                                background: 'var(--primary)',
+                                color: 'var(--primary-foreground)',
+                                opacity: 0.7,
+                              }
+                        }
+                      >
+                        <FaFingerprint className="w-5 h-5" />
+                      </button>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 justify-end">
                         <button
@@ -297,7 +326,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                 ))}
                 {students.length === 0 && (
                   <tr>
-                    <td colSpan={11} className="px-4 py-12 text-center">
+                    <td colSpan={12} className="px-4 py-12 text-center">
                       <p className="text-muted-foreground">No students found. Add a student to get started.</p>
                     </td>
                   </tr>
@@ -474,11 +503,21 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
               studentId={enrollingStudent._id}
               onEnrollmentComplete={() => {
                 handleCloseEnrollment();
-                fetchStudents(); // Refresh the table to show enrolled status
+                fetchStudents();
               }}
             />
           </div>
         </div>
+      )}
+      {biometricStudent && (
+        <BiometricEnrollmentModal
+          studentId={biometricStudent._id}
+          studentName={biometricStudent.full_name}
+          onClose={() => {
+            handleCloseBiometricEnrollment();
+            fetchStudents();
+          }}
+        />
       )}
     </>
   );
