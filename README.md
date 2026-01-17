@@ -3,7 +3,7 @@
 # 🔐 NoMoreProxies — Smart Attendance & Leave Management System
 
 [![Platform](https://img.shields.io/badge/Education%20Platform-Live-00d4ff?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Team-Pony-HackCrypt)
-[![Hackathon](https://img.shields.io/badge/HackCrypt%202026-Winner-ff6b6b?style=for-the-badge&logo=trophy&logoColor=white)]()
+
 [![Security](https://img.shields.io/badge/Security-WebAuthn%20%2B%20Biometric-4ecdc4?style=for-the-badge&logo=shield&logoColor=white)]()
 
 **Next-Generation Attendance Tracking with AI-Powered Leave Verification**
