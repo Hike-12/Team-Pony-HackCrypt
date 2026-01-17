@@ -27,6 +27,13 @@ const TeacherDashboard = () => {
     attendanceRate: 0,
   })
   const [showStartSession, setShowStartSession] = useState(false)
+  const [selectedLectureId, setSelectedLectureId] = useState(null)
+  const [methodToggles, setMethodToggles] = useState({
+    enable_qr: true,
+    enable_biometric: false,
+    enable_gps: false,
+    enable_device_fingerprint: false,
+  })
 
   // Fetch today's lectures for dropdown
   useEffect(() => {
