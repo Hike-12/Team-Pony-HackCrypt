@@ -10,17 +10,35 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: ['http://localhost:5173', 'http://localhost:5174'],
-        credentials: true
-    }
+  cors: {
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'https://nomoreproxies-hackcrypt.vercel.app'
+    ],
+    credentials: true
+  }
 });
+
+app.set("trust proxy", 1);
 
 connectDB();
 
+const allowed = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://nomoreproxies-hackcrypt.vercel.app'
+];
+
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'https://nomoreproxies-hackcrypt.vercel.app','https://nomoreproxies-hackcrypt.vercel.app/','nomoreproxies-hackcrypt.vercel.app'],
-    credentials: true
+  origin: (origin, callback) => {
+    // allow non-browser requests (mobile apps / curl) - origin can be undefined
+    if (!origin) return callback(null, true);
+    if (allowed.includes(origin)) return callback(null, true);
+    console.warn('CORS: blocking origin', origin);
+    return callback(new Error('CORS blocked'));
+  },
+  credentials: true
 }));
 
 app.use(express.json());
