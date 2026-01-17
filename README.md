@@ -703,11 +703,7 @@ Built with **Tailwind CSS 4** and **Framer Motion** for smooth animations.
 
 ---
 
-## 📄 License
 
-This project was created for **HackCrypt 2026** and is intended for educational and portfolio purposes.
-
----
 
 ## 🙏 Acknowledgments
 
