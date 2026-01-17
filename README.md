@@ -45,7 +45,7 @@
 ![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 
 ### AI & Security
-![Google AI](https://img.shields.io/badge/Google-Gemini%20AI-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![Groq AI](https://img.shields.io/badge/Groq-AI-F55036?style=for-the-badge&logo=cpu&logoColor=white)
 ![WebAuthn](https://img.shields.io/badge/WebAuthn-Passkeys-FF6B00?style=for-the-badge&logo=webauthn&logoColor=white)
 ![Tesseract](https://img.shields.io/badge/Tesseract-OCR-3776AB?style=for-the-badge&logo=tesseract&logoColor=white)
 
@@ -85,7 +85,7 @@ Team-Pony-HackCrypt/
 ### 👨‍🏫 For Teachers
 - **🎯 Session Management** — Create attendance sessions with unique QR codes and time limits
 - **📡 Real-Time Monitoring** — Live attendance updates via Socket.io as students mark attendance
-- **🤖 AI Leave Verification** — Automated document authenticity checks using Google Gemini AI + Tesseract OCR
+- **🤖 AI Leave Verification** — Automated document authenticity checks using Groq AI + Tesseract OCR
 - **✅ Leave Approval Workflow** — Review, approve, or reject student leave applications
 - **📊 Class Analytics** — View attendance statistics, defaulter lists, and session reports
 - **📅 Schedule Overview** — Manage teaching timetable and upcoming sessions
@@ -543,7 +543,7 @@ NoMoreProxies employs a **defense-in-depth** approach to prevent proxy attendanc
 When students submit leave applications with medical certificates or other documents:
 
 1. **OCR Extraction** — Tesseract.js extracts text from images/PDFs
-2. **AI Analysis** — Google Gemini AI analyzes document authenticity, consistency, and validity
+2. **AI Analysis** — Groq AI analyzes document authenticity, consistency, and validity
 3. **Confidence Scoring** — Returns verification confidence percentage
 4. **Teacher Review** — AI results assist teachers in approval decisions
 
@@ -707,7 +707,7 @@ Built with **Tailwind CSS 4** and **Framer Motion** for smooth animations.
 
 ## 🙏 Acknowledgments
 
-- **Google Gemini AI** — Document verification
+- **Groq AI** — Document verification
 - **Tesseract.js** — OCR capabilities
 - **Radix UI** — Accessible component primitives
 - **shadcn/ui** — Beautiful component library
