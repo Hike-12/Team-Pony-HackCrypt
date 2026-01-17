@@ -3,6 +3,7 @@ const TimetableEntry = require('../../models/TimetableEntry');
 const TimetableSlot = require('../../models/TimetableSlot');
 const TeacherSubject = require('../../models/TeacherSubject');
 const Teacher = require('../../models/Teacher');
+const AttendanceSession = require('../../models/AttendanceSession');
 
 /**
  * Convert User ID to Student ID
@@ -273,4 +274,116 @@ exports.getCurrentLecture = async (req, res) => {
             error: error.message 
         });
     }
+};
+
+
+/**
+ * Start attendance session for current lecture
+ */
+exports.startAttendanceSession = async (req, res) => {
+    try {
+        const teacherId = req.user.teacher_id;
+        const { enable_face, enable_biometric, enable_geofencing, enable_static_qr, enable_dynamic_qr } = req.body;
+
+        if (!teacherId) {
+            return res.status(401).json({ success: false, message: 'Teacher not authenticated' });
+        }
+
+        // Find current lecture (reuse getCurrentLecture logic)
+        const now = new Date();
+        const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+        const currentTime = now.toTimeString().substring(0, 5);
+
+        const currentSlot = await TimetableSlot.findOne({
+            start_time: { $lte: currentTime },
+            end_time: { $gte: currentTime }
+        });
+
+        if (!currentSlot) {
+            return res.status(400).json({ success: false, message: 'No active lecture slot at this time' });
+        }
+
+        const teacherSubjects = await TeacherSubject.find({ teacher_id: teacherId });
+        const teacherSubjectIds = teacherSubjects.map(ts => ts._id);
+
+        const timetableEntry = await TimetableEntry.findOne({
+            teacher_subject_id: { $in: teacherSubjectIds },
+            day_of_week: dayOfWeek,
+            slot_id: currentSlot._id,
+            valid_from: { $lte: now },
+            valid_to: { $gte: now }
+        });
+
+        if (!timetableEntry) {
+            return res.status(400).json({ success: false, message: 'No scheduled lecture at this time' });
+        }
+
+        // Check if session already exists and is active
+        let session = await AttendanceSession.findOne({
+            teacher_subject_id: timetableEntry.teacher_subject_id,
+            is_active: true,
+            starts_at: { $lte: now },
+            ends_at: { $gte: now }
+        });
+
+        if (!session) {
+            session = await AttendanceSession.create({
+                teacher_subject_id: timetableEntry.teacher_subject_id,
+                session_type: timetableEntry.session_type,
+                starts_at: new Date(`${now.toDateString()} ${currentSlot.start_time}`),
+                ends_at: new Date(`${now.toDateString()} ${currentSlot.end_time}`),
+                room_label: timetableEntry.room_label,
+                is_active: true,
+                enable_face: !!enable_face,
+                enable_biometric: !!enable_biometric,
+                enable_geofencing: !!enable_geofencing,
+                enable_static_qr: !!enable_static_qr,
+                enable_dynamic_qr: !!enable_dynamic_qr
+            });
+        } else {
+            // Optionally update toggles if session exists
+            session.enable_face = !!enable_face;
+            session.enable_biometric = !!enable_biometric;
+            session.enable_geofencing = !!enable_geofencing;
+            session.enable_static_qr = !!enable_static_qr;
+            session.enable_dynamic_qr = !!enable_dynamic_qr;
+            await session.save();
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Attendance session started',
+            data: session
+        });
+
+    } catch (error) {
+        console.error("Start Attendance Session Error:", error);
+        res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    }
+};
+
+exports.getTodaysLectures = async (req, res) => {
+  try {
+    const teacherId = req.user.teacher_id;
+    const now = new Date();
+    const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+
+    const teacherSubjects = await TeacherSubject.find({ teacher_id: teacherId });
+    const teacherSubjectIds = teacherSubjects.map(ts => ts._id);
+
+    const entries = await TimetableEntry.find({
+      teacher_subject_id: { $in: teacherSubjectIds },
+      day_of_week: dayOfWeek,
+      valid_from: { $lte: now },
+      valid_to: { $gte: now }
+    }).populate([
+      { path: 'teacher_subject_id', populate: { path: 'subject_id' } },
+      { path: 'class_id' },
+      { path: 'slot_id' }
+    ]);
+
+    res.json({ success: true, lectures: entries });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
 };

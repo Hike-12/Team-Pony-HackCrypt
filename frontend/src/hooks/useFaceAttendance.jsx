@@ -29,6 +29,8 @@ export function useFaceAttendance({
   const [challenge, setChallenge] = useState(null);
   const [challengePassed, setChallengePassed] = useState(false);
   const [multipleFaces, setMultipleFaces] = useState(false);
+  const [lastDescriptor, setLastDescriptor] = useState(null); // <-- add this
+
 
   // 1. Load face-api.js models
   useEffect(() => {
@@ -111,6 +113,7 @@ export function useFaceAttendance({
 
           if (distance < matchThreshold) {
             console.log("✅ Match found! Switching to Liveness check.");
+            setLastDescriptor(Array.from(descriptor));
             setStatus("liveness");
             setChallenge(getRandomChallenge());
           }
@@ -167,7 +170,7 @@ export function useFaceAttendance({
           const leftEAR = getEAR(leftEye);
           const rightEAR = getEAR(rightEye);
           console.log(`[FaceAttendance] Blink EAR: left=${leftEAR}, right=${rightEAR}`);
-          if (leftEAR < 0.25 && rightEAR < 0.25) {
+          if (leftEAR < 0.3 && rightEAR < 0.3) {
             setChallengePassed(true);
             setStatus("success");
             console.log("[FaceAttendance] Blink detected, liveness passed!");
@@ -207,5 +210,6 @@ export function useFaceAttendance({
     multipleFaces,
     captureDescriptor,
     startVideo,
+    lastDescriptor,
   };
 }

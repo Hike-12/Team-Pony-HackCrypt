@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { verifyStudentAttendance, getCurrentLecture, getUserStudentId } = require('../../controllers/Teacher/attendanceController');
+const { verifyStudentAttendance, getCurrentLecture, getUserStudentId, startAttendanceSession, getTodaysLectures, } = require('../../controllers/Teacher/attendanceController');
 const { 
     startQRAttendance, 
     refreshQRToken, 
     stopQRAttendance, 
     scanQRAttendance,
-    getSessionAttendance 
+    getSessionAttendance,
 } = require('../../controllers/Teacher/qrAttendanceController');
 const { authenticateToken, isTeacher, isStudent } = require('../../middleware/authMiddleware');
 
@@ -27,6 +27,9 @@ router.post('/verify-student', verifyStudentAttendance);
 
 // Get current active lecture for the teacher
 router.get('/current-lecture', getCurrentLecture);
+
+router.post('/start-session', startAttendanceSession);
+router.get('/today-lectures', getTodaysLectures);
 
 // QR Attendance - Teacher routes
 router.post('/qr/start', startQRAttendance);
