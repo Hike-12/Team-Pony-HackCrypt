@@ -68,6 +68,7 @@ app.use('/api/student/attendance', require('./routes/Student/attendanceMarkingRo
 app.use('/api/student/attendance-analytics', require('./routes/Student/attendanceAnalyticsRoutes'));
 app.use('/api/admin/csv', require('./routes/Admin/csvUploadRoutes'));
 app.use('/api/admin/analytics', require('./routes/Admin/analyticsRoutes'));
+app.use('/api/noti/email', require('./routes/Notis/nodemailerRoutes'));
 
 const PORT = process.env.PORT || 8000;
 
