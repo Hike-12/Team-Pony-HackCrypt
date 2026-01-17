@@ -29,6 +29,7 @@
     "qrcode": "^1.5.4",
     "socket.io": "^4.8.3",
     "tesseract.js": "^7.0.0",
+    "twilio": "^5.11.2",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

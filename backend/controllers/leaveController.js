@@ -2,6 +2,9 @@ const LeaveApplication = require('../models/LeaveApplication');
 const Student = require('../models/Student');
 const cloudinary = require('../config/cloudinaryConfig');
 const mongoose = require('mongoose');
+const AttendanceRecord = require('../models/AttendanceRecord');
+const AttendanceSession = require('../models/AttendanceSession');
+const TeacherSubject = require('../models/TeacherSubject');
 
 // Create a new leave application
 exports.createLeaveApplication = async (req, res) => {
@@ -293,7 +296,7 @@ exports.approveLeave = async (req, res) => {
         const { leaveId } = req.params;
         const { teacher_id, comments } = req.body; // TODO: Get teacher_id from auth middleware
 
-        const leave = await LeaveApplication.findById(leaveId);
+        const leave = await LeaveApplication.findById(leaveId).populate('student_id');
 
         if (!leave) {
             return res.status(404).json({
@@ -316,11 +319,121 @@ exports.approveLeave = async (req, res) => {
 
         await leave.save();
 
-        res.status(200).json({
-            success: true,
-            message: 'Leave approved successfully',
-            data: leave
-        });
+        // Mark attendance for the leave period
+        try {
+            const student = await Student.findById(leave.student_id);
+            console.log('📋 Processing attendance for approved leave:', {
+                student_id: leave.student_id,
+                student_name: student?.full_name,
+                class_id: student?.class_id,
+                leave_dates: { start: leave.start_date, end: leave.end_date }
+            });
+
+            if (student && student.class_id) {
+                // Find all teacher subjects for this student's class
+                const teacherSubjects = await TeacherSubject.find({ class_id: student.class_id });
+                const teacherSubjectIds = teacherSubjects.map(ts => ts._id);
+                
+                console.log('🎓 Found teacher subjects for class:', {
+                    class_id: student.class_id,
+                    subject_count: teacherSubjects.length,
+                    subject_ids: teacherSubjectIds
+                });
+
+                // Create date range that covers the entire day(s)
+                const leaveStartDate = new Date(leave.start_date);
+                leaveStartDate.setHours(0, 0, 0, 0);
+                
+                const leaveEndDate = new Date(leave.end_date);
+                leaveEndDate.setHours(23, 59, 59, 999);
+
+                // Find all attendance sessions during the leave period for this class
+                const sessions = await AttendanceSession.find({
+                    teacher_subject_id: { $in: teacherSubjectIds },
+                    $or: [
+                        // Session starts during leave period
+                        { starts_at: { $gte: leaveStartDate, $lte: leaveEndDate } },
+                        // Session ends during leave period
+                        { ends_at: { $gte: leaveStartDate, $lte: leaveEndDate } },
+                        // Session spans the entire leave period
+                        { starts_at: { $lte: leaveStartDate }, ends_at: { $gte: leaveEndDate } }
+                    ]
+                });
+
+                console.log('📅 Found attendance sessions:', {
+                    session_count: sessions.length,
+                    date_range: { start: leaveStartDate, end: leaveEndDate },
+                    sessions: sessions.map(s => ({
+                        id: s._id,
+                        starts_at: s.starts_at,
+                        ends_at: s.ends_at
+                    }))
+                });
+
+                // Mark attendance as EXCUSED for each session
+                const attendancePromises = sessions.map(async (session) => {
+                    // Check if attendance record already exists
+                    const existingRecord = await AttendanceRecord.findOne({
+                        session_id: session._id,
+                        student_id: leave.student_id
+                    });
+
+                    if (!existingRecord) {
+                        console.log('✅ Creating EXCUSED attendance for session:', session._id);
+                        // Create new attendance record with EXCUSED status
+                        return AttendanceRecord.create({
+                            session_id: session._id,
+                            student_id: leave.student_id,
+                            status: 'EXCUSED',
+                            marked_at: new Date(),
+                            verification_level: 'HIGH',
+                            trust_score: 100
+                        });
+                    } else {
+                        console.log('⚠️ Attendance already exists for session:', session._id, 'with status:', existingRecord.status);
+                    }
+                    return null;
+                });
+
+                const attendanceResults = await Promise.all(attendancePromises);
+                const markedCount = attendanceResults.filter(result => result !== null).length;
+
+                console.log('🎉 Attendance marking complete:', {
+                    total_sessions: sessions.length,
+                    marked_count: markedCount,
+                    already_existing: sessions.length - markedCount
+                });
+
+                res.status(200).json({
+                    success: true,
+                    message: `Leave approved successfully. ${markedCount} attendance record(s) marked as excused.`,
+                    data: leave,
+                    attendance_marked: markedCount,
+                    debug_info: {
+                        total_sessions_found: sessions.length,
+                        newly_marked: markedCount,
+                        already_marked: sessions.length - markedCount
+                    }
+                });
+            } else {
+                console.log('⚠️ Student not found or has no class_id');
+                res.status(200).json({
+                    success: true,
+                    message: 'Leave approved successfully',
+                    data: leave,
+                    attendance_marked: 0
+                });
+            }
+        } catch (attendanceError) {
+            console.error('❌ Error marking attendance:', attendanceError);
+            // Leave is still approved even if attendance marking fails
+            res.status(200).json({
+                success: true,
+                message: 'Leave approved successfully, but attendance marking failed',
+                data: leave,
+                warning: 'Attendance could not be automatically marked'
+            });
+        }
     } catch (error) {
         console.error('Error approving leave:', error);
         res.status(500).json({
