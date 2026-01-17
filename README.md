@@ -149,7 +149,7 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# Google Gemini AI (for document verification)
+# GROQ AI (for document verification)
 GROQ_API_KEY=your_groq_api_key
 ```
 
@@ -703,11 +703,7 @@ Built with **Tailwind CSS 4** and **Framer Motion** for smooth animations.
 
 ---
 
-## 📄 License
 
-This project was created for **HackCrypt 2026** and is intended for educational and portfolio purposes.
-
----
 
 ## 🙏 Acknowledgments
 
