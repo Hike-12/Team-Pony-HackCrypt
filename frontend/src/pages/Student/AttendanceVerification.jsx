@@ -159,6 +159,16 @@ export default function AttendanceVerification() {
   };
 
   const renderStepContent = (step) => {
+    if (!step || !step.key) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>No verification steps available for this session.</p>
+          <p className="text-sm mt-2">Please wait for your teacher to enable verification methods.</p>
+        </div>
+      );
+    }
+    
     switch (step.key) {
       case 'geofencing':
         return (
@@ -282,7 +292,14 @@ export default function AttendanceVerification() {
                     </div>
                     <div className="w-full">
                       {loading && <div className="text-center py-8">Loading...</div>}
-                      {!loading && session && renderStepContent(steps[currentStep - 1])}
+                      {!loading && session && steps.length > 0 && renderStepContent(steps[currentStep - 1])}
+                      {!loading && session && steps.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                          <p>No verification steps configured for this session.</p>
+                          <p className="text-sm mt-2">Please wait for your teacher to enable verification methods.</p>
+                        </div>
+                      )}
                       {!loading && !session && (
                         <div className="text-center py-8 text-muted-foreground">
                           No active attendance session. Please wait for your teacher to start.

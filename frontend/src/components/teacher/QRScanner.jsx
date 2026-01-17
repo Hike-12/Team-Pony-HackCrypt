@@ -8,10 +8,12 @@ const QRScanner = ({ onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentLecture, setCurrentLecture] = useState(null);
   const [error, setError] = useState(null);
+  const [lastScannedQR, setLastScannedQR] = useState(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const canvasRef = useRef(null);
   const scanIntervalRef = useRef(null);
+  const cooldownRef = useRef(false);
 
   // Fetch current lecture info
   useEffect(() => {
@@ -79,7 +81,7 @@ const QRScanner = ({ onClose }) => {
   };
 
   const scanQRCode = async () => {
-    if (!videoRef.current || !canvasRef.current || isProcessing) return;
+    if (!videoRef.current || !canvasRef.current || isProcessing || cooldownRef.current) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -96,7 +98,7 @@ const QRScanner = ({ onClose }) => {
       if (window.jsQR) {
         const code = window.jsQR(imageData.data, imageData.width, imageData.height);
         
-        if (code) {
+        if (code && code.data !== lastScannedQR) {
           await handleQRCodeScanned(code.data);
         }
       }
@@ -104,36 +106,39 @@ const QRScanner = ({ onClose }) => {
   };
 
   const handleQRCodeScanned = async (qrData) => {
-    if (isProcessing) return;
+    if (isProcessing || cooldownRef.current) return;
     
     setIsProcessing(true);
+    cooldownRef.current = true;
+    setLastScannedQR(qrData);
     
     try {
       console.log('Raw QR Data received:', qrData);
-      console.log('QR Data type:', typeof qrData);
-      console.log('QR Data length:', qrData ? qrData.length : 'null');
 
-      // Extract ID from QR data (could be user_id or student_id)
-      let scannedId;
+      // Extract user_id from QR data
+      let userId;
       
       try {
         const parsed = JSON.parse(qrData);
         console.log('Parsed JSON:', parsed);
-        scannedId = parsed.userId || parsed.user_id || parsed.studentId || parsed.student_id || parsed.id || parsed._id;
-        console.log('Extracted ID from JSON:', scannedId);
+        userId = parsed.user_id || parsed.userId || parsed.id || parsed._id;
+        console.log('Extracted user_id:', userId);
       } catch (e) {
-        // If not JSON, assume the QR data is the ID itself
+        // If not JSON, assume the QR data is the user_id itself
         console.log('Not JSON, treating as plain ID');
-        scannedId = qrData ? qrData.trim() : null;
-        console.log('Extracted plain ID:', scannedId);
+        userId = qrData ? qrData.trim() : null;
+        console.log('Extracted plain ID:', userId);
       }
 
-      console.log('Final scannedId:', scannedId);
-
-      if (!scannedId || scannedId.length === 0) {
-        console.error('scannedId is empty or null');
+      if (!userId || userId.length === 0) {
+        console.error('userId is empty or null');
         toast.error('Invalid QR code format - empty ID');
         setIsProcessing(false);
+        // Reset cooldown after 2 seconds for failed scans
+        setTimeout(() => {
+          cooldownRef.current = false;
+          setLastScannedQR(null);
+        }, 2000);
         return;
       }
 
@@ -142,73 +147,64 @@ const QRScanner = ({ onClose }) => {
       if (!token) {
         toast.error('Authentication token not found');
         setIsProcessing(false);
+        setTimeout(() => {
+          cooldownRef.current = false;
+          setLastScannedQR(null);
+        }, 2000);
         return;
       }
 
-      // First, try to get student ID from user ID (in case QR contains user_id)
-      let studentId = scannedId;
-      
-      // Check if this looks like a user_id (MongoDB ObjectId is 24 hex characters)
-      console.log('Checking if ID is ObjectId format...');
-      if (scannedId.length === 24 && /^[0-9a-fA-F]{24}$/.test(scannedId)) {
-        console.log('ID looks like ObjectId, attempting conversion from user_id');
-        try {
-          const userToStudentResponse = await fetch(`http://localhost:8000/api/teacher/attendance/get-student-id/${scannedId}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
+      console.log('Calling scan student QR with user_id:', userId);
 
-          console.log('User to student conversion response status:', userToStudentResponse.status);
-
-          if (userToStudentResponse.ok) {
-            const userToStudentData = await userToStudentResponse.json();
-            console.log('User to student data:', userToStudentData);
-            if (userToStudentData.success) {
-              studentId = userToStudentData.data.studentId;
-              console.log('Successfully converted to studentId:', studentId);
-            }
-          }
-        } catch (err) {
-          console.warn('Could not convert user_id to student_id, trying as student_id:', err);
-        }
-      } else {
-        console.log('ID does not look like ObjectId format, using as-is');
-      }
-
-      console.log('Final studentId to send:', studentId);
-
-      // Verify student attendance
-      const response = await fetch('http://localhost:8000/api/teacher/attendance/verify-student', {
+      // Call teacher scan student QR endpoint
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/teacher/attendance/scan-student-qr`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ studentId })
+        body: JSON.stringify({ user_id: userId })
       });
 
       const result = await response.json();
-      console.log('Attendance verification response:', result);
+      console.log('Scan student QR response:', result);
 
       if (result.success) {
-        toast.success(result.message, {
-          description: `${result.data.student.roll_no} - ${result.data.lecture.subject}`
-        });
+        if (result.alreadyMarked) {
+          toast.info(result.message, {
+            description: 'Student attendance was already recorded'
+          });
+        } else {
+          toast.success(result.message, {
+            description: result.data ? `${result.data.roll_no} - ${result.data.student}` : 'Attendance marked'
+          });
+        }
         
-        // Brief pause before allowing next scan
+        // Longer pause before allowing next scan (5 seconds)
         setTimeout(() => {
           setIsProcessing(false);
-        }, 2000);
+          cooldownRef.current = false;
+          setLastScannedQR(null);
+        }, 5000);
       } else {
         toast.error(result.message || 'Failed to verify student');
         setIsProcessing(false);
+        // Reset cooldown after 2 seconds for failed scans
+        setTimeout(() => {
+          cooldownRef.current = false;
+          setLastScannedQR(null);
+        }, 2000);
       }
 
     } catch (err) {
       console.error('Error verifying attendance:', err);
       toast.error('Failed to verify attendance: ' + err.message);
       setIsProcessing(false);
+      // Reset cooldown after 2 seconds for errors
+      setTimeout(() => {
+        cooldownRef.current = false;
+        setLastScannedQR(null);
+      }, 2000);
     }
   };
 
