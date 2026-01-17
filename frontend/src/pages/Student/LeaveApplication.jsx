@@ -14,6 +14,7 @@ import {
 
 const LeaveApplication = () => {
     const { student } = useContext(StudentContext);
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const [formData, setFormData] = useState({
         leave_type: '',
         start_date: '',

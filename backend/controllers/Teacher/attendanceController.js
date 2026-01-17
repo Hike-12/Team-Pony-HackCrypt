@@ -4,6 +4,23 @@ const TimetableSlot = require('../../models/TimetableSlot');
 const TeacherSubject = require('../../models/TeacherSubject');
 const Teacher = require('../../models/Teacher');
 const AttendanceSession = require('../../models/AttendanceSession');
+const AttendanceAttempt = require('../../models/AttendanceAttempt'); // Ensure this is imported
+
+exports.getStudentAttemptsForSession = async (req, res) => {
+    try {
+        const { sessionId, studentId } = req.params;
+        
+        const attempts = await AttendanceAttempt.find({
+            session_id: sessionId,
+            student_id: studentId
+        }).sort({ created_at: -1 });
+
+        res.json({ success: true, attempts });
+    } catch (error) {
+        console.error("Get Student Attempts Error:", error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
 
 /**
  * Get active attendance sessions for teacher
