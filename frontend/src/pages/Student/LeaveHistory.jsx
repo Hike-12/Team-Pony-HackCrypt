@@ -9,6 +9,7 @@ import { FaCheckCircle, FaClock, FaTimesCircle, FaFileAlt, FaCalendarAlt, FaSlas
 const LeaveHistory = () => {
     const { student } = useContext(StudentContext);
     const [leaves, setLeaves] = useState([]);
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('ALL');
@@ -25,7 +26,7 @@ const LeaveHistory = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/student/leave/my-applications/${student.student_id}`);
+            const response = await fetch(`${API_BASE_URL}/api/student/leave/my-applications/${student.student_id}`);
             const data = await response.json();
             if (data.success) setLeaves(data.data);
         } catch (error) {
@@ -38,7 +39,7 @@ const LeaveHistory = () => {
     const fetchStats = async () => {
         if (!student || !student.student_id) return;
         try {
-            const response = await fetch(`http://localhost:8000/api/student/leave/stats/${student.student_id}`);
+            const response = await fetch(`${API_BASE_URL}/api/student/leave/stats/${student.student_id}`);
             const data = await response.json();
             if (data.success) setStats(data.data);
         } catch (error) { }
@@ -52,7 +53,7 @@ const LeaveHistory = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/student/leave/${leaveId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/student/leave/${leaveId}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ student_id: student.student_id })

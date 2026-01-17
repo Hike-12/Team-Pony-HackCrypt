@@ -95,7 +95,7 @@ const LeaveApplication = () => {
             });
             formDataToSend.append('student_id', student.student_id);
 
-            const response = await fetch('http://localhost:8000/api/student/leave/apply', {
+            const response = await fetch(`${API_BASE_URL}/api/student/leave/apply`, {
                 method: 'POST',
                 body: formDataToSend
             });

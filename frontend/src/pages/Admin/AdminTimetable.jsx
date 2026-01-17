@@ -49,6 +49,7 @@ const AdminTimetable = () => {
   });
   
   const isExpanded = useSidebarState();
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   // Sort slots by order
   const sortedSlots = [...slots].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
@@ -67,8 +68,8 @@ const AdminTimetable = () => {
     try {
       setLoading(true);
       const [classesRes, slotsRes] = await Promise.all([
-        fetch('http://localhost:8000/api/admin/timetable/classes'),
-        fetch('http://localhost:8000/api/admin/timetable/slots')
+        fetch(`${API_BASE_URL}/api/admin/timetable/classes`),
+        fetch(`${API_BASE_URL}/api/admin/timetable/slots`)
       ]); 
 
       const classesData = await classesRes.json();
@@ -95,7 +96,7 @@ const AdminTimetable = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:8000/api/admin/timetable/entries?class_id=${selectedClass}`
+        `${API_BASE_URL}/api/admin/timetable/entries?class_id=${selectedClass}`
       );
       const data = await response.json();
 
@@ -143,7 +144,7 @@ const AdminTimetable = () => {
   const handleEntryUpdate = async (entryId, updates) => {
     try {
       const response = await fetch(
-        `http://localhost:8000/api/admin/timetable/entries/${entryId}`,
+        `${API_BASE_URL}/api/admin/timetable/entries/${entryId}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -170,7 +171,7 @@ const AdminTimetable = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/admin/timetable/entries/${entryId}`,
+        `${API_BASE_URL}/api/admin/timetable/entries/${entryId}`,
         { method: 'DELETE' }
       );
 

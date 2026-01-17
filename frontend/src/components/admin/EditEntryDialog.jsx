@@ -43,7 +43,7 @@ const EditEntryDialog = ({ open, onOpenChange, entry, onUpdate }) => {
 
   const fetchSlots = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/admin/timetable/slots');
+      const response = await fetch(`${API_BASE_URL}/api/admin/timetable/slots`);
       const data = await response.json();
       if (data.success) {
         setSlots(data.data);

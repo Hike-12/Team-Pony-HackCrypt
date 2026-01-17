@@ -14,6 +14,7 @@ const QRScanner = ({ onClose }) => {
   const canvasRef = useRef(null);
   const scanIntervalRef = useRef(null);
   const cooldownRef = useRef(false);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   // Fetch current lecture info
   useEffect(() => {
@@ -23,7 +24,7 @@ const QRScanner = ({ onClose }) => {
   const fetchCurrentLecture = async () => {
     try {
       const token = Cookies.get('teacherToken');
-      const response = await fetch('http://localhost:8000/api/teacher/attendance/current-lecture', {
+      const response = await fetch(`${API_BASE_URL}/api/teacher/attendance/current-lecture`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

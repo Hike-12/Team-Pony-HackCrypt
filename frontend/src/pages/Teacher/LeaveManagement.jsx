@@ -32,6 +32,7 @@ const LeaveManagement = () => {
     const [modalType, setModalType] = useState(''); // 'approve' or 'reject'
     const [comments, setComments] = useState('');
     const [verifying, setVerifying] = useState(false);
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const [verificationResult, setVerificationResult] = useState(null);
 
     useEffect(() => {
@@ -43,8 +44,8 @@ const LeaveManagement = () => {
         setLoading(true);
         try {
             const endpoint = filter === 'PENDING'
-                ? 'http://localhost:8000/api/teacher/leave/pending'
-                : `http://localhost:8000/api/teacher/leave/all?status=${filter}`;
+                ? `${API_BASE_URL}/api/teacher/leave/pending`
+                : `${API_BASE_URL}/api/teacher/leave/all?status=${filter}`;
 
             const response = await fetch(endpoint);
             const data = await response.json();
@@ -58,7 +59,7 @@ const LeaveManagement = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/teacher/leave/stats');
+            const response = await fetch(`${API_BASE_URL}/api/teacher/leave/stats`);
             const data = await response.json();
             if (data.success) setStats(data.data);
         } catch (error) { }
@@ -85,7 +86,7 @@ const LeaveManagement = () => {
         setVerificationResult(null);
 
         try {
-            const response = await fetch(`http://localhost:8000/api/teacher/leave/${leave._id}/verify-document`, {
+            const response = await fetch(`${API_BASE_URL}/api/teacher/leave/${leave._id}/verify-document`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -117,7 +118,7 @@ const LeaveManagement = () => {
         }
 
         try {
-            const endpoint = `http://localhost:8000/api/teacher/leave/${selectedLeave._id}/${modalType}`;
+            const endpoint = `${API_BASE_URL}/api/teacher/leave/${selectedLeave._id}/${modalType}`;
             const response = await fetch(endpoint, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },

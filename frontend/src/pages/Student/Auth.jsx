@@ -34,13 +34,15 @@ const StudentAuth = () => {
     console.log('StudentAuth page loaded');
   }, []);
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('Student login attempt with rollNo:', rollNo);
+    console.log('Student login attempt with email:', email);
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/student/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/student/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

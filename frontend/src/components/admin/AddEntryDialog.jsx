@@ -21,6 +21,7 @@ const SESSION_TYPES = ['LECTURE', 'LAB', 'TUTORIAL', 'Online'];
 const AddEntryDialog = ({ open, onOpenChange, onSuccess, selectedClass, slots }) => {
   const [loading, setLoading] = useState(false);
   const [teachers, setTeachers] = useState([]);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   const [subjects, setSubjects] = useState([]);
   
   const [formData, setFormData] = useState({
@@ -43,8 +44,8 @@ const AddEntryDialog = ({ open, onOpenChange, onSuccess, selectedClass, slots })
   const fetchTeachersAndSubjects = async () => {
     try {
       const [teachersRes, subjectsRes] = await Promise.all([
-        fetch('http://localhost:8000/api/admin/timetable/teachers'),
-        fetch('http://localhost:8000/api/admin/timetable/subjects')
+        fetch(`${API_BASE_URL}/api/admin/timetable/teachers`),
+        fetch(`${API_BASE_URL}/api/admin/timetable/subjects`)
       ]);
 
       const teachersData = await teachersRes.json();
@@ -70,7 +71,7 @@ const AddEntryDialog = ({ open, onOpenChange, onSuccess, selectedClass, slots })
 
     try {
       // First, get or create teacher-subject mapping
-      const tsResponse = await fetch('http://localhost:8000/api/admin/timetable/teacher-subject', {
+      const tsResponse = await fetch(`${API_BASE_URL}/api/admin/timetable/teacher-subject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -88,7 +89,7 @@ const AddEntryDialog = ({ open, onOpenChange, onSuccess, selectedClass, slots })
       }
 
       // Then create the timetable entry
-      const entryResponse = await fetch('http://localhost:8000/api/admin/timetable/entries', {
+      const entryResponse = await fetch(`${API_BASE_URL}/api/admin/timetable/entries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

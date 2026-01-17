@@ -21,16 +21,18 @@ const AdminDashboard = () => {
     fetchStats();
   }, []);
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const fetchStats = async () => {
     try {
       setLoading(true);
       
       // Fetch counts from different endpoints
       const [studentsRes, teachersRes, classesRes, subjectsRes] = await Promise.all([
-        fetch('http://localhost:8000/api/admin/students'),
-        fetch('http://localhost:8000/api/admin/teachers'),
-        fetch('http://localhost:8000/api/admin/timetable/classes'),
-        fetch('http://localhost:8000/api/admin/timetable/subjects')
+        fetch(`${API_BASE_URL}/api/admin/students`),
+        fetch(`${API_BASE_URL}/api/admin/teachers`),
+        fetch(`${API_BASE_URL}/api/admin/timetable/classes`),
+        fetch(`${API_BASE_URL}/api/admin/timetable/subjects`)
       ]);
 
       const [studentsData, teachersData, classesData, subjectsData] = await Promise.all([

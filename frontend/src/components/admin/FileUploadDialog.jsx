@@ -52,7 +52,7 @@ const FileUploadDialog = ({ open, onOpenChange, onSuccess, selectedClass }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('http://localhost:8000/api/admin/timetable/parse-file', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/timetable/parse-file`, {
         method: 'POST',
         body: formData
       });
@@ -79,7 +79,7 @@ const FileUploadDialog = ({ open, onOpenChange, onSuccess, selectedClass }) => {
     setProcessing(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/admin/timetable/create-from-parsed', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/timetable/create-from-parsed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(parsedData)

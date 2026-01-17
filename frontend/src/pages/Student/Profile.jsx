@@ -58,7 +58,7 @@ const Profile = () => {
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/student/auth/profile/${studentId}`);
+            const response = await fetch(`${API_BASE_URL}/api/student/auth/profile/${studentId}`);
             const data = await response.json();
 
             if (data.success) {
