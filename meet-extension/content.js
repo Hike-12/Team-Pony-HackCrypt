@@ -150,9 +150,29 @@ const IGNORED_STRINGS = new Set([
 ]);
 
 function extractParticipantName(element) {
+    // PRIORITY 1: Check if the element itself is the 'listitem' with a direct aria-label
+    // This is the most reliable method for Google Meet.
+    if (element.getAttribute('role') === 'listitem' && element.hasAttribute('aria-label')) {
+        let rawName = element.getAttribute('aria-label');
+        // Clean up common suffixes
+        let cleanName = rawName
+            .replace(/\(You\)$/, '')
+            .replace(/\(Presentation\)$/, '')
+            .replace(/^Remove\s+/, '')
+            .trim();
+            
+        if (isValidName(cleanName)) {
+            return cleanName;
+        }
+    }
+
+    // PRIORITY 2: Look for the specific name structure inside
+    // Div structure: listitem -> ... -> div[jsname] -> div -> span (Name) -> span (You)
+    // We try to find the first valid text node that is NOT in a blacklisted container.
+
     // Immediate rejection for obvious button/icon containers
-    if (element.tagName === 'BUTTON' ||
-        element.getAttribute('role') === 'button' ||
+    if (element.tagName === 'BUTTON' || 
+        element.getAttribute('role') === 'button' || 
         element.classList.contains('material-icons') ||
         element.classList.contains('google-material-icons') ||
         element.classList.contains('material-symbols-outlined')) {
@@ -160,24 +180,27 @@ function extractParticipantName(element) {
     }
 
     const candidates = [];
-
-    // Use TreeWalker to find pure text nodes
+    
+    // Use TreeWalker to find pure text nodes in DOM ORDER
     const walker = document.createTreeWalker(
         element,
         NodeFilter.SHOW_TEXT,
         {
-            acceptNode: function (node) {
+            acceptNode: function(node) {
                 // Traverse up to check if this text is inside a blocked container
                 let ptr = node.parentElement;
                 while (ptr && ptr !== element) {
-                    if (ptr.tagName === 'BUTTON' ||
+                    if (ptr.tagName === 'BUTTON' || 
                         ptr.getAttribute('role') === 'button' ||
-                        ptr.tagName === 'I' ||
+                        ptr.tagName === 'I' || 
                         ptr.classList.contains('material-icons-extended') ||
                         ptr.classList.contains('material-icons') ||
+                        ptr.classList.contains('google-symbols') || // Found in user snippet
                         ptr.getAttribute('aria-hidden') === 'true') {
                         return NodeFilter.FILTER_REJECT;
                     }
+                    // Google Meet Status text (Meeting host) usually appears in small text or specific containers
+                    // specific class 'd93U2d' seen in snippet for "Meeting host", often has "notranslate" or timestamp classes
                     ptr = ptr.parentElement;
                 }
                 return NodeFilter.FILTER_ACCEPT;
@@ -194,29 +217,26 @@ function extractParticipantName(element) {
     }
 
     if (candidates.length > 0) {
-        // Sort by length (descending) but penalize very long strings that look like sentences
-        candidates.sort((a, b) => b.length - a.length);
-
-        for (const candidate of candidates) {
-            // Strict check
-            if (!candidate.includes('\n') && !candidate.match(/^\d+:\d+$/)) {
-                return candidate;
-            }
-        }
+        // PRIORITY 3: Select the earliest valid text node in the DOM.
+        // Google Meet typically puts the name BEFORE the status ("Meeting host") or timestamp.
+        // Previously we sorted by length, which caused "Meeting host" (12 chars) to override "Reniyas" (7 chars).
+        // NOW we take the first valid one.
+        
+        return candidates[0]; 
     }
-
-    // Fallback: Check aria-label
+    
+    // Fallback: Check aria-label of the row if we didn't check it in Priority 1
     const ariaLabel = element.getAttribute('aria-label');
     if (ariaLabel) {
-        if (!ariaLabel.includes('More options') &&
-            !ariaLabel.includes('Pin') &&
+        if (!ariaLabel.includes('More options') && 
+            !ariaLabel.includes('Pin') && 
             !ariaLabel.includes('Mute') &&
             !ariaLabel.includes('Remove')) {
-
+                
             let clean = ariaLabel.replace(/\(You\)$/, '').trim();
             clean = clean.replace(/\(Presentation\)$/, '').trim();
             clean = clean.replace(/^Remove\s+/, '').trim();
-
+            
             if (isValidName(clean)) return clean;
         }
     }
