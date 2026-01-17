@@ -19,7 +19,13 @@ export function BiometricVerification({ studentId, sessionId, onSuccess, onError
         toast.success('Biometric verified successfully!');
 
         if (onSuccess) {
-          onSuccess(result);
+          // Return credential data for attendance marking
+          onSuccess({
+            verified: true,
+            credential: result.credential,
+            biometric_type: result.biometric_type,
+            device_type: result.device_type
+          });
         }
       } else {
         throw new Error('Verification failed');
