@@ -219,7 +219,70 @@ exports.getEnrolledCredentials = async (req, res) => {
 };
 
 /**
- * Remove a credential
+ * Internal method for attendance marking verification
+ */
+exports.verifyAuthenticationInternal = async (data) => {
+  try {
+    const { student_id, credential, session_id } = data;
+    
+    // Get challenge from memory
+    const expectedChallenge = challenges.get(student_id);
+    if (!expectedChallenge) {
+      return { verified: false, message: 'Challenge not found or expired' };
+    }
+    
+    // Get credential ID from response
+    const credentialId = Buffer.from(credential.id, 'base64url').toString('base64');
+    
+    // Find stored credential
+    const dbCredential = await WebAuthnCredential.findOne({ 
+      credential_id: credentialId,
+      student_id,
+      is_active: true 
+    });
+    
+    if (!dbCredential) {
+      return { verified: false, message: 'Credential not found' };
+    }
+    
+    // Verify the authentication response
+    const verification = await verifyAuthenticationResponse({
+      response: credential,
+      expectedChallenge,
+      expectedOrigin: webauthnConfig.origin,
+      expectedRPID: webauthnConfig.rpID,
+      authenticator: {
+        credentialID: Buffer.from(dbCredential.credential_id, 'base64'),
+        credentialPublicKey: Buffer.from(dbCredential.public_key, 'base64'),
+        counter: dbCredential.counter,
+      },
+    });
+    
+    if (!verification.verified) {
+      return { verified: false, message: 'Biometric verification failed' };
+    }
+    
+    // Update counter and last used
+    dbCredential.counter = verification.authenticationInfo.newCounter;
+    dbCredential.last_used = new Date();
+    await dbCredential.save();
+    
+    // Clean up challenge
+    challenges.delete(student_id);
+    
+    return { 
+      verified: true,
+      biometric_type: 'WEBAUTHN',
+      device_type: dbCredential.device_type
+    };
+  } catch (error) {
+    console.error('Internal authentication verification error:', error);
+    return { verified: false, message: error.message };
+  }
+};
+
+/**
+ * Remove a credential for a student
  */
 exports.removeCredential = async (req, res) => {
   try {
