@@ -38,7 +38,7 @@ const StudentAuth = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log('Student login attempt with email:', email);
+    // console.log('Student login attempt with email:', email);
     setLoading(true);
 
     try {

@@ -158,6 +158,11 @@ exports.markAttendance = async (req, res) => {
     const studentId = req.user.student_id;
     const { sessionId, faceData, biometricData, location, qrToken } = req.body;
 
+    const student = await Student.findById(studentId).populate('class_id');
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
     console.log("FACE DATA", faceData);
 
     // 1. Find active session
