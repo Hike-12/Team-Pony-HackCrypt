@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
-import { FaEdit, FaTrash, FaCamera, FaCheck } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaCheck, FaCamera } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
@@ -259,11 +259,11 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                     <td className="px-4 py-3 text-center">
                       {student.face_enrolled ? (
                         <button
-                          className="p-2 rounded-full bg-green-100 text-green-600 cursor-default"
+                          className="p-2 rounded-full bg-transparent text-white cursor-default"
                           title="Face enrolled"
                           disabled
                         >
-                          <FaCheck className="w-4 h-4" />
+                          <FaCheck className="w-5 h-5 text-white" />
                         </button>
                       ) : (
                         <button
@@ -271,7 +271,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                           title="Enroll Face"
                           onClick={() => handleOpenFaceEnrollment(student)}
                         >
-                          <FaCamera className="w-4 h-4" />
+                          <FaCamera className="w-5 h-5" />
                         </button>
                       )}
                     </td>
@@ -403,7 +403,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
               <label className="text-sm font-medium text-muted-foreground">Student Image</label>
               <div className="flex items-start gap-4">
                 {editImagePreview && (
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <img
                       src={editImagePreview}
                       alt="Current"

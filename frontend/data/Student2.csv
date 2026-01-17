@@ -1,0 +1,9 @@
+email,password,rollno,fullname,gender,phone,class
+rahul.patil@student.edu,pass1234,CEA001,Rahul Patil,Male,9876543210,Computer Engineering A (2026)
+sneha.joshi@student.edu,pass1234,CEA002,Sneha Joshi,Female,9876543211,Computer Engineering A (2026)
+aman.khan@student.edu,pass1234,CEB001,Aman Khan,Male,9876543212,Computer Engineering B (2026)
+riya.sharma@student.edu,pass1234,CEB002,Riya Sharma,Female,9876543213,Computer Engineering B (2026)
+karan.desai@student.edu,pass1234,CSA001,Karan Desai,Male,9876543214,Computers A (2026)
+pooja.nair@student.edu,pass1234,CSA002,Pooja Nair,Female,9876543215,Computers A (2026)
+aditya.verma@student.edu,pass1234,ITA001,Aditya Verma,Male,9876543216,Information Tech A (2025)
+neha.singh@student.edu,pass1234,ITA002,Neha Singh,Female,9876543217,Information Tech A (2025)

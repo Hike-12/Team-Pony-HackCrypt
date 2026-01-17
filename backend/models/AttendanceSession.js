@@ -10,6 +10,11 @@ const attendanceSessionSchema = new mongoose.Schema({
   expected_lat: { type: Number },
   expected_lng: { type: Number },
   allowed_radius_m: { type: Number },
+  enable_face: { type: Boolean, default: false },
+  enable_biometric: { type: Boolean, default: false },
+  enable_geofencing: { type: Boolean, default: false },
+  enable_static_qr: { type: Boolean, default: false },
+  enable_dynamic_qr: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now }
 });
 

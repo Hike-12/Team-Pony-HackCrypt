@@ -1,5 +1,6 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { useFaceAttendance } from "@/hooks/useFaceAttendance";
+
 
 export default function AttendanceScanner({ storedDescriptor, onSuccess }) {
   const {
@@ -11,11 +12,18 @@ export default function AttendanceScanner({ storedDescriptor, onSuccess }) {
     multipleFaces,
     startVideo,
     captureDescriptor,
+    lastDescriptor,
   } = useFaceAttendance({
     storedDescriptor,
-    onSuccess,
     matchThreshold: 0.45,
   });
+
+    useEffect(() => {
+    if (status === "success" && lastDescriptor && onSuccess) {
+      onSuccess({ descriptor: lastDescriptor, liveness: true });
+    }
+    // eslint-disable-next-line
+  }, [status, lastDescriptor]);
 
   const challengeText = {
     blink: "Please blink your eyes 👁️",

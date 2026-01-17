@@ -1,0 +1,6 @@
+fullname,department,subject_name,subject_code,email,password,class
+Aarav Mehta,Computer Engineering,Data Structures,CS101,aarav.mehta@college.edu,pass1234,Computer Engineering A (2026)
+Neha Sharma,Computer Engineering,Operating Systems,CS102,neha.sharma@college.edu,pass1234,Computer Engineering A (2026)
+Rohan Verma,Computer Engineering,Database Management Systems,CS103,rohan.verma@college.edu,pass1234,Computer Engineering B (2026)
+Priya Nair,Computer Engineering,Computer Networks,CS104,priya.nair@college.edu,pass1234,Computer Engineering B (2026)
+Kunal Singh,Computers,Web Development,CS201,kunal.singh@college.edu,pass1234,Computers A (2026)
