@@ -171,7 +171,7 @@ export function useFaceAttendance({
           const leftEAR = getEAR(leftEye);
           const rightEAR = getEAR(rightEye);
           console.log(`[FaceAttendance] Blink EAR: left=${leftEAR}, right=${rightEAR}`);
-          if (leftEAR < 0.25 && rightEAR < 0.25) {
+          if (leftEAR < 0.45 && rightEAR < 0.45) {
             setChallengePassed(true);
             setStatus("success");
             console.log("[FaceAttendance] Blink detected, liveness passed!");

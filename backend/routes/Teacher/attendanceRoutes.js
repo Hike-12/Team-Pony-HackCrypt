@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { verifyStudentAttendance, getCurrentLecture, getUserStudentId, startAttendanceSession, getTodaysLectures, getActiveSessions } = require('../../controllers/Teacher/attendanceController');
+const { verifyStudentAttendance, getCurrentLecture, getUserStudentId, startAttendanceSession, getTodaysLectures, getActiveSessions, scanStudentQR } = require('../../controllers/Teacher/attendanceController');
 const { 
     startQRAttendance, 
     refreshQRToken, 
@@ -18,6 +18,9 @@ router.post('/qr/scan', isStudent, scanQRAttendance);
 
 // Teacher-only routes
 router.use(isTeacher);
+
+// Teacher scans student ID QR code
+router.post('/scan-student-qr', scanStudentQR);
 
 // Convert User ID to Student ID (used when QR contains user_id)
 router.get('/get-student-id/:userId', getUserStudentId);

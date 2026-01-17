@@ -437,3 +437,99 @@ exports.getTodaysLectures = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
+
+/**
+ * Teacher scans student ID QR code to mark attendance
+ */
+exports.scanStudentQR = async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    const teacherId = req.user.teacher_id;
+
+    if (!teacherId) {
+      return res.status(401).json({ success: false, message: 'Teacher not authenticated' });
+    }
+
+    if (!user_id) {
+      return res.status(400).json({ success: false, message: 'User ID is required' });
+    }
+
+    // Find student by user_id
+    const Student = require('../../models/Student');
+    const AttendanceRecord = require('../../models/AttendanceRecord');
+    
+    const student = await Student.findOne({ user_id }).populate('class_id');
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    // Find active session for teacher
+    const now = new Date();
+    const teacherSubjects = await TeacherSubject.find({ teacher_id: teacherId });
+    const teacherSubjectIds = teacherSubjects.map(ts => ts._id);
+
+    const session = await AttendanceSession.findOne({
+      teacher_subject_id: { $in: teacherSubjectIds },
+      is_active: true,
+      starts_at: { $lte: now },
+      ends_at: { $gte: now }
+    });
+
+    if (!session) {
+      return res.status(400).json({ success: false, message: 'No active attendance session found' });
+    }
+
+    // Check if already marked
+    const existingRecord = await AttendanceRecord.findOne({
+      session_id: session._id,
+      student_id: student._id
+    });
+
+    if (existingRecord) {
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Attendance already marked for this session',
+        alreadyMarked: true
+      });
+    }
+
+    // Create attendance record
+    await AttendanceRecord.create({
+      session_id: session._id,
+      student_id: student._id,
+      status: 'PRESENT',
+      marked_at: now,
+      marked_by_teacher_id: teacherId,
+      verification_method: 'STUDENT_ID_QR'
+    });
+
+    // Emit socket event to teacher
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`session-${session._id}`).emit('studentAttendance', {
+        student: {
+          id: student._id,
+          name: student.full_name,
+          roll_no: student.roll_no,
+          class: student.class_id ? student.class_id.name : 'Unknown'
+        },
+        timestamp: now,
+        sessionId: session._id.toString()
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Attendance marked successfully',
+      data: {
+        student: student.full_name,
+        roll_no: student.roll_no,
+        session: session._id
+      }
+    });
+
+  } catch (error) {
+    console.error('Scan student QR error:', error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
