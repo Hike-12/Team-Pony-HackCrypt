@@ -26,7 +26,6 @@ import TeacherQRAttendance from "@/pages/Teacher/QRAttendance";
 import AttentivenessMonitor from "@/pages/Teacher/AttentivenessMonitor";
 import SessionManagement from "@/pages/Teacher/SessionManagement";
 
-
 import { Toaster } from '@/components/ui/sonner';
 import { StudentProvider } from './context/StudentContext';
 import { TeacherProvider } from './context/TeacherContext';
