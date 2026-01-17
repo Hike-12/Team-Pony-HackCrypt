@@ -21,10 +21,13 @@ export default function AttendanceVerification() {
   const [feedback, setFeedback] = useState(null);
   const [faceEmbedding, setFaceEmbedding] = useState(null);
 
-  // Fetch active session
+  // Fetch active session with polling
   useEffect(() => {
-    async function fetchSession() {
-      setLoading(true);
+    async function fetchSession(isPolling = false) {
+      // Don't show loading on polling requests
+      if (!isPolling) {
+        setLoading(true);
+      }
       try {
         const token = localStorage.getItem('studentToken');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/student/attendance/active-session`, {
@@ -36,16 +39,32 @@ export default function AttendanceVerification() {
           setSession(data.session);
         } else {
           setSession(null);
-          if (!data.success) toast.error(data.message || 'No active attendance session');
+          if (!data.success && !isPolling) toast.error(data.message || 'No active attendance session');
         }
       } catch (err) {
-        toast.error('Failed to fetch session');
+        if (!isPolling) {
+          toast.error('Failed to fetch session');
+        }
         setSession(null);
       } finally {
-        setLoading(false);
+        if (!isPolling) {
+          setLoading(false);
+        }
       }
     }
+    
+    // Initial fetch
     fetchSession();
+    
+    // Set up polling interval - fetch every 1 second when there's an active session
+    const pollInterval = setInterval(() => {
+      fetchSession(true);
+    }, 1000);
+    
+    // Cleanup interval on unmount
+    return () => {
+      clearInterval(pollInterval);
+    };
   }, [student]);
 
   // Fetch face biometric
