@@ -384,7 +384,7 @@ exports.approveLeave = async (req, res) => {
                         return AttendanceRecord.create({
                             session_id: session._id,
                             student_id: leave.student_id,
-                            status: 'EXCUSED',
+                            status: 'PRESENT',
                             marked_at: new Date(),
                             verification_level: 'HIGH',
                             trust_score: 100

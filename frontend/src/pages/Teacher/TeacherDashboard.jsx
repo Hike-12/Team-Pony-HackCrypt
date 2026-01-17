@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react'
 import { TeacherContext } from '@/context/TeacherContext'
 import { TeacherSidebar } from '@/components/teacher/TeacherSidebar'
-import { Clock, QrCode } from 'lucide-react'
+import { Clock, QrCode, FileDown, Users } from 'lucide-react'
 import QRScanner from '@/components/teacher/QRScanner'
 import { toast } from 'sonner'
 import {
@@ -33,6 +33,10 @@ const TeacherDashboard = () => {
     enable_biometric: false,
     enable_geofencing: false,
   })
+  const [showExportDialog, setShowExportDialog] = useState(false)
+  const [exportThreshold, setExportThreshold] = useState(75)
+  const [exportStats, setExportStats] = useState(null)
+  const [exportLoading, setExportLoading] = useState(false)
 
   // Fetch today's lectures for dropdown
   useEffect(() => {
@@ -143,6 +147,79 @@ const TeacherDashboard = () => {
     return now >= start && now <= end;
   }
 
+  // Fetch low attendance statistics
+  const fetchExportStats = async (threshold) => {
+    setExportLoading(true)
+    try {
+      const token = localStorage.getItem('teacherToken')
+      const teacherId = teacher?.teacher_id || localStorage.getItem('teacherId')
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/teacher/export/stats?threshold=${threshold}&teacher_id=${teacherId}`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      )
+      const data = await res.json()
+      if (data.success) {
+        setExportStats(data.data)
+      }
+    } catch (error) {
+      toast.error('Failed to fetch statistics')
+    } finally {
+      setExportLoading(false)
+    }
+  }
+
+  // Handle CSV export
+  const handleExportCSV = async () => {
+    try {
+      const token = localStorage.getItem('teacherToken')
+      const teacherId = teacher?.teacher_id || localStorage.getItem('teacherId')
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/teacher/export/export?threshold=${exportThreshold}&teacher_id=${teacherId}`,
+        {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      )
+      
+      if (!res.ok) {
+        toast.error('Failed to export data')
+        return
+      }
+
+      // Check if response is CSV
+      const contentType = res.headers.get('content-type')
+      if (!contentType || !contentType.includes('text/csv')) {
+        // If not CSV, try to parse as JSON for error message
+        const data = await res.json()
+        toast.error(data.message || 'Failed to export data')
+        return
+      }
+
+      // Download the CSV file
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `low-attendance-students-${Date.now()}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast.success('CSV exported successfully!')
+      setShowExportDialog(false)
+    } catch (error) {
+      toast.error('Failed to export CSV')
+    }
+  }
+
+  // Open export dialog and fetch stats
+  const handleOpenExportDialog = () => {
+    setShowExportDialog(true)
+    fetchExportStats(exportThreshold)
+  }
+
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
       <TeacherSidebar />
@@ -216,17 +293,27 @@ const TeacherDashboard = () => {
               <p className="text-muted-foreground mb-6">
                 This is your teacher dashboard. Manage your classes, take attendance, and track student performance.
               </p>
-              <Button
-                onClick={() => setShowQRScanner(true)}
-                className="flex items-center gap-2"
-                style={{
-                  background: 'var(--primary)',
-                  color: 'var(--primary-foreground)'
-                }}
-              >
-                <QrCode className="h-5 w-5" />
-                Scan QR for Attendance
-              </Button>
+              <div className="flex gap-3 flex-wrap">
+                <Button
+                  onClick={() => setShowQRScanner(true)}
+                  className="flex items-center gap-2"
+                  style={{
+                    background: 'var(--primary)',
+                    color: 'var(--primary-foreground)'
+                  }}
+                >
+                  <QrCode className="h-5 w-5" />
+                  Scan QR for Attendance
+                </Button>
+                <Button
+                  onClick={handleOpenExportDialog}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <FileDown className="h-5 w-5" />
+                  Export Low Attendance
+                </Button>
+              </div>
             </CardContent>
           </Card>
           <Button
@@ -321,6 +408,102 @@ const TeacherDashboard = () => {
         {/* QR Scanner Modal */}
         {showQRScanner && (
           <QRScanner onClose={() => setShowQRScanner(false)} />
+        )}
+
+        {/* Export Low Attendance Dialog */}
+        {showExportDialog && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md p-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Export Low Attendance Students
+                </CardTitle>
+                <CardDescription>
+                  Download CSV of students below attendance threshold
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block mb-2 font-medium">
+                    Attendance Threshold (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={exportThreshold}
+                    onChange={(e) => {
+                      setExportThreshold(e.target.value)
+                      fetchExportStats(e.target.value)
+                    }}
+                    className="w-full px-3 py-2 border rounded-md"
+                    style={{
+                      background: 'var(--input)',
+                      color: 'var(--foreground)',
+                      borderColor: 'var(--border)'
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Students with attendance below this percentage will be exported
+                  </p>
+                </div>
+
+                {exportLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : exportStats ? (
+                  <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Total Students:</span>
+                      <span className="font-semibold">{exportStats.total_students}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Below Threshold:</span>
+                      <span className="font-semibold text-red-600">
+                        {exportStats.low_attendance_count-2}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Threshold:</span>
+                      <span className="font-semibold">{exportStats.threshold}%</span>
+                    </div>
+                  </div>
+                ) : null}
+
+                {exportStats && exportStats.low_attendance_count === 0 && (
+                  <div className="text-center py-4 text-green-600">
+                    ✓ No students found below the threshold!
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="flex gap-3">
+                <Button
+                  onClick={handleExportCSV}
+                  disabled={!exportStats || exportStats.low_attendance_count === 0}
+                  className="flex items-center gap-2"
+                  style={{
+                    background: 'var(--primary)',
+                    color: 'var(--primary-foreground)'
+                  }}
+                >
+                  <FileDown className="h-4 w-4" />
+                  Download CSV
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowExportDialog(false)}
+                  style={{
+                    background: 'var(--secondary)',
+                    color: 'var(--secondary-foreground)'
+                  }}
+                >
+                  Cancel
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
         )}
       </main>
     </div>
