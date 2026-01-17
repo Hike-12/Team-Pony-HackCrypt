@@ -19,6 +19,7 @@ const AdminTimetable = () => {
   const [loading, setLoading] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [timetableFilter, setTimetableFilter] = useState('with'); // 'with' or 'without'
   
   const isExpanded = useSidebarState();
 
@@ -169,137 +170,188 @@ const AdminTimetable = () => {
       <Toaster position="top-right" richColors />
       
       <main className={cn(
-        "flex-1 p-6 transition-all duration-300",
+        "flex-1 min-h-screen bg-background transition-all duration-300",
         isExpanded ? "ml-64" : "ml-20"
       )}>
+        <header className="sticky top-0 z-10 flex h-16 mt-1 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-backdrop-filter:bg-background/60">
+          <h1 className="text-lg font-semibold">Manage Timetables</h1>
+        </header>
         <div className={cn(
-          "mx-auto space-y-6 transition-all duration-300",
+          "mx-auto space-y-6 p-6 transition-all duration-300",
           isExpanded ? "max-w-7xl" : "max-w-full"
         )}>
-          {/* Header */}
+          {/* Class Selection Controls */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Timetable Management</h1>
-              <p className="text-muted-foreground mt-1">
-                Manage class schedules and timetable entries
-              </p>
-            </div>
-            {selectedClass && (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowUploadDialog(true)}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Import
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setShowAddDialog(true)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Entry
-                </Button>
-              </div>
-            )}
           </div>
+
+          {selectedClass && (
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowUploadDialog(true)}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Import
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setShowAddDialog(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Entry
+              </Button>
+            </div>
+          )}
 
           {/* Class Selection by Batch Year */}
           {!selectedClass && (
-            <div className="space-y-8">
-              {/* Classes with Timetable */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Calendar className="w-5 h-5 text-green-500" />
-                  <h2 className="text-xl font-semibold text-foreground">Classes with Timetable</h2>
-                </div>
-                
-                {sortedYears.map(year => {
-                  const withTimetable = groupedClasses[year].withTimetable;
-                  if (withTimetable.length === 0) return null;
-                  
-                  return (
-                    <div key={`with-${year}`} className="mb-6">
-                      <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                        Batch {year}
-                      </h3>
+            <div className="space-y-6">
+              {/* Toggle Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  variant={timetableFilter === 'with' ? 'default' : 'outline'}
+                  onClick={() => setTimetableFilter('with')}
+                  className="transition-all duration-200"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Classes with Timetables
+                </Button>
+                <Button
+                  variant={timetableFilter === 'without' ? 'default' : 'outline'}
+                  onClick={() => setTimetableFilter('without')}
+                  className="transition-all duration-200"
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Classes without Timetables
+                </Button>
+              </div>
+
+              {/* Loading State */}
+              {loading && (
+                <div className="space-y-6">
+                  {[1, 2, 3].map(i => (
+                    <div key={i}>
+                      <div className="h-6 bg-muted rounded w-32 mb-4 animate-pulse" />
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                        {withTimetable.map(cls => (
-                          <Card
-                            key={cls._id}
-                            onClick={() => setSelectedClass(cls._id)}
-                            className="p-4 cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-200 group"
-                          >
-                            <div className="text-center">
-                              <div className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                                {cls.name}
-                              </div>
-                              <div className="text-sm text-muted-foreground mt-1">
-                                {cls.division}
-                              </div>
-                              <div className="flex items-center justify-center gap-1 mt-2">
-                                <Clock className="w-3 h-3 text-green-500" />
-                                <span className="text-xs text-green-500">Active</span>
-                              </div>
+                        {[1, 2, 3, 4, 5, 6].map(j => (
+                          <Card key={`${i}-${j}`} className="p-4 animate-pulse">
+                            <div className="space-y-3">
+                              <div className="h-6 bg-muted rounded" />
+                              <div className="h-4 bg-muted rounded w-3/4" />
+                              <div className="h-4 bg-muted rounded w-1/2" />
                             </div>
                           </Card>
                         ))}
                       </div>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+              )}
 
-                {classes.length > 0 && sortedYears.every(year => groupedClasses[year].withTimetable.length === 0) && (
-                  <Card className="p-8 text-center">
-                    <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                    <p className="text-muted-foreground">No classes with timetables yet</p>
-                  </Card>
-                )}
-              </div>
+              {/* Classes with Timetable */}
+              {!loading && timetableFilter === 'with' && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-green-500" />
+                    <h2 className="text-xl font-semibold text-foreground">Classes with Timetable</h2>
+                  </div>
+                  
+                  {sortedYears.length > 0 ? (
+                    sortedYears.map(year => {
+                      const withTimetable = groupedClasses[year].withTimetable;
+                      if (withTimetable.length === 0) return null;
+                      
+                      return (
+                        <div key={`with-${year}`}>
+                          <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                            Batch {year}
+                          </h3>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {withTimetable.map(cls => (
+                              <Card
+                                key={cls._id}
+                                onClick={() => setSelectedClass(cls._id)}
+                                className="p-4 cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-200 group"
+                              >
+                                <div className="text-center">
+                                  <div className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                                    {cls.name}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground mt-1">
+                                    {cls.division}
+                                  </div>
+                                  <div className="flex items-center justify-center gap-1 mt-2">
+                                    <Clock className="w-3 h-3 text-green-500" />
+                                    <span className="text-xs text-green-500">Active</span>
+                                  </div>
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <Card className="p-8 text-center">
+                      <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                      <p className="text-muted-foreground">No classes with timetables yet</p>
+                    </Card>
+                  )}
+                </div>
+              )}
 
               {/* Classes without Timetable */}
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Calendar className="w-5 h-5 text-orange-500" />
-                  <h2 className="text-xl font-semibold text-foreground">Classes without Timetable</h2>
-                </div>
-                
-                {sortedYears.map(year => {
-                  const withoutTimetable = groupedClasses[year].withoutTimetable;
-                  if (withoutTimetable.length === 0) return null;
+              {!loading && timetableFilter === 'without' && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-orange-500" />
+                    <h2 className="text-xl font-semibold text-foreground">Classes without Timetable</h2>
+                  </div>
                   
-                  return (
-                    <div key={`without-${year}`} className="mb-6">
-                      <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                        Batch {year}
-                      </h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                        {withoutTimetable.map(cls => (
-                          <Card
-                            key={cls._id}
-                            onClick={() => setSelectedClass(cls._id)}
-                            className="p-4 cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-200 group"
-                          >
-                            <div className="text-center">
-                              <div className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                                {cls.name}
-                              </div>
-                              <div className="text-sm text-muted-foreground mt-1">
-                                {cls.division}
-                              </div>
-                              <div className="flex items-center justify-center gap-1 mt-2">
-                                <Clock className="w-3 h-3 text-orange-500" />
-                                <span className="text-xs text-orange-500">Pending</span>
-                              </div>
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                  {sortedYears.length > 0 ? (
+                    sortedYears.map(year => {
+                      const withoutTimetable = groupedClasses[year].withoutTimetable;
+                      if (withoutTimetable.length === 0) return null;
+                      
+                      return (
+                        <div key={`without-${year}`}>
+                          <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                            Batch {year}
+                          </h3>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {withoutTimetable.map(cls => (
+                              <Card
+                                key={cls._id}
+                                onClick={() => setSelectedClass(cls._id)}
+                                className="p-4 cursor-pointer hover:shadow-lg hover:border-primary transition-all duration-200 group"
+                              >
+                                <div className="text-center">
+                                  <div className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                                    {cls.name}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground mt-1">
+                                    {cls.division}
+                                  </div>
+                                  <div className="flex items-center justify-center gap-1 mt-2">
+                                    <Clock className="w-3 h-3 text-orange-500" />
+                                    <span className="text-xs text-orange-500">Pending</span>
+                                  </div>
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <Card className="p-8 text-center">
+                      <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                      <p className="text-muted-foreground">No classes without timetables</p>
+                    </Card>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

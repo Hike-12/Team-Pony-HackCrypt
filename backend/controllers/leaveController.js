@@ -1,6 +1,7 @@
 const LeaveApplication = require('../models/LeaveApplication');
 const Student = require('../models/Student');
 const cloudinary = require('../config/cloudinaryConfig');
+const mongoose = require('mongoose');
 
 // Create a new leave application
 exports.createLeaveApplication = async (req, res) => {
@@ -120,7 +121,7 @@ exports.getLeaveStats = async (req, res) => {
         const student_id = req.params.studentId; // TODO: Get from auth middleware
 
         const stats = await LeaveApplication.aggregate([
-            { $match: { student_id: new require('mongoose').Types.ObjectId(student_id) } },
+            { $match: { student_id: new mongoose.Types.ObjectId(student_id) } },
             {
                 $group: {
                     _id: '$status',

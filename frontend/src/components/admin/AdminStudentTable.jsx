@@ -227,6 +227,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Class</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Division</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Batch</th>
+                  <th className="px-4 py-3 text-sm font-semibold text-muted-foreground">Camera</th>
                   <th className="px-4 py-3 text-sm font-semibold text-muted-foreground text-right">Actions</th>
                 </tr>
               </thead>
@@ -254,6 +255,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.phone || 'N/A'}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.class_name || 'N/A'}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{student.division || 'N/A'}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{student.batch_year || 'N/A'}</td>
                     <td className="px-4 py-3 text-center">
                       {student.face_enrolled ? (
                         <button
@@ -295,7 +297,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
                 ))}
                 {students.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-4 py-12 text-center">
+                    <td colSpan={11} className="px-4 py-12 text-center">
                       <p className="text-muted-foreground">No students found. Add a student to get started.</p>
                     </td>
                   </tr>
@@ -401,7 +403,7 @@ export const AdminStudentTable = forwardRef(function AdminStudentTable(props, re
               <label className="text-sm font-medium text-muted-foreground">Student Image</label>
               <div className="flex items-start gap-4">
                 {editImagePreview && (
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <img
                       src={editImagePreview}
                       alt="Current"
