@@ -9,6 +9,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      '@mediapipe/pose': path.resolve(__dirname, 'src/dummy-mediapipe-pose.js'),
     },
+  },
+  optimizeDeps: {
+    exclude: ['@mediapipe/pose'],
   },
 })

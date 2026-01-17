@@ -38,6 +38,7 @@ app.use('/api/student/geofencing', require('./routes/Student/geofencingRoutes'))
 app.use('/api/teacher/auth', require('./routes/Teacher/authRoutes'));
 app.use('/api/teacher/attendance', require('./routes/Teacher/attendanceRoutes'));
 app.use('/api/teacher/leave', require('./routes/Teacher/leaveRoutes'));
+app.use('/api/teacher/attentiveness', require('./routes/Teacher/attentivenessRoutes'));
 app.use('/api/admin/students', require('./routes/adminStudentRoutes'));
 app.use('/api/admin/teachers', require('./routes/adminTeacherRoutes'));
 app.use('/api/admin/timetable', require('./routes/Admin/timetableRoutes'));
