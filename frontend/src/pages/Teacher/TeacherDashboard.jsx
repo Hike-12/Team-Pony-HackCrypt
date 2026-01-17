@@ -87,6 +87,7 @@ const TeacherDashboard = () => {
     let minDiff = Infinity
     lecturesToday.forEach(entry => {
       const slot = entry.slot_id
+      if (!slot || !slot.start_time) return; // Skip if slot or start_time is null
       const [h, m] = slot.start_time.split(':').map(Number)
       const startMinutes = h * 60 + m
       if (startMinutes > currentMinutes) {
