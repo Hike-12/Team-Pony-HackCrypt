@@ -5,6 +5,7 @@ const multer = require('multer');
 const cloudinary = require('../../config/cloudinary');
 const QRCode = require('qrcode');
 const StudentBiometric = require('../../models/StudentBiometric');
+const WebAuthnCredential = require('../../models/WebAuthnCredential'); // Add this import at the top
 
 // Configure multer to use memory storage
 const storage = multer.memoryStorage();
@@ -27,9 +28,17 @@ exports.getAllStudents = async (req, res) => {
       .populate('user_id', 'email is_active')
       .populate('class_id', 'name division batch_year');
 
-      const biometrics = await StudentBiometric.find({});
-    
-    // Transform to include email in response
+    const biometrics = await StudentBiometric.find({});
+    // --- NEW: Fetch all credentials for all students in one go
+    const studentIds = students.map(s => s._id);
+    const creds = await WebAuthnCredential.aggregate([
+      { $match: { student_id: { $in: studentIds }, is_active: true } },
+      { $group: { _id: '$student_id', count: { $sum: 1 } } }
+    ]);
+    const credMap = {};
+    creds.forEach(c => { credMap[c._id.toString()] = c.count > 0; });
+
+    // Transform to include email and biometric_enrolled in response
     const studentsWithDetails = students.map(s => {
       const biometric = biometrics.find(b => b.student_id.toString() === s._id.toString());
       return {
@@ -48,6 +57,7 @@ exports.getAllStudents = async (req, res) => {
         id_qr_url: s.id_qr_url,
         is_active: s.user_id?.is_active,
         face_enrolled: biometric?.face_enrolled || false,
+        biometric_enrolled: !!credMap[s._id.toString()], // <-- THIS LINE
         created_at: s.created_at
       };
     });
