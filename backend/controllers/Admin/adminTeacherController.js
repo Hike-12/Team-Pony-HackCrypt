@@ -16,9 +16,9 @@ exports.getAllTeachers = async (req, res) => {
       is_active: t.user_id?.is_active,
       created_at: t.created_at
     }));
-    res.json(teachersWithEmail);
+    res.json({ success: true, data: teachersWithEmail });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 

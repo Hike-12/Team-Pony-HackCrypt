@@ -3,9 +3,9 @@ const Class = require('../../models/Class');
 exports.getAllClasses = async (req, res) => {
   try {
     const classes = await Class.find().sort({ batch_year: -1, name: 1, division: 1 });
-    res.json(classes);
+    res.json({ success: true, data: classes });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 

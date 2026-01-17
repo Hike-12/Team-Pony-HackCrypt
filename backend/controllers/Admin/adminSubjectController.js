@@ -3,9 +3,9 @@ const Subject = require('../../models/Subject');
 exports.getAllSubjects = async (req, res) => {
   try {
     const subjects = await Subject.find().sort({ code: 1 });
-    res.json(subjects);
+    res.json({ success: true, data: subjects });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
