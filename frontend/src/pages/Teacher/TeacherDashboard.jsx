@@ -26,6 +26,7 @@ const TeacherDashboard = () => {
     totalStudents: 0,
     attendanceRate: 0,
   })
+  const [showStartSession, setShowStartSession] = useState(false)
 
   // Fetch today's lectures for dropdown
   useEffect(() => {
