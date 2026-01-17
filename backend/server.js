@@ -49,6 +49,7 @@ app.use('/api/admin/geofencing', require('./routes/Admin/geofencingRoutes'));
 app.use('/api/student/attendance', require('./routes/Student/attendanceMarkingRoutes'));
 app.use('/api/student/attendance-analytics', require('./routes/Student/attendanceAnalyticsRoutes'));
 app.use('/api/admin/csv', require('./routes/Admin/csvUploadRoutes'));
+app.use('/api/admin/analytics', require('./routes/Admin/analyticsRoutes'));
 
 const PORT = process.env.PORT || 8000;
 
