@@ -61,10 +61,10 @@ exports.getAllStudents = async (req, res) => {
         created_at: s.created_at
       };
     });
-    res.json(studentsWithDetails);
+    res.json({ success: true, data: studentsWithDetails });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
