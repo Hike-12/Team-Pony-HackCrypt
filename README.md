@@ -8,6 +8,21 @@
 
 **Next-Generation Attendance Tracking with AI-Powered Leave Verification**
 
+---
+
+## 🚀 Live Demo
+
+<div align="center">
+
+### **[🌐 Visit NoMoreProxies Live →](https://nomoreproxies-hackcrypt.vercel.app)**
+
+[![Vercel](https://img.shields.io/badge/Frontend-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://nomoreproxies-hackcrypt.vercel.app)
+[![Render](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)]()
+
+**Frontend:** Deployed on Vercel | **Backend:** Deployed on Render
+
+</div>
+
 </div>
 
 ---
@@ -574,18 +589,24 @@ npm run dev  # Vite dev server with HMR
 
 ### Building for Production
 
-**Frontend:**
+**Frontend (Vercel):**
 ```bash
 cd frontend
 npm run build       # Outputs to dist/
 npm run preview     # Preview production build
 ```
 
-**Backend:**
+**Backend (Render):**
 ```bash
 cd backend
 npm start           # Production mode (no hot-reload)
 ```
+
+### Deployment
+
+**Frontend:** Deployed on [Vercel](https://vercel.com) with automatic deployments from Git  
+**Backend:** Deployed on [Render](https://render.com) with continuous deployment  
+**Live URL:** [https://nomoreproxies-hackcrypt.vercel.app](https://nomoreproxies-hackcrypt.vercel.app)
 
 ### Environment-Specific Configuration
 
@@ -704,7 +725,7 @@ This project was created for **HackCrypt 2026** and is intended for educational 
 **Built with ❤️ for the future of education**
 
 [![GitHub](https://img.shields.io/badge/GitHub-Team--Pony--HackCrypt-181717?style=for-the-badge&logo=github)](https://github.com/Team-Pony-HackCrypt)
-[![Live Demo](https://img.shields.io/badge/Live-Demo-00d4ff?style=for-the-badge&logo=vercel)](https://your-demo-url.com)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-00d4ff?style=for-the-badge&logo=vercel)](https://nomoreproxies-hackcrypt.vercel.app)
 
 **🔐 Secure • 🚀 Fast • 🎨 Beautiful • 🤖 Intelligent**
 
